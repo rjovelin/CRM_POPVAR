@@ -5,6 +5,9 @@ Created on Fri May  6 11:43:14 2016
 @author: RJovelin
 """
 
+from Manipulate_Sequences import *
+from mirna_targets import *
+
 
 # use this function to map transcript name to gene names
 def transcript_to_gene(caeno_gff):
@@ -50,6 +53,55 @@ def gene_to_transcripts(caeno_gff):
             genes[gene_name] = [transcript]
 
     return genes
+
+
+# remanei and elegans GFF have different formats
+# use this function to create a dict of transcript : gene pairs
+def celegans_transcript_to_gene(celegans_gff):
+    '''
+    (file) -> dict
+    Returns a dictionnary with celegans transcript : gene pairs from the gff annotation file
+    '''
+    #create a dictionnary of transcript : gene pairs
+    transcripts_genes = {}
+
+    # open file for reading
+    gff = open(celegans_gff, 'r')
+    for line in gff:
+        line = line.rstrip()
+        if line != '':
+            line = line.split()
+            if line[1] == 'WormBase':
+                if line[2] == 'mRNA':
+                    transcript = line[8][line[8].index('Transcript:')+11 : line[8].index(';')]
+                    gene = line[8][line[8].index('Parent=Gene:')+12 : line[8].index(';', line[8].index('Parent'))]
+                    transcripts_genes[transcript] = gene
+    gff.close()
+    return transcripts_genes
+
+
+# remanei and elegans GFF have different formats
+# use this function to create a dict if gene : list of rsnacripts airs
+def celegans_gene_to_transcripts(celegans_gff):
+    '''
+    (file) -> dict
+    Returns a dictionnary with celegans gene as key and a list of transcripts as value
+    '''
+
+    # get the dictionnary of transcripts : gene names pairs
+    transcripts_genes = celegans_transcript_to_gene(celegans_gff)
+
+    # create a reverse dictionnary of gene : [transcripts] pairs
+    genes = {}
+    for transcript in transcripts_genes:
+        gene_name = transcripts_genes[transcript]
+        if gene_name in genes:
+            genes[gene_name].append(transcript)
+        else:
+            genes[gene_name] = [transcript]
+
+    return genes
+
 
 
 # use this function to generate a set of genes with indels to exclude from analysis
@@ -161,3 +213,119 @@ def X_autosomal_genes(genes, caeno_gff, chromosome_file):
                 autosomal_genes.append(gene)
                 
     return X_genes, autosomal_genes
+    
+    
+# use this function to get the length of all annotated 3' UTRs in C. elegans    
+def celegans_three_prime_UTR_length(celegans_gff):
+    '''
+    (file) -> list
+    Returns a list with the length of the annotated 3' UTRs in C. elegans gff annotation file
+    '''
+    #create list to store UTR length
+    UTR = []
+    # opengff file for reading
+    cel = open(celegans_gff, 'r')
+    # go through the file, extract UTR length and store in list
+    for line in cel:
+        line = line.rstrip()
+        if line != '':
+            line = line.split('\t')
+            if len(line) >= 5:
+                if line[1] == 'WormBase':
+                    if line[2] == 'three_prime_UTR':
+                        UTR_length = (int(line[4]) - int(line[3])) + 1
+                        UTR.append(UTR_length)
+    cel.close()
+    return UTR
+
+# use this function to get the value corresponding to percentile
+def get_percentile(L, percentile):
+    '''
+    (list, int) -> num
+    Return the value corresponding to the percentile from the list of values L
+    Precondition: percentile is not in %
+    '''
+
+    # order the list
+    L.sort()
+    # use the nearest rank method to find the percentile rank
+    Q = percentile / 100 * len(L)
+    if int(Q+1) >= len(L):
+        Qposition = int(Q-1)
+    else:
+        Qposition = int(Q+1)
+    return L[Qposition]
+
+
+# use this function to get the coordinates of the C. elegans 3' UTRs
+def celegans_annotated_three_prime_coordinates(celegans_gff):
+    '''
+    (file) -> dict
+    Returns a dictionnary with the 3' UTR coordinates of each celegans transcript
+    Use a single UTR if multiple UTRs are annotated
+    '''
+
+    # create a dictionnary to stote the coordinates {transcript_name : [chromo, start, end, orienation]}
+    annotated_three_prime = {}
+
+    # open file for reading
+    gff = open(celegans_gff, 'r')
+    for line in gff:
+        line = line.rstrip()
+        if line != '':
+            line = line.split()
+            if line[1] == 'WormBase':
+                if line[2] == 'three_prime_UTR':
+                    transcript = line[8][line[8].index('Transcript:')+11 :]
+                    chromo = line[0]
+                    # get positions 0-based
+                    start = int(line[3]) - 1
+                    end = int(line[4])
+                    orientation = line[6]
+                    annotated_three_prime[transcript] = [chromo, start, end, orientation]
+    gff.close()
+    return annotated_three_prime
+ 
+   
+# use this function to get the UTR sequences of each transcript
+def celegans_UTR_sequences(celegans_gff, assembly):
+    '''
+    (file, file, int) -> dict
+    Returns a dictionnary with the transcript name as key and the UTR sequence
+    from the assembly as value. Ignore transcripts lacking a UTR sequence
+    (e.g. at the ends of chromosome or when adjacent to another gene)
+    '''
+
+    # convert assembly to fasta format
+    genome = convert_fasta(assembly)
+    
+    # create a dictionnary with UTR coordinates
+    three_prime = celegans_annotated_three_prime_coordinates(celegans_gff)
+    
+    # create a dict {transcript: sequence}
+    UTR = {}
+    # loop over transcripts
+    for transcript in three_prime:
+        # ignore transcripts that do not have a UTR (start = end)
+        if not three_prime[transcript][1] == three_prime[transcript][2]:
+            # get chromo
+            chromo = three_prime[transcript][0]
+            # get orientation
+            orientation = three_prime[transcript][-1]
+            # get positions (already 0-based)
+            start = three_prime[transcript][1] 
+            # no need to convert end because end non-inclusive
+            end = three_prime[transcript][2]
+            # slice the squence
+            UTR_seq = genome[chromo][start:end]
+            # check orientation
+            if orientation == '+':
+                # populate dict
+                UTR[transcript] = UTR_seq.upper()
+            elif orientation == '-':
+                # take reverse complement
+                UTR_seq = reverse_complement(UTR_seq)
+                # populate dict
+                UTR[transcript] = UTR_seq.upper()
+                
+    return UTR
