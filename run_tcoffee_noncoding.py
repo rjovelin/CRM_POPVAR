@@ -1,6 +1,7 @@
 
 import os
 
+# use this function to align sequence pairs located in separate files in directory
 def run_tcoffee_noncoding(directory):
     '''
     (str) -> files
@@ -18,7 +19,7 @@ def run_tcoffee_noncoding(directory):
             print(alignCommand)
             os.system(alignCommand)
 
-        
+# use this fucntion to convert the tcoffee format to fasta        
 def convert_tcoffee_to_fasta(filename):
     '''
     (str) -> None
@@ -50,12 +51,13 @@ def convert_tcoffee_to_fasta(filename):
     tcoffee.close()
     alignment.close()
 
+# use this function to convert all tcoffee alignment files located in directory to fasta
 def generate_fasta_from_tcoffee(directory):
     '''
     (str) -> None
     Convert each tcoffee files in the directory into a text file in a fasta format
     '''
-
+    
     files = os.listdir(directory)
     
     for filename in files:
@@ -102,18 +104,5 @@ def convert_tcoffee_prot_to_fasta(filename):
 
     infile.close()
     alignment.close()
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
