@@ -329,3 +329,74 @@ def celegans_UTR_sequences(celegans_gff, assembly):
                 UTR[transcript] = UTR_seq.upper()
                 
     return UTR
+    
+    
+# use this function to convert coordinates in a sequence to genomic coordinates
+def convert_seq_coord_genome_coord(site_start, site_end, sequence_start, sequence_end, sequence_sense, length_chromo):
+    '''
+    (int, int, int, int, str, int) -> (int, int)
+    Take the coordinates of a feature in a given sequence,
+    the coordinates of that sequence in the genome, its orientation,
+    the chromosome length where the sequence is located and return the
+    coordinates of the feature relative to chromosome    
+    Precondition: all coordinates are 0-index based and the sequence is continuous   
+    '''
+
+    # compute site length and sequence length
+    site_length = site_end - site_start
+    sequence_length = sequence_end - sequence_start    
+    
+    # check  sequence orientation
+    if sequence_sense == '+':
+        # site coordinates on chromosome can be directly deduced
+        # start = start_index_site + start_index_sequence
+        start = site_start + sequence_start
+        # end = start + length_site, also end = end_index_site + start_index_sequence
+        end = start + site_length
+        return start, end
+    elif sequence_sense == '-':
+        # sites are predicted based on reverse_complement of sequence
+        # need to adjust coordinates of site on chromo
+        # get the indices of site in sequence in - sense
+        site_start_sequence = sequence_length - site_end
+        # site indices on chromo can be deduced from site indices on sequence(-)
+        start = site_start_sequence + sequence_start
+        end = start + site_length
+        return start, end
+        
+
+# use this function to get positions not falling in site categories
+def keep_intergenic_positions(genome, CDS_pos, UTR_pos, intron_pos):
+    '''
+    (dict, dict, dict, dict) -> dict
+    Take the dictionary of genome sequence, the dict of CDS coordinates,
+    predicted UTR coordinates, intron coordinates and return a dictionnary of 
+    intergenic positions for each chromo after removing sites falling in the other sites
+    Precondition: all dicts are in the form {chromo: {set of positions}}
+    '''
+    
+    # make a dict with positions in intergenic regions
+    # {chromo: {set of positions}}
+    intergenic_pos = {}
+    for chromo in genome:
+        intergenic_pos[chromo] = set(i for i in range(len(genome[chromo])))
+    # loop over CDS pos, remove positions falling in CDS
+    for chromo in CDS_pos:
+        # loop over position on that chromo
+        for i in CDS_pos[chromo]:
+            if i in intergenic_pos[chromo]:
+                intergenic_pos[chromo].remove(i)
+    # loop over UTR pos, remove positions falling in UTR
+    for chromo in UTR_pos:
+        # loop over positions on that chromo
+        for i in UTR_pos[chromo]:
+            if i in intergenic_pos[chromo]:
+                intergenic_pos[chromo].remove(i)
+    # loop over intron pos
+    for chromo in intron_pos:
+        # loop over positoons on that chromo
+        for i in intron_pos[chromo]:
+            if i in intergenic_pos[chromo]:
+                intergenic_pos[chromo].remove(i)
+            
+    return intergenic_pos
