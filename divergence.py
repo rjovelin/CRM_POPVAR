@@ -15,6 +15,7 @@ import math
 
 
 
+
 # use this function to compute theta when all sites have the same sample size
 def watterson_theta(k, N):
     '''
@@ -398,6 +399,22 @@ def pairwise_distance(seq1, seq2, bioseq):
     else:
         return 'NA'
 
+
+# use this function to count the number of differences between 2 sequences
+def match_diff(seq1, seq2):
+    '''
+    (str, str) -> int
+    Take 2 sequences and return the number of differences between them
+    Precondition: seq1 and seq2 have same length    
+    '''
+    # set up counter
+    diff = 0
+    # loop over seq1, compare each position to seq2
+    for i in range(len(seq1)):
+        if seq1[i].upper() != seq2[i].upper():
+            diff += 1
+            
+    return diff
 
 
 # use this function to compute theta per site for a sequence of interest
