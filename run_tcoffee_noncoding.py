@@ -57,9 +57,9 @@ def generate_fasta_from_tcoffee(directory):
     (str) -> None
     Convert each tcoffee files in the directory into a text file in a fasta format
     '''
-    
+    # create a list of files in directory
     files = os.listdir(directory)
-    
+    # loop over files and convert file to fasta
     for filename in files:
         if filename[-4:] == '.aln':
             convert_tcoffee_to_fasta(directory + filename)
