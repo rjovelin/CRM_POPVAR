@@ -10,9 +10,8 @@ Created on Thu Jun  4 16:55:43 2015
 # import script
 import os
 from miRNA_target import *
-from cel_UTR_length import *
-from accessories import *
-from Cel_UTR import *
+from Genomic_Coordinates import *
+from Manipulate_Sequences import *
 from parse_targetscan_output import *
 
 
