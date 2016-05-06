@@ -583,8 +583,41 @@ def make_cremanei_clatens_targetscan_input_sequences(directory, outputfile):
     
     newfile.close()
                 
-            
+         
+# use this function to generate the TargetScan input sequence file for cremanei-celegans analysis
+def make_cremanei_celegans_targetscan_input_sequences(directory, outputfile):
+    '''
+    (str, file) -> file
+    Generate the input sequence file for TargetScan using the aligned UTR sequences
+    located in directory. Use only Cremanei and Celegans orthologs      
+    '''
 
+    # open outputfile for writing
+    newfile = open(outputfile, 'w')
+
+    # grab the aligned remanei and latens sequences and write to newfile
+    files = os.listdir(directory)
+    for filename in files:
+        # check that the file contains the crem-cel orthologs
+        if 'CRE' in filename and '.txt' in filename:
+            # convert fasta file to a dictionnary for seq_name : sequence
+            fasta_seq = convert_fasta(directory + filename)
+            # get the name of the remanei transcript
+            for seq_name in fasta_seq:
+                if 'CRE_PX356' in seq_name:
+                    transcript_name = seq_name
+            # use the cremanei transcript name for the elegans ortholog
+            # but add species ID to distinguish species
+            # convert T to U
+            for seq_name in fasta_seq:
+                if 'CRE_PX356' in seq_name:
+                    newfile.write(transcript_name + '\t' + '31234' + '\t' + fasta_seq[seq_name].upper().replace('T', 'U') + '\n')
+                else:
+                    newfile.write(transcript_name + '\t' + '6239' + '\t' + fasta_seq[seq_name].upper().replace('T', 'U') + '\n')
+    
+    
+    newfile.close()         
+         
 # use this function to get the mirna coordinates on each chromo
 def get_mirna_loci(mirna_coord_file):
     '''
