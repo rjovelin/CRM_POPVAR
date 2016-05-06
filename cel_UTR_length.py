@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 
 
 def celegans_three_prime_UTR_length(celegans_gff):

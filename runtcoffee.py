@@ -1,4 +1,3 @@
-#!/usr/bin/ env python3
 
 # run to-coffee command lines to align protein sequences and
 # get the codon-based DNA alignment
