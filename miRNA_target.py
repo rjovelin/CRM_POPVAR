@@ -8,9 +8,9 @@ Created on Tue May 26 11:09:39 2015
 #!/usr/bin/env python3
 
 
-from Cel_UTR import *
-from accessories import *
-from piRNAs import *
+from Genomic_Coordinates import *
+from Manipulate_Sequences import *
+from divergence import *
 from miRfam_targetscan_input import *
 from parse_targetscan_output import *
 import os
