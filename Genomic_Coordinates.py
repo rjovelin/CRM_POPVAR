@@ -6,7 +6,7 @@ Created on Fri May  6 11:43:14 2016
 """
 
 from Manipulate_Sequences import *
-from mirna_target import *
+from miRNA_target import *
 
 
 # use this function to map transcript name to gene names

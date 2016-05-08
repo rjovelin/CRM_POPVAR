@@ -6,12 +6,12 @@ Created on Fri Jun 26 17:16:38 2015
 """
 
 
-from MK_test import *
-from accessories import *
-from diversity_chemo_partitions import *
-from sites_with_coverage import *
-import numpy as np
-import math
+#from MK_test import *
+from Manipulate_Sequences import *
+#from diversity_chemo_partitions import *
+#from sites_with_coverage import *
+#import numpy as np
+#import math
 
 
 
