@@ -9,10 +9,10 @@ Created on Thu May 28 14:01:09 2015
 
 import os
 from miRNA_target import *
-from cel_UTR_length import *
+from Genomic_Coordinates import *
 from protein_divergence import *
-from run_tcoffee_noncoding import *
-from Cel_UTR import *
+from TcoffeeAlignment import *
+
 
 # compute threshold based on the distribution of elegans UTR length
 UTR_length = celegans_three_prime_UTR_length('c_elegans.PRJNA13758.WS248.annotations.gff3')
