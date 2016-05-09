@@ -177,7 +177,7 @@ for mir in differences:
 assert len(mirnas) == len(nodiff) + len(close) + len(divergent), 'mirnas are missing'   
  
 # save information to file
-newfile = open('CRM_miRNAsCoordinatesFinal.txt', 'w')
+newfile = open('CRM_miRNAsCoordinatesEdits.txt', 'w')
 newfile.write('\t'.join(header) + '\n')
 total = 0
 for mir in nodiff:
