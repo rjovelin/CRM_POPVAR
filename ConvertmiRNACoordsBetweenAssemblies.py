@@ -15,7 +15,6 @@ import sys
 # [found/search]: add final coordinates if sequences are found, or edit sequences if search
 step = sys.argv[1]
 
-
 # add family conservation to mirnas
 # get the seeds of distant caeno species
 caenoSeeds = set()
@@ -202,14 +201,131 @@ if step == 'search':
     assert len(mirnas) == total, 'some mirnas are not saved to file'
 
 elif step == 'found':
-    # convert file to dict
-    infile = open('CRM_miRNAsCoordinatesEdits.txt')
+    # remove mirnas for which the mature miR doesn't match the hairpin sequence    
+    to_remove = []
+    # convert file to dict, check that all mature seqs are in hairpin
+    infile = open('CRM_miRNAsCoordinatesEdited.txt')
     header = infile.readline().rstrip().split('\t')
+    mirnas = {}
+    for line in infile:
+        line = line.rstrip()
+        if line != '':
+            line = line.split('\t')
+            if line[4] not in line[1]:
+                # check that mature in reverse complement of hairpin
+                if line[4] in reverse_complement(line[1]):
+                    # change hairpin to its reverse complement
+                    line[1] = reverse_complement(line[1])
+                else:
+                    to_remove.append(line[0])
+            mirnas[line[0]] = line
+    infile.close()
+    
+    # remove mirnas
+    for i in to_remove:
+        del mirnas[i]
+    
+    newfile = open('CRM_miRNAsCoordinatesFinal.txt', 'w')   
+    newfile.write('\t'.join(header) + '\n')
+    for i in mirnas:
+        newfile.write('\t'.join(mirnas[i]) + '\n')
+    newfile.close()
+    
+    # do some QC
+    infile = open('CRM_miRNAsCoordinatesFinal.txt')
+    infile.readline()
+    for line in infile:
+        line = line.rstrip()
+        if line != '':
+            line = line.split('\t')
+            # check that mature in hairpin
+            assert line[4] in line[1], 'mature not in hairpin'
+            # check that seed  == 6bp
+            assert len(line[5]) == 6, 'seed is not 6bp'
+            # check that seed is seed
+            assert line[4][1:7] == line[5], 'seed does not match'
+    infile.close()    
+    
+    # add coordinates to each mirnas
+    mirnas = {}
+    infile = open('CRM_miRNAsCoordinatesFinal.txt')
+    header = infile.readline().rstrip().split('\t')
+    for line in infile:
+        line = line.rstrip()
+        if line != '':
+            line = line.split('\t')
+            mir = line[0]
+            mirnas[mir] = line
+    infile.close()
     
     # modify header
-    # check that mature in hairpin
-    # check that seed  == 6bp
-    # check that seed is seed
-    # remove strand and start and conservation
-    # get coordinates and strand
-    # get conservation
+    # remove strand
+    header.remove(header[-1])
+    # remove start position
+    header.remove(header[3])
+    # correct typo
+    header[1] = 'Hairpin'    
+    coord = ['start', 'end', 'orientation']    
+    # extract chromo and add at first position in coord list
+    chromo = header.pop(2)
+    # add coordinates after chromo
+    coord.insert(0, chromo)
+    # add coordinates after mirna name
+    j = 1
+    for i in range(len(coord)):
+        header.insert(j+i, coord[i])
+
+    # convert genome sequence to dict
+    genome = convert_fasta('noamb_356_v1_4.txt')
+    
+    # loop over mirnas, modifiy conservation and coordinates
+    for mir in mirnas:
+        # remove strand
+        mirnas[mir].remove(mirnas[mir][-1])
+        # remove conservation
+        mirnas[mir].remove(mirnas[mir][-1])
+        # remove start position
+        mirnas[mir].remove(mirnas[mir][3])
+        # get hairpin
+        hairpin = mirnas[mir][1]        
+        # extract chromo
+        chromo = mirnas[mir].pop(2)
+        # find coordinates
+        if hairpin in genome[chromo]:
+            start = genome[chromo].index(hairpin)
+            end = start + len(hairpin)
+            orientation = '+'
+        elif reverse_complement(hairpin) in genome[chromo]:
+            start = genome[chromo].index(reverse_complement(hairpin))
+            end = start + len(hairpin)
+            orientation = '-'
+        else:
+            print(mir)
+        # create a list of coordinates, change coordinates to 1-based
+        coord = [chromo, str(start + 1), str(end), orientation]
+        # add coordinates after mirna name
+        j = 1
+        for i in range(len(coord)):
+            mirnas[mir].insert(j+i, coord[i])
+
+        # check family conservation
+        # get the seed sequence
+        seed = mirnas[mir][7]
+        if seed in caenoSeeds:
+            conservation = 'Caeno'
+        elif seed not in caenoSeeds and seed in latensSeeds:
+            conservation = 'CrmCla'
+        elif seed not in caenoSeeds and seed not in latensSeeds:
+            conservation = 'Crm'
+        # add conservation as varaible to list
+        mirnas[mir].append(conservation)
+    
+    # save data to file
+    # create a list of mirna names
+    names = [i for i in mirnas]
+    names.sort()
+    newfile = open('CRM_miRNAsCoordinatesFinal.txt', 'w')   
+    newfile.write('\t'.join(header) + '\n')
+    for i in names:
+        newfile.write('\t'.join(mirnas[i]) + '\n')
+    newfile.close()
