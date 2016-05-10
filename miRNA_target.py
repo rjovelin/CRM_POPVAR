@@ -395,8 +395,134 @@ def get_all_miRNA_target_sites(mirna_target_coord_file):
     
     return targets
 
-  
-            
+
+
+# use this function to slice the 7bp seed from the mature sequence 
+def grab_seed(mature_seq):
+    '''
+    (str) -> str
+    Slice the miRNA mature sequence to return the 7bp seed motif
+    '''
+    seed = mature_seq[1:8]
+    return seed
+
+
+# use this function to generate a dict of seeds and list pf mirnas pairs
+def seed_mirnas(mature_fasta):
+    '''
+    (file) -> dict
+    Take a fasta file of miRNA mature sequences and return a dictionnary with
+    seed as key and a list of mirnas from the same family (sharing the same seed)
+    as value
+    '''
+    
+    # convert fasta file to 
+    mirnas = convert_fasta(mature_fasta)
+    # create a dict of seed : [mir1, mir2]
+    seeds = {}
+    # loop over mature sequences
+    for name in mirnas:
+        # get seed sequence
+        seed_seq = grab_seed(mirnas[name])
+        # populate dict
+        if seed_seq in seeds:
+            seeds[seed_seq].append(name)
+        else:
+            seeds[seed_seq] = [name]
+    return seeds
+
+
+# use this function to generate a set of seeds for a given species, or group of mature sequences
+def get_all_seeds_in_species(mature_fasta):
+    '''
+    (file) -> set
+    Take a fasta file of miRNA mature sequences and return a set of miRNA 
+    seed sequences present in a given species
+    '''
+    
+    # create a dict of seed sequence and list of mirna pairs
+    seeds = seed_mirnas(mature_fasta)
+    # create a set of seeds present in species
+    seed_species = {i for i in seeds}
+    return seed_species
+
+
+# use this function to check if a miRNA family is conserved in a group of miRNAs or species
+def is_miRNA_family_conserved(seed_seq, seeds_species):
+    '''
+    (str, set) -> bool
+    Return True if the seed sequence is conserved and present in the set of 
+    seeds from species, return False otherwise
+    '''
+    
+    if seed_seq in seeds_species:
+        return True
+    else:
+        return False
+
+    
+
+# use this function to get the seed sequences of all miRNAs
+def get_seed_sequences(mirna_fam_file):
+    '''
+    (file) -> list
+    Take the miRNA seed family file and return a list with all seeds with U 
+    replaced by T    
+    '''
+    
+    # create list
+    seeds = []
+    
+    # open file for reading
+    infile = open(mirna_fam_file, 'r')
+    # loop over file
+    for line in infile:
+        line = line.rstrip()
+        if line != '':
+            line = line.split()
+            # replace U by T and add seed to list
+            seeds.append(line[1].replace('U', 'T'))
+    
+    # close file
+    infile.close()
+    return seeds
+    
+
+
+# use this function to check if a potential miRNA site is matching a seed sequence
+def is_matching_seed(site, site_type, seed):
+    '''
+    (str, str, str)
+    Take a DNA sequence, potentially a miRNA target site of given type, and a
+    known miRNA seed and return True if the site match the seed or False if it doesn not
+    Precondition: site contains only valid nucleotides
+    '''
+    # convert to upper case
+    seed = seed.upper()
+    site = site.upper()    
+    # convert seed from RNA to DNA
+    if 'U' in seed:
+        seed = seed.replace('U', 'T')
+        
+    # check the site_type
+    if site_type == '8mer-1a' or site_type == '8mer-1u':
+        if reverse_complement(site)[1:] == seed:
+            return True
+        else:
+            return False
+    elif site_type == '7mer-m8':
+        if reverse_complement(site) == seed:
+            return True
+        else:
+            return False
+    elif site_type == '7mer-1a':
+        if reverse_complement(site)[1:] == seed[:1]:
+            return True
+        else:
+            return False
+
+
+       
 # use this function to get the DAF of the miRNA targets
 def get_DAF_miRNA_targets(chromo_sites, genome_fasta, crm_cla_target_sites_file, UTR_alignments_folder, conservation_scores, conservation_level, unique_transcripts):
     '''
@@ -1008,64 +1134,6 @@ def count_targets_with_single_snp(chromo_sites, genome_fasta, crm_cla_target_sit
 
 
 
-# use this function to get the seed sequences of all miRNAs
-def get_seed_sequences(mirna_fam_file):
-    '''
-    (file) -> list
-    Take the miRNA seed family file and return a list with all seeds with U 
-    replaced by T    
-    '''
-    
-    # create list
-    seeds = []
-    
-    # open file for reading
-    infile = open(mirna_fam_file, 'r')
-    # loop over file
-    for line in infile:
-        line = line.rstrip()
-        if line != '':
-            line = line.split()
-            # replace U by T and add seed to list
-            seeds.append(line[1].replace('U', 'T'))
-    
-    # close file
-    infile.close()
-    return seeds
-    
-
-
-# use this function to check if a potential miRNA site is matching a seed sequence
-def is_matching_seed(site, site_type, seed):
-    '''
-    (str, str, str)
-    Take a DNA sequence, potentially a miRNA target site of given type, and a
-    known miRNA seed and return True if the site match the seed or False if it doesn not
-    Precondition: site contains only valid nucleotides
-    '''
-    # convert to upper case
-    seed = seed.upper()
-    site = site.upper()    
-    # convert seed from RNA to DNA
-    if 'U' in seed:
-        seed = seed.replace('U', 'T')
-        
-    # check the site_type
-    if site_type == '8mer-1a' or site_type == '8mer-1u':
-        if reverse_complement(site)[1:] == seed:
-            return True
-        else:
-            return False
-    elif site_type == '7mer-m8':
-        if reverse_complement(site) == seed:
-            return True
-        else:
-            return False
-    elif site_type == '7mer-1a':
-        if reverse_complement(site)[1:] == seed[:1]:
-            return True
-        else:
-            return False
         
         
 # use this function to get the start position of a target site in the non-aligned UTR 
