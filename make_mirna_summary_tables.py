@@ -5,13 +5,11 @@ Created on Thu Jun  4 16:55:43 2015
 @author: Richard
 """
 
-#!/usr/bin/env python3
-
 # import script
 import os
 from miRNA_target import *
-from Genomic_Coordinates import *
-from Manipulate_Sequences import *
+from genomic_oordinates import *
+from manipulate_sequences import *
 from parse_targetscan_output import *
 
 

@@ -4,12 +4,11 @@ Created on Thu May 28 14:01:09 2015
 
 @author: Richard
 """
-#!/usr/bin/env python3
 
 
 import os
 from miRNA_target import *
-from Genomic_Coordinates import *
+from genomic_coordinates import *
 from protein_divergence import *
 from TcoffeeAlignment import *
 
