@@ -5,7 +5,7 @@ Created on Thu May 28 21:23:49 2015
 @author: Richard
 """
 
-from Manipulate_Sequences import *
+from manipulate_sequences import *
 from miRNA_target import *
 
 
