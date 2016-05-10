@@ -10,7 +10,7 @@ Created on Wed Jun 10 11:08:59 2015
 
 # import modules
 from manipulate_sequences import *
-from MK_test import * 
+from mk_test import * 
 from genomic_coordinates import *
 
   
