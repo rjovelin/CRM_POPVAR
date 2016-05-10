@@ -13,7 +13,8 @@ import sys
 # use this script to find the coordinates of the remanei mirnas in PX356 assembly
 # options:
 # [found/search]: add final coordinates if sequences are found, or edit sequences if search
-step = sys.argv[1]
+#step = sys.argv[1]
+step = 'found'
 
 # add family conservation to mirnas
 # get the seeds of distant caeno species
@@ -224,7 +225,11 @@ elif step == 'found':
     # remove mirnas
     for i in to_remove:
         del mirnas[i]
-    
+        
+    # convert 6bp seed to 7bp seed
+    for mir in mirnas:
+        mirnas[mir][5] = mirnas[mir][4][1:8]
+        
     newfile = open('CRM_miRNAsCoordinatesFinal.txt', 'w')   
     newfile.write('\t'.join(header) + '\n')
     for i in mirnas:
@@ -241,9 +246,9 @@ elif step == 'found':
             # check that mature in hairpin
             assert line[4] in line[1], 'mature not in hairpin'
             # check that seed  == 6bp
-            assert len(line[5]) == 6, 'seed is not 6bp'
+            assert len(line[5]) == 7, 'seed is not 6bp'
             # check that seed is seed
-            assert line[4][1:7] == line[5], 'seed does not match'
+            assert line[4][1:8] == line[5], 'seed does not match'
     infile.close()    
     
     # add coordinates to each mirnas
