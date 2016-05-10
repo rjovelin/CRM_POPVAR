@@ -6,13 +6,6 @@ Created on Thu May 28 18:34:40 2015
 """
 
 
-
-from manipulate_sequences import *
-from miRNA_target import *
-from genomic_coordinates import *
-
-
-
 def check_seq_position():
     '''
     
@@ -839,3 +832,7 @@ def make_table_clatens_specific_sites(cla_specific_targets, mature_fasta, caeno_
     newfile.close()
 
 
+if __main__ == '__main__':
+    from manipulate_sequences import *
+    from miRNA_target import *
+    from genomic_coordinates import *
