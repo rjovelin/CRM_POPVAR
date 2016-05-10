@@ -473,25 +473,6 @@ def make_table_cremanei_clatens_sites(caeno_gff, UTR_seq_targetscan, predicted_t
         
 
     
-#genome coordinates: GS, GE
-#UTR coord: US, UE
-#site coord: SS, SE        
-        
-# if orientation == '+':
-#US = genome.index(UTR)        
-#UE = US + len(UTR)
-#UTR = genome[US:UE]
-#SS = UTR.index(site)
-#SE = SS + len(site)
-#
-#position of site in genome:
-#SGS = SS + US
-#SGE = SE + US        
-#        
-#        
-        
-
-
 # use this function to create dicts from the targetscan output
 def parse_targetscan_output(UTR_seq_targetscan, predicted_targets, mature_fasta, other_species):
     '''
