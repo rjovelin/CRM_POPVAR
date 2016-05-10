@@ -154,13 +154,13 @@ def make_cremanei_celegans_targetscan_input_sequences(directory, outputfile):
 def get_mirna_loci(mirna_coord_file):
     '''
     (file) -> dict
-    Take the file with mirna coordinates and return a dictionary with chromo
-    as key and a list of list coordinates for each mirna on that chromo
+    Take the file with mirna genomic coordinates (hairpin or mature)
+    and return a dictionary with chromo as key and a list of list coordinates
+    for each mirna on that chromo
     '''
     
     # create a dict {chromo: [[start, end, orientation]]}
     mirnas_coord = {}
-    
     # openfile for reading
     infile = open(mirna_coord_file, 'r')
     # skip header
@@ -183,46 +183,6 @@ def get_mirna_loci(mirna_coord_file):
     infile.close()
 
     return mirnas_coord
-    
-
-#use this function to get the coordinates of mature miRNAs on each chromo
-def get_mature_loci(mature_coord_file):
-    '''
-    (file) -> dict
-    Take the file with genomic coordinates of mature miRNAs and return a 
-    dictionary with chromo as key and a list of list coordinates for each mature 
-    miR of that chrom
-    '''
-    
-    # create a dict {chromo: [[start, end orientation]]}
-    mature_coord = {}
-    
-    # open file for reading
-    infile = open(mature_coord_file, 'r')
-    # skip header
-    infile.readline()
-    infile.readline()
-    # loop over file
-    for line in infile:
-        line = line.rstrip()
-        if line != '':
-            line = line.split()
-            # get chromo
-            chromo = line[2]
-            # get start, end position in 0-based
-            start = int(line[3]) - 1
-            end = int(line[4])
-            # get orientation
-            orientation = line[-1]
-            # check if chromo in dict
-            if chromo in mature_coord:
-                mature_coord[chromo].append([start, end, orientation])
-            else:
-                mature_coord[chromo] = [[start, end, orientation]]
-    # close file after reading
-    infile.close()
-    
-    return mature_coord
     
 
 # use this function to grab the coordinates of the miRNA targets 
