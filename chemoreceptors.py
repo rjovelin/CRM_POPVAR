@@ -6,7 +6,7 @@ Created on Sat Jun 20 19:26:00 2015
 """
 
 from manipulate_sequences import *
-from MK_test import *
+from mK_test import *
 from divergence import *
 
 
