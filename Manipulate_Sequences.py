@@ -215,3 +215,16 @@ def clean_cel_crem_orthologs_file(best_blast_hits, crem_gff, cel_gff, outputfile
     # close files
     infile.close()
     newfile.close()
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
