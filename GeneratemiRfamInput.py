@@ -5,14 +5,10 @@ Created on Thu May 28 21:23:49 2015
 @author: Richard
 """
 
-from manipulate_sequences import *
 from miRNA_target import *
-
-
 
 # use this script to generate a fasta file with cremanei mature sequences
 # and the targetscan miRNA family input file
-
 
 # generate a fasta file with mature mirna sequences
 infile = open('CRM_miRNAsCoordinatesFinal.txt')
