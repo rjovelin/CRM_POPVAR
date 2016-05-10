@@ -9,13 +9,13 @@ import os
 
 
 # run TargetScan on Cremanei transcripts only
-os.system('perl targetscan_60.pl Cremanei_miRfam_mirbase21_info.txt Crm_UTR_seq_targetscan.txt Cremanei_predicted_sites_targetscan.txt')
+os.system('perl targetscan_60.pl Cremanei_miRfam_info.txt Crm_UTR_seq_targetscan.txt Cremanei_predicted_sites_targetscan.txt')
 
 # run TargetScan on Cremanei and Clatens aligned orthologous UTRs
-os.system('perl targetscan_60.pl Cremanei_miRfam_mirbase21_info.txt Crm_Cla_UTR_seq_targetscan.txt Crm_Cla_predicted_sites_targetscan.txt')
+os.system('perl targetscan_60.pl Cremanei_miRfam_info.txt Crm_Cla_UTR_seq_targetscan.txt Crm_Cla_predicted_sites_targetscan.txt')
 
 # run TargetScan on Cremanei and Celegans aligned orthologous files 
-os.system('perl targetscan_60.pl Cremanei_miRfam_mirbase21_info.txt Crm_Cel_UTR_seq_targetscan.txt Crm_Cel_predicted_sites_targetscan.txt')
+os.system('perl targetscan_60.pl Cremanei_miRfam_info.txt Crm_Cel_UTR_seq_targetscan.txt Crm_Cel_predicted_sites_targetscan.txt')
 
 
 
