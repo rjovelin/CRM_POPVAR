@@ -10,7 +10,7 @@ Created on Fri Jun 12 16:45:23 2015
 # import modules
 from get_coding_sequences import *
 from miRNA_target import *
-from accessories import *
+from manipulate_sequences import *
 
 
 # use this function to make a dict with the coordinates of all indels on each chromosome

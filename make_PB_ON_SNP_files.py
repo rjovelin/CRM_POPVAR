@@ -7,7 +7,7 @@ Created on Thu Sep 10 14:04:22 2015
 
 import os
 from parse_vcf_comp_files import *
-from accessories import *
+from manipulate_sequences import *
 from repeats_TEs import *
 
 # path to the vcf comp files

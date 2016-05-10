@@ -7,7 +7,7 @@ Created on Wed Jun 24 16:26:02 2015
 
 
 from scipy import stats
-from accessories import *
+from manipulate_sequences import *
 
 
 

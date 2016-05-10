@@ -7,7 +7,7 @@ Created on Tue Jun  9 14:25:11 2015
 
 
 #!/usr/bin/env python3
-from accessories import *
+from manipulate_sequences import *
 from scipy import stats
 
 

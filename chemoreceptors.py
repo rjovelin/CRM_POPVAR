@@ -5,7 +5,7 @@ Created on Sat Jun 20 19:26:00 2015
 @author: Richard
 """
 
-from accessories import *
+from manipulate_sequences import *
 from MK_test import *
 from divergence import *
 

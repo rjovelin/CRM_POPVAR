@@ -1,4 +1,4 @@
-from accessories import *
+from manipulate_sequences import *
 
 
 
