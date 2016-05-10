@@ -13,8 +13,7 @@ import sys
 # use this script to find the coordinates of the remanei mirnas in PX356 assembly
 # options:
 # [found/search]: add final coordinates if sequences are found, or edit sequences if search
-#step = sys.argv[1]
-step = 'found'
+step = sys.argv[1]
 
 # add family conservation to mirnas
 # get the seeds of distant caeno species
