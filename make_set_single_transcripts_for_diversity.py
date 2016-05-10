@@ -5,10 +5,10 @@ Created on Thu Jun 11 15:06:16 2015
 @author: Richard
 """
 
-#!/usr/bin/env python3
 
-from accessories import *
-
+from manipulate_sequences import *
+from genomic_coordinates import *
+from miRNA_target import *
 
 # use this script to make a set of unique transcript per gene for analyses of 
 # polymorphism 

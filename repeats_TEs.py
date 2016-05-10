@@ -5,7 +5,7 @@ Created on Fri Jul 31 13:05:22 2015
 @author: RJovelin
 """
 
-from accessories import *
+from manipulate_sequences import *
 
 # use this function to get the coordinates of TEs in remanei
 def get_repeats_coord(repeatmasker_output, remove_simple_repeat):

@@ -8,8 +8,8 @@ Created on Mon Aug  3 20:30:31 2015
 import os
 from miRNA_target import *
 from piRNAs import *
-from Cel_UTR import *
-from cel_UTR_length import *
+from genomic_coordinates import *
+from manipulate_sequences import *
 
 
 
