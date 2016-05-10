@@ -8,7 +8,7 @@ Created on Thu Jun  4 16:55:43 2015
 # import script
 import os
 from miRNA_target import *
-from genomic_oordinates import *
+from genomic_coordinates import *
 from manipulate_sequences import *
 from parse_targetscan_output import *
 
