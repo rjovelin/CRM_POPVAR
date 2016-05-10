@@ -869,3 +869,23 @@ def keep_intergenic_positions(genome, CDS_pos, UTR_pos, intron_pos):
                 intergenic_pos[chromo].remove(i)
             
     return intergenic_pos
+    
+    
+
+# use this function to get the start position of a target site in the non-aligned UTR 
+# from its start position in the aligned UTR
+def convert_MSA_coord_to_UTR_coord(start, aligned_UTR_seq):
+    '''
+    (int, str) -> int
+    Take a the start position of a target site in the the aligned UTR sequence
+    return its start position in the non-aligned UTR (ie. same sequence, gapped removed) 
+    Precondition: positions are 0-based
+    '''
+    
+    gaps = 0
+    for i in range(len(aligned_UTR_seq[:start])):
+        if aligned_UTR_seq[i] == '-':
+            gaps += 1
+    
+    return start - gaps
+            
