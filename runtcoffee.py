@@ -34,8 +34,6 @@ for filename in files:
     print(backtransCommand)
     os.system(backtransCommand)
 
-
-
     # convert clustal format to fasta format
     DNA_ali_fasta = filename[:-3] + '_aln.tfa'
     convertDNAalignToFastaCommand = 't_coffee -other_pg seq_reformat -in' + './pairs'/ + DNA_ali + '-output fasta_aln > ' + DNA_ali_fasta
