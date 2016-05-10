@@ -11,7 +11,7 @@ Created on Wed Apr 29 13:21:35 2015
 
 from manipulate_sequences import *
 from get_coding_sequences import *
-from crem_cla_divergence import *
+from divergence import *
 import os
 
 # convert genomes to fasta
