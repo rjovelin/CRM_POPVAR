@@ -5,7 +5,8 @@ Created on Fri May  6 11:43:14 2016
 @author: RJovelin
 """
 
-
+from manipulate_sequences import *
+from miRNA_target import *      
 
 
 # use this function to map transcript name to gene names
@@ -889,6 +890,4 @@ def convert_MSA_coord_to_UTR_coord(start, aligned_UTR_seq):
     return start - gaps
 
 
-if __name__ == '__main__':
-    from manipulate_sequences import *
-    from miRNA_target import *            
+  

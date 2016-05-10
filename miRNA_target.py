@@ -5,7 +5,11 @@ Created on Tue May 26 11:09:39 2015
 @author: Richard
 """
 
-
+from genomic_coordinates import *
+from manipulate_sequences import *
+from divergence import *
+from parse_targetscan_output import *
+import os
 
    
 # use this function to generate the targetscan input file for the Cremanei transcripts only
@@ -1459,9 +1463,3 @@ def infer_target_gain_loss(crm_target_DAF, cla_target_DAF, mature_seeds):
         
 
     
-if __name__ == '__main__':
-    from genomic_coordinates import *
-    from manipulate_sequences import *
-    from divergence import *
-    from parse_targetscan_output import *
-    import os
