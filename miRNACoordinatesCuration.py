@@ -5,7 +5,7 @@ Created on Sat May  7 22:16:13 2016
 @author: Richard
 """
 
-from Manipulate_Sequences import *
+from manipulate_sequences import *
 from divergence import *
 import os
 import sys

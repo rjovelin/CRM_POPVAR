@@ -7,9 +7,9 @@ Created on Thu May 28 18:34:40 2015
 
 
 
-from accessories import *
+from manipulate_sequences import *
 from miRNA_target import *
-from miRfam_targetscan_input import *
+from genomic_coordinates import *
 
 
 
