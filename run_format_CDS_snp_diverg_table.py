@@ -4,7 +4,7 @@ Created on Fri Jun  5 12:26:07 2015
 
 @author: Richard
 """
-from accessories import *
+from manipulate_sequences import *
 import os
 
 
@@ -51,7 +51,7 @@ print('table updated with KSR+PX strains')
 
 
 # make a list of alignment files
-files = os.listdir('./pairs/Aligned_pairs/')
+files = os.listdir('../CREM_CLA_protein_divergence/pairs/Aligned_pairs/')
 # make a list of alignment files
 alignments = [filename for filename in files if filename[-8:] == '_aln.tfa']
 
@@ -61,7 +61,7 @@ for filename in alignments:
     gene_name = filename[:filename.index('_CLA')]
     sequences = {}
     orthologs[gene_name] = {}
-    sequences = convert_fasta('./pairs/Aligned_pairs/' + filename)
+    sequences = convert_fasta('../CREM_CLA_protein_divergence/pairs/Aligned_pairs/' + filename)
     for seq in sequences:
         if 'CRE' in seq:
             orthologs[gene_name]['crm'] = sequences[seq]
