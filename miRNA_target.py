@@ -798,51 +798,10 @@ def get_SNP_count(chromo_sites, chromo, positions):
             SNPs += 1
     return SNPs
 
-# use this function to find the indices where 2 sequences have a difference
-def find_mismatch_positions(seq1, seq2):
-    '''
-    (str, str) -> list
-    Take 2 sequences and return a list of indices where the 2 sequences differ
-    Preconditions: the 2 sequences are aligned and/or have the same length
-    '''
-    
-    # create a list to store the indices
-    pos = []
-    # loop over seq1, compare each position to seq2
-    for i in range(len(seq1)):
-        # compare seq1 and se2
-        if seq1.upper()[i] != seq2.upper()[i]:
-            pos.append(i)
-            
-    return pos
+
     
  
-# use this function to find the indices of a SNP
-def find_SNP_positions(chromo_sites, chromo, positions):
-    '''
-    (dict, str, list) -> list
-    Take the dictionary with site positions : allele counts, the chromo where
-    the sequence of interest is located and a sorted list with positions of the
-    sequence of interest on chromo and return a list with the indices of the
-    SNPs in the sequence
-    Precondition: positions are 0-based, the sequence has coverage and
-    minumum sample size for all its sites and the list of its positions is
-    already ordered such that the sequence is orientated 5'-3'
-    (positions are in decreasing order is the sequence orientation is '-')    
-    '''
-    
-    # create a list to store the indisces of the snps
-    SNPs = []    
-    # loop over positions
-    for i in range(len(positions)):
-        # get the ref and alt allele counts
-        ref_count = chromo_sites[chromo][positions[i]][2]
-        alt_count = chromo_sites[chromo][positions[i]][3]
-        # check if site is polymorphic
-        if ref_count != 0 and alt_count != 0:
-            # site is polymorphic, add i to list
-            SNPs.append(i)
-    return SNPs
+
 
 
 # use this function to compute the derived allele frequency at a single snp
@@ -1096,23 +1055,7 @@ def count_targets_with_single_snp(chromo_sites, genome_fasta, crm_cla_target_sit
 
         
         
-# use this function to get the start position of a target site in the non-aligned UTR 
-# from its start position in the aligned UTR
-def convert_MSA_coord_to_UTR_coord(start, aligned_UTR_seq):
-    '''
-    (int, str) -> int
-    Take a the start position of a target site in the the aligned UTR sequence
-    return its start position in the non-aligned UTR (ie. same sequence, gapped removed) 
-    Precondition: positions are 0-based
-    '''
-    
-    gaps = 0
-    for i in range(len(aligned_UTR_seq[:start])):
-        if aligned_UTR_seq[i] == '-':
-            gaps += 1
-    
-    return start - gaps
-            
+
     
    
 # use this function to the find the cla targets with a single high DAF SNP in non-target remanei
