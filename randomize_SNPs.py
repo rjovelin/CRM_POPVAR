@@ -5,12 +5,11 @@ Created on Mon Aug 17 14:07:49 2015
 @author: RJovelin
 """
 
-from accessories import *
+from manipulate_sequences import *
 from sites_with_coverage import *
 from miRNA_target import *
 from piRNAs import *
-from Cel_UTR import *
-from cel_UTR_length import *
+from genomic_coordinates import *
 import random
 import os
 

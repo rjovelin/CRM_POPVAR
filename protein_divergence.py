@@ -1,6 +1,6 @@
 
 import os
-from accessories import *
+from manipulate_sequences import *
 
 
 

@@ -5,7 +5,7 @@ Created on Fri Jul 10 09:31:03 2015
 @author: Richard
 """
 
-from accessories import *
+from manipulate_sequences import *
 from repeats_TEs import *
 from get_coding_sequences import *
 

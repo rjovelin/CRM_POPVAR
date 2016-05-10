@@ -9,10 +9,9 @@ Created on Wed Jun 10 11:08:59 2015
 
 
 # import modules
-from accessories import *
-from MK_test import genetic_code
-from MK_test import diff_codon
-from caeno_chromosomes import *
+from manipulate_sequences import *
+from MK_test import * 
+from genomic_coordinates import *
 
   
 # use this function to identify the genes that have premature stop codons caused by SNPs only
