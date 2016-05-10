@@ -10,22 +10,22 @@ import os
 from miRNA_target import *
 from genomic_coordinates import *
 from protein_divergence import *
-from TcoffeeAlignment import *
+from tcoffee_alignment import *
 
 
 # compute threshold based on the distribution of elegans UTR length
-UTR_length = celegans_three_prime_UTR_length('c_elegans.PRJNA13758.WS248.annotations.gff3')
+UTR_length = celegans_three_prime_UTR_length('../Genome_Files/c_elegans.PRJNA13758.WS248.annotations.gff3')
 threshold = get_percentile(UTR_length, 99)
 
 
 # generate the Targetscan input file for all the remanei transcripts
 
 # create a dict of transcript : gene  pairs
-crm_transcripts = transcript_to_gene('../CREM_CLA_protein_divergence/356_10172014.gff3')
+crm_transcripts = transcript_to_gene('../Genome_Files/356_10172014.gff3')
 # create a dict of remanei UTR sequences
-crm_UTR = fetch_UTR_sequences('../CREM_CLA_protein_divergence/356_10172014.gff3', '../CREM_CLA_protein_divergence/noamb_356_v1_4.txt', threshold)
+crm_UTR = fetch_UTR_sequences('../Genome_Files/356_10172014.gff3', '../Genome_Files/noamb_356_v1_4.txt', threshold)
 # create targetscan input sequence file
-make_cremanei_targetscan_input_sequences(crm_UTR, crm_transcripts, '../CREM_CLA_protein_divergence/crem_cla_orthologs.txt', 'Crm_UTR_seq_targetscan.txt')
+make_cremanei_targetscan_input_sequences(crm_UTR, crm_transcripts, '../Genome_Files/crem_cla_orthologs.txt', 'Crm_UTR_seq_targetscan.txt')
 print('remanei targetscan input done')
 
 
@@ -36,10 +36,10 @@ print('remanei targetscan input done')
 os.mkdir('./Crm_Cla_UTR_sequences/')
 
 # create a dict of latens UTR sequences
-cla_UTR = fetch_UTR_sequences('../CREM_CLA_protein_divergence/534_10172014.gff3', '../CREM_CLA_protein_divergence/noamb_534_v1.txt', threshold)
+cla_UTR = fetch_UTR_sequences('../Genome_Files/534_10172014.gff3', '../Genome_Files/noamb_534_v1.txt', threshold)
 
 # create a dict of orthologous pairs {crem_TS: cla_TS}
-crm_cla_orthos = orthologous_pairs('../CREM_CLA_protein_divergence/crem_cla_orthologs.txt')
+crm_cla_orthos = orthologous_pairs('../Genome_Files/crem_cla_orthologs.txt')
 
 # save UTRs of orthologous pairs to separate files
 for gene in crm_cla_orthos:
@@ -81,10 +81,10 @@ print('remanei - latens targetscan input done')
 os.mkdir('./Crm_Celegans_UTR_sequences/')
 
 # create a dict of elegans UTR sequences
-elegans_UTR = celegans_UTR_sequences('c_elegans.PRJNA13758.WS248.annotations.gff3', 'Celegans_WS248_genome.txt')
+elegans_UTR = celegans_UTR_sequences('../Genome_Files/c_elegans.PRJNA13758.WS248.annotations.gff3', '../Genome_Files/Celegans_WS248_genome.txt')
 
 # create a dict of orthologous pairs {crem_TS: cel_TS}
-crm_cel_orthos = orthologous_pairs('crm_cel_orthologs.txt')
+crm_cel_orthos = orthologous_pairs('Genome_Files/crm_cel_orthologs.txt')
 
 # create a set of remanei transcripts that are used to predict target sites
 valid_transcripts = set()
