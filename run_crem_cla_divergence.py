@@ -5,22 +5,23 @@ Created on Fri May  8 17:01:03 2015
 @author: Richard
 """
 
+# use this script to generate codon-based sequence alignments and compute
+# divergence between remanei and latens orthologs
+
 
 from protein_divergence import *
-from accessories import *
+from manipilate_sequences import *
 import os
 
 
-
-
 # clean the reciprocal BLAST file to generate a file with 1:1 orthologs
-clean_orthologs_file('mutual_blast_besthit.tab', '356_10172014.gff3', '534_10172014.gff3', 'crem_cla_orthologs.txt')
+clean_orthologs_file('../Genome_Files/mutual_blast_besthit.tab', '../Genome_Files/356_10172014.gff3', '../Genome_Files/534_10172014.gff3', '../Genome_Files/crem_cla_orthologs.txt')
 
 # create a directory named pairs
 os.mkdir('./pairs/')
 
 # save orthologous sequences into separate files
-save_orthologous_seq_pairs_to_file('crem_cla_orthologs.txt', 'noamb_PX356_all_CDS.fasta', 'noamb_PX534_all_CDS.fasta', './pairs/')
+save_orthologous_seq_pairs_to_file('../Genome_Files/crem_cla_orthologs.txt', '../Genome_Files/noamb_PX356_all_CDS.fasta', '../Genome_Files/noamb_PX534_all_CDS.fasta', './pairs/')
 print('done generating fasta files')
 
 # run t-coffee
@@ -73,7 +74,7 @@ for filename in files:
 print('done running codeml')
 
 # save divergent results to file
-save_divergence_results_to_file('356_10172014.gff3', '534_10172014.gff3', 'CRM_CLA_protein_divergence.txt', './')
+save_divergence_results_to_file('../Genome_Files/356_10172014.gff3', '../Genome_Files/534_10172014.gff3', 'CRM_CLA_protein_divergence.txt', './')
 print('done computing sequence divergence')
 
 
