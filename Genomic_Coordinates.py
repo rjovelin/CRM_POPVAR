@@ -7,7 +7,7 @@ Created on Fri May  6 11:43:14 2016
 
 from manipulate_sequences import *
 from miRNA_target import *      
-import os
+
 
 # use this function to map transcript name to gene names
 def transcript_to_gene(caeno_gff):
