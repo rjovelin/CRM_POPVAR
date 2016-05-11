@@ -5,10 +5,6 @@ Created on Fri May  8 17:01:03 2015
 @author: Richard
 """
 
-#!/usr/bin/env python3
-
-
-
 
 from protein_divergence import *
 from accessories import *

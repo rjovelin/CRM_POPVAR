@@ -5,8 +5,6 @@ Created on Fri Jun 12 17:00:04 2015
 @author: Richard
 """
 
-#!/usr/bin/env python3
-
 from indel_coordinates import *
 
 # find transcrtips with deletions in KSR

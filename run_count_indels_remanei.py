@@ -5,7 +5,7 @@ Created on Fri Jun 12 22:50:32 2015
 @author: Richard
 """
 
-#!/usr/bin/env python3
+
 
 from indel_coordinates import *
 
