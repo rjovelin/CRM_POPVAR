@@ -20,10 +20,9 @@ os.mkdir('../SNP_files/')
 snp_dir = '../SNP_files/'
 
 # create a dict of repeat name coordinate
-repeat_coord = get_repeats_coord('../piRNAs/356_v1_4.fasta.out', False)
+repeat_coord = get_repeats_coord('356_v1_4.fasta.out', False)
 # create a dict of chromo : set of repeat indices
 repeat_pos = get_repeat_positions(repeat_coord)
-
 
 # check that all chromo in the GFF file are in the vcf comp file
 chromo_gff, chromo_dir = check_chromo(vcf_dir, '356_10172014.gff3')
@@ -41,7 +40,7 @@ if chromo_gff == chromo_dir:
         print(i)
         # get the full path of the file
         filename = vcf_dir + i
-        # get chromo and dict with SNP counts
+        # get chromo and dict with SNP counts, remove SNPs in repeat regions
         chromo, snps = from_vcf_comp_to_dict(filename, repeat_pos, True)
         # check that chromo and snps are defined (ie. that comp file is not empty)
         if chromo != '' and snps != 0:
