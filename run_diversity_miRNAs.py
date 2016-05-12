@@ -19,44 +19,37 @@ import math
 
 # compute theta at synonymous sites
 theta_syn = compute_theta_diversity('../Genome_Files/CDS_SNP_DIVERG.txt', '../Genome_Files/unique_transcripts.txt', 'SYN', 10)
-                                   
+                             
 # make a list of theta values
 SYN_theta = []
 for gene in theta_syn:
     SYN_theta.append(theta_syn[gene])
-
 print('done computing theta at synonymous sites')
+print('Sites\tmean\tmin\tmax')
+print('SYN', np.mean(SYN_theta), min(SYN_theta), max(SYN_theta))
 
 # compute theta at nonsynonymous sites
 theta_rep = compute_theta_diversity('../Genome_Files/CDS_SNP_DIVERG.txt', '../Genome_Files/unique_transcripts.txt', 'REP', 10)
-
 
 # make a list of theta values
 REP_theta = []
 for gene in theta_rep:
     REP_theta.append(theta_rep[gene])
-    
 print('done computing theta at replacement sites')
+print('Sites\tmean\tmin\tmax')
+print('REP', np.mean(REP_theta), min(REP_theta), max(REP_theta))
 
 # get the allele counts for all sites with coverage
 chromo_sites = get_non_coding_snps('../SNP_files/', 10)
-
 print('got allele counts at all sites')
 
 # get miRNA coordinates {chromo: [[start, end, orientation]]}
-mirna_coord = get_mirna_loci('../miRNA_Target_sites/crm_miRBase21_premina_coordinates.txt')
-
+mirna_coord = get_mirna_loci('CRM_miRNAsCoordinatesFinal.txt')
 print('got miRNA coordinates')
 
 # get mature coordinates {chromo: [[start, end orientation]]}
-mature_coord = get_mature_loci('../miRNA_Target_sites/crm_mature_miRBase_genomic_coordinates.txt')
- 
+mature_coord = get_mirna_loci('../miRNA_Target_sites/crm_mature_miRBase_genomic_coordinates.txt')
 print('got mature miR coordinates')
-
-# get piRNA coordinates {chromo: [[start, end, orienation]]}
-pirna_coord = get_pirna_loci('PX356_piRNA_coord.txt')
-
-print('got piRNA coordinates')
 
 # compute theta for mirnas
 # create a list to store theta at miRNA loci
@@ -73,8 +66,9 @@ for chromo in mirna_coord:
         # check that theta is defined
         if theta != 'NA':
             mirna_theta.append(theta)
-            
 print('done computing theta at miRNAs')
+print('Sites\tmean\tmin\tmax')
+print('miRNAs', np.mean(mirna_theta), min(mirna_theta), max(mirna_theta))
 
 # compute theta at mature miRs
 # create a list to store theta at miR
@@ -91,34 +85,18 @@ for chromo in mature_coord:
         # check if theta is defined
         if theta != 'NA':
             mature_theta.append(theta)
-            
 print('done computing theta at mature miRs')
+print('Sites\tmean\tmin\tmax')
+print('mature', np.mean(mature_theta), min(mature_theta), max(mature_theta))
 
-# compute theta at pirnas
-# create a list to store theta at pirnasd
-pirna_theta = []
-# loop over chromo
-for chromo in pirna_coord:
-    # loop over all prina on that chromo:
-    for i in range(len(pirna_coord[chromo])):
-        # get start, end
-        start = pirna_coord[chromo][i][0]
-        end = pirna_coord[chromo][i][1]
-        # compute theta, accepting only 2 missing sites
-        theta = compute_theta_non_coding(chromo_sites, chromo, start, end, 2)
-        # check if theta is defined
-        if theta != 'NA':
-            pirna_theta.append(theta)
-            
-print('done computing theta at piRNAs')
 
 # create a list of theta
-theta_sites = [SYN_theta, REP_theta, mirna_theta, mature_theta, pirna_theta]
+theta_sites = [SYN_theta, REP_theta, mirna_theta, mature_theta]
 # create a list of corrsponding site type
-site_types = ['SYN', 'REP', 'miRNA', 'mature_miR', 'piRNA']
+site_types = ['SYN', 'REP', 'miRNA', 'mature_miR']
 
 # open file to store the results of the analusis
-newfile = open('diversity_small_RNAs.txt', 'w')
+newfile = open('diversity_miRNAs.txt', 'w')
 # write header
 newfile.write('sites' + '\t' + 'N' + '\t' + 'mean_theta' + '\t' + 'SEM' + '\n')
 for i in range(len(theta_sites)):
@@ -135,12 +113,11 @@ for i in range(0, len(theta_sites) - 1):
     for j in range(i+1, len(theta_sites)):
         wilcoxon, p = stats.ranksums(theta_sites[i], theta_sites[j])
         newfile.write('\t'.join([site_types[i] + '_vs_' + site_types[j], str(wilcoxon), str(p)]) + '\n')
-        
 # close file after writing
 newfile.close()
 
 # open file to dump all theta values
-newfile = open('theta_values_small_RNAs.txt', 'w')
+newfile = open('theta_values_miRNAs.txt', 'w')
 for i in REP_theta:
     newfile.write('REP' + '\t' + str(i) + '\n')
 for i in SYN_theta:
@@ -149,14 +126,6 @@ for i in mirna_theta:
     newfile.write('miRNA' + '\t' + str(i) + '\n')
 for i in mature_theta:
     newfile.write('mature' + '\t' + str(i) + '\n')
-for i in pirna_theta:
-    newfile.write('piRNA' + '\t' + str(i) + '\n')
-    
 # close file after writing
 newfile.close()
-
-
-    
-
-
 
