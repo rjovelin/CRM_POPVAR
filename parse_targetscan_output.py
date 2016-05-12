@@ -284,12 +284,12 @@ def convert_site_position_UTR_to_site_position_chromo(site_start, site_end, UTR_
   
         
 # use this function to parse the targetscan output files with remanei and latens sites
-def parse_crm_cla_sites(UTR_seq_targetscan, predicted_targets, mature_fasta):
+def parse_crm_cla_sites(UTR_seq_targetscan, predicted_targets, seeds):
     '''
-    (file, file, file) -> dict
+    (file, file, dict) -> dict
     Take the targetscan input file with aligned UTR sequences, the targetscan
-    output file with predicted targets and the fasta file of remanei mature mirnas
-    and return a dict with site as key and list of seeds for targeting that
+    output file with predicted targets and a dict with seeds: mirna pairs
+    and return a dict with site as key and list of seeds targeting that
     site as value
     '''
     
@@ -300,9 +300,6 @@ def parse_crm_cla_sites(UTR_seq_targetscan, predicted_targets, mature_fasta):
     # transcript names are the remanei name in each species
     remanei_UTR, latens_UTR = get_aligned_UTR_from_TargetScan_input(UTR_seq_targetscan, 'latens')
         
-    # create a dict of seed sequence : list of mirnas sharing the seed
-    seeds = seed_mirnas(mature_fasta)
-       
     # create a dict of {mirna name : seed_seq}
     mirna_seed = {}
     for seed in seeds:
@@ -364,16 +361,18 @@ def parse_crm_cla_sites(UTR_seq_targetscan, predicted_targets, mature_fasta):
 
 # use this function to generate the summary table of remanei and latens sites
 # use this table to compute divergence at mirna target sites between species
-def make_table_cremanei_clatens_sites(caeno_gff, UTR_seq_targetscan, predicted_targets, mature_fasta, assembly, threshold, outputfile):
+def make_table_cremanei_clatens_sites(caeno_gff, assembly, threshold, seeds, targets, outputfile):
     '''
-    (file, file, file, file, file, int, file) -> file
-    Take the remanei GFF annotation file, The targetscan input file with aligned
-    remanei and latens orthologs, the targetscan outputfile with predicted targets,
-    the fasta file of mature remanei miRNAs, the genome fasta file and the
-    threshold used to grab the UTR sequences and generate a summary table of
-    target sites
+    (file, file, int, dict, dict, file) -> file
+    Take the remanei genome and its GGF annotation files, a threshold used to
+    grab the UTR sequences, a dict with seeds :mirna pairs, a dict with
+    site info: seeds pairs and generate a summary table of target sites
     '''
     
+    # targets is a dict with site info : seed pairs
+    # {'transcript|site_type|start|end|MSA_start|MSA_end|conservation': [seed1, seed2]}
+    # seeds is a dict of seeds : mirna pairs 
+       
     # get the coordinates of the UTR/downstream seq
     # {TS1 : [chromo, start, end, orientation]}
     UTR_coord = get_three_prime_UTR_positions(caeno_gff, assembly, threshold)
@@ -381,13 +380,6 @@ def make_table_cremanei_clatens_sites(caeno_gff, UTR_seq_targetscan, predicted_t
     # convert genome fasta file to dict
     # convert the fasta assembly to a dictionnary with chromo / scaffold as key and sequence as value
     genome = convert_fasta(assembly)
-
-    # create a dict with target sites
-    # {'transcript|site_type|start|end|MSA_start|MSA_end|conservation': [seed1, seed2]}
-    targets = parse_crm_cla_sites(UTR_seq_targetscan, predicted_targets, mature_fasta)
-     
-    # create a dict of seed sequence : list of mirnas sharing the seed
-    seeds = seed_mirnas(mature_fasta)    
     
     # get the remanei transcript coordinates
     # {gene1 : [chromo, start, end, orientation]}
@@ -399,11 +391,9 @@ def make_table_cremanei_clatens_sites(caeno_gff, UTR_seq_targetscan, predicted_t
     
     # open file for writing
     newfile = open(outputfile, 'w')
-    
-    
+       
     # site positions in the UTR and in the MSA correspond to UTR in the + sense
     # even if UTR orientation is - on chromo     
-        
     header = '\t'.join(['transcript', 'seed', 'N_mirnas', 'type_of_site',
                         'conservation_level', 'site_MSA_start(+)', 'site_MSA_end(+)',
                         'chromo', 'downstream/UTR', 'UTR_start', 'UTR_end',
@@ -412,8 +402,7 @@ def make_table_cremanei_clatens_sites(caeno_gff, UTR_seq_targetscan, predicted_t
                         
     # write header to file
     newfile.write(header + '\n')                        
-    
-    
+        
     # loop over sites in dict
     for site in targets:
         # get site features by parsing the site string
@@ -474,11 +463,11 @@ def make_table_cremanei_clatens_sites(caeno_gff, UTR_seq_targetscan, predicted_t
 
     
 # use this function to create dicts from the targetscan output
-def parse_targetscan_output(UTR_seq_targetscan, predicted_targets, mature_fasta, other_species):
+def parse_targetscan_output(UTR_seq_targetscan, predicted_targets, seeds, other_species):
     '''
-    (file, file, file, str) -> dict
-    Take the targetscan input sequence file, the targetscan output, the fasta
-    file of mature miRNAs and a species name ('remanei', 'elegans' or 'latens')
+    (file, file, dict, str) -> dict
+    Take the targetscan input sequence file, the targetscan output, a dict of
+    seeds :mirna pairs, and a species name ('remanei', 'elegans' or 'latens')
     and return a dict with site as key and a list of seeds targeting that site
     as value. Only records conserved sites if species is not remanei
     '''
@@ -506,8 +495,8 @@ def parse_targetscan_output(UTR_seq_targetscan, predicted_targets, mature_fasta,
         # close file after reading
         infile.close()
     
-    # create a dict of seed sequence : list of mirnas sharing the seed
-    seeds = seed_mirnas(mature_fasta)
+#    # create a dict of seed sequence : list of mirnas sharing the seed
+#    seeds = seed_mirnas(mature_fasta)
        
     # create a dict of {mirna name : seed_seq}
     mirna_seed = {}
@@ -584,24 +573,21 @@ def parse_targetscan_output(UTR_seq_targetscan, predicted_targets, mature_fasta,
 
 # use this function to make a summary table with remanei target sites
 # to use to analyze SNPs in targets
-def summary_table_cremanei_target_sites(crm_sites, crm_cla_conserved_sites, crm_cel_conserved_sites, assembly, caeno_gff, mature_fasta, threshold, outputfile):
+def summary_table_cremanei_target_sites(crm_sites, crm_cla_conserved_sites, crm_cel_conserved_sites, assembly, caeno_gff, seeds, threshold, outputfile):
     '''
-    (dict, dict, dict, file, file, file, int, file)
-    Save information about the remanei miRNA target sites, adding conservation
-    level by comparing the target siyes obtained with the remanei transcripts only,
-    remanei and latens orthologs and remanei and elegans orthologs, and by
-    adding the coordinates of the site on chromosome    
+    (dict, dict, dict, file, file, dict, int, file)
+    Take the parsed target prediction files, the genome and its annotation files, 
+    a dict with seeds: mirna pairs, a threshold of UTR length, and save information
+    about the remanei miRNA target sites, adding conservation level by comparing
+    the target sites obtained with the remanei transcripts only, remanei and latens
+    orthologs and remanei and elegans orthologs, and by adding the coordinates of
+    the site on chromosome    
     '''
-        
+     
 
-    # create a dict with all cremanei target sites
-    # create a dict with cremanei targets from crem-cla analysis
-    # create a dict with cremanei targets from crem-cla analysis
     # targetscan calls sites conserved when gaps are destroy a site 
     # these sites are considered not conserved here    
     
-    
-
     # get the coordinates of the UTR/downstream seq
     # {TS1 : [chromo, start, end, orientation]}
     UTR_coord = get_three_prime_UTR_positions(caeno_gff, assembly, threshold)
@@ -610,9 +596,6 @@ def summary_table_cremanei_target_sites(crm_sites, crm_cla_conserved_sites, crm_
     # convert the fasta assembly to a dictionnary with chromo / scaffold as key and sequence as value
     genome = convert_fasta(assembly)
          
-    # create a dict of seed sequence : list of mirnas sharing the seed
-    seeds = seed_mirnas(mature_fasta)    
-    
     # get the remanei transcript coordinates
     # {gene1 : [chromo, start, end, orientation]}
     transcripts_coord = get_genes_coordinates(caeno_gff)
@@ -623,7 +606,6 @@ def summary_table_cremanei_target_sites(crm_sites, crm_cla_conserved_sites, crm_
     
     # open file for writing
     newfile = open(outputfile, 'w')
-    
     
     # site positions in the UTR and in the MSA correspond to UTR in the + sense
     # even if UTR orientation is - on chromo     
