@@ -10,6 +10,8 @@ from parse_vcf_comp_files import *
 from manipulate_sequences import *
 from repeats_TEs import *
 
+# use this script to generate SNP files for the Ontario strains only (PX and KSR)
+
 # path to the vcf comp files
 vcf_dir = '/disk3/wei.wang/c_rem_analysis/split_strain_vcf_combKSRPX/vcf/'
 
