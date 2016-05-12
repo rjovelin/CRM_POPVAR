@@ -1,7 +1,6 @@
 from manipulate_sequences import *
 
 
-
     
 # use this function to get the positions of the coding sequence for each transcript
 def get_CDS_positions(caeno_gff):

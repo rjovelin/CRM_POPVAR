@@ -12,7 +12,6 @@ from get_coding_sequences import *
 from miRNA_target import *
 from manipulate_sequences import *
 
-
 # use this function to make a dict with the coordinates of all indels on each chromosome
 def get_short_indel_coordinates(short_indel_file):
     '''

@@ -2,7 +2,6 @@
 from genomic_coordinates import *
 
 
-
 # use this function to translate a coding sequence
 def cds_translate(cds):
     '''
