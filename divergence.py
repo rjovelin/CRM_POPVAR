@@ -390,7 +390,6 @@ def compute_theta_diversity(snp_file, valid_transcripts, sites, threshold):
         
     return theta_sites
     
-    
 
 # use this function to compute the p-distance between 2 aligned sequences
 def pairwise_distance(seq1, seq2, bioseq):
