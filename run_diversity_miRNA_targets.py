@@ -5,66 +5,62 @@ Created on Sat Aug 15 23:09:46 2015
 @author: Richard
 """
 
-from accessories import *
+from manipulate_sequences import *
 from sliding_windows import *
 from sites_with_coverage import *
 from miRNA_target import *
 from divergence import *
+from genomic_coordinates import *
 import numpy as np
 from scipy import stats
 import math
 
 # convert genome fasta to dict
-genome = convert_fasta('../CREM_CLA_protein_divergence/noamb_356_v1_4.txt')
-
-print('got genome sequence')
+genome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
+print('converted genome fasta to dict')
 
 # get the allele counts for all sites with coverage, exclude sites with sample size < 10
 chromo_sites = get_non_coding_snps('../SNP_files/', 10) 
-
 print('got allele counts at all sites')
 
 # get mirna target coordinates 
 # {gene: [[chromo, start, end, orientation, seed, N_mirnas, site_type, conservation, utr]]}
 target_coord = get_miRNA_target_coord('Cremanei_miRNA_sites.txt')
-
 print('got miRNA target coordinates')
 
 # get the set of valid transcripts
-valid_transcripts = get_valid_transcripts('../CREM_CLA_protein_divergence/unique_transcripts.txt')
+valid_transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
+print('made list of valid transcripts')
 
 # remove genes that are not not valid (ie to keep a single transcript per gene)
 to_remove = [gene for gene in target_coord if gene not in valid_transcripts]
 for gene in to_remove:
     del target_coord[gene]
-    
+print('deleted {0} non-valid genes'.format(len(to_remove)))
 print('filtered non-valid transcripts') 
 
 # compute theta at synonymous sites
-theta_syn = compute_theta_diversity('../CREM_CLA_protein_divergence/CDS_SNP_DIVERG.txt',
-                                    '../CREM_CLA_protein_divergence/unique_transcripts.txt',
-                                    'SYN', 10)
+theta_syn = compute_theta_diversity('../Genome_Files/CDS_SNP_DIVERG.txt', valid_transcripts, 'SYN', 10)
 # make a list of theta values
 SYN_theta = []
 for gene in theta_syn:
     SYN_theta.append(theta_syn[gene])
-
+print('sites\tmean\tmin\tmax\t')
+print('SYN', np.mean(SYN_theta), min(SYN_theta), max(SYN_theta))
 print('done computing theta at synonymous sites')
 
 # compute theta at nonsynonymous sites
-theta_rep = compute_theta_diversity('../CREM_CLA_protein_divergence/CDS_SNP_DIVERG.txt',
-                                    '../CREM_CLA_protein_divergence/unique_transcripts.txt',
-                                    'REP', 10)
+theta_rep = compute_theta_diversity('../Genome_Files/CDS_SNP_DIVERG.txt', valid_transcripts, 'REP', 10)
 # make a list of theta values
 REP_theta = []
 for gene in theta_rep:
     REP_theta.append(theta_rep[gene])
-    
+print('sites\tmean\tmin\tmax\t')
+print('REP', np.mean(REP_theta), min(REP_theta), max(REP_theta))
 print('done computing theta at replacement sites')
 
 
-# compute diversity for all mirna targets, remanei-specific, conserved in crem-cla
-# conserved in crem-cla-cel, 
+# compute diversity for all mirna targets, remanei-specific, crem-cla and cremclacel conserved
 # create a list theta at target sites
 targets_theta, crm_targets_theta, crmcla_targets_theta, crmclacel_targets_theta =  [], [], [], []
 # from downstream or UTR
@@ -108,6 +104,18 @@ for gene in target_coord:
                 elif utr == 'downstream':
                     # add theta to the predicted UTR
                     nonUTR_targets_theta.append(theta)
+
+
+a = [targets_theta, crm_targets_theta, crmcla_targets_theta, crmclacel_targets_theta, nonUTR_targets_theta, UTR_targets_theta]
+b = ['all', 'crm', 'crmcla', 'crmclacel', 'nonutr', 'utr']
+
+for i in range(len(a)):
+    print(b[i], np.mean(a[i]), min(a[i]), max(a[i]), sep = '\t')
+
+
+
+
+
                 
 print('done computing theta for target sites')
 print('all targets: ', len(targets_theta))
