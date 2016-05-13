@@ -11,71 +11,7 @@ from divergence import *
     
 
 
-# use this function to count the degenerate sites in a codon
-def count_degenerate_sites_in_codon(codon, position):
-    '''
-    (str, str) -> list
-    Take a codon, and a string specifying the position of a given site in codon
-    and return a 3-item list with counts of the number of nondegenerate, 2-fold
-    and 4-fold degenerate sites in the codon
-    '''
-    
-    # verify that codon has correct case
-    codon = codon.upper()
-    
-    # initialise list [0-fold, 2-fold, 4-fold]
-    sites = [0, 0, 0]
-    
-    # check all codons and count the number of degenerate, 2-fold and 4-fold sites
-    # look up 2-fold degenerate codons
-    if codon in {'AAA', 'AAC', 'AAT', 'AGC', 'AGT', 'ATA', 'ATC', 'ATG', 'ATT',
-                     'CAA', 'CAC', 'CAG', 'CAT', 'GAA', 'GAC', 'GAG', 'GAT', 'TTC',
-                     'TTT', 'TGT', 'TGC', 'TAA', 'TAC', 'TAG', 'TAT'}:
-        # check position:
-        if position == '3':
-            # add 2-fold
-            sites[1] += 1
-        else:
-            # non-degenerate
-            sites[0] += 1
-    # look up nondegenerate codons
-    elif codon in {'TGG', 'AAG'}:
-        # nondegenerate
-        sites[0] += 1
-    # look up 4-fold degenerate codons
-    elif codon in {'ACA', 'ACC', 'ACG', 'ACT', 'CCA', 'CCC', 'CCG',
-                   'CCT', 'CGC', 'CGT', 'CTC', 'CTT', 'GCA', 'GCC', 'GCG', 'GCT',
-                   'GGA', 'GGC', 'GGG', 'GGT', 'GTA', 'GTC', 'GTG', 'GTT', 
-                   'TCA', 'TCC', 'TCG', 'TCT'}:
-        # check position
-        if position == '3':
-            # 4-fold
-            sites[2] += 1
-        else:
-            # nondegenerate
-            sites[0] += 1
-    # look up the special codons
-    elif codon in {'TTA', 'TTG', 'AGA', 'AGG'}:
-        # check position
-        if position == '3' or position == '1':
-            # 2-fold
-            sites[1] += 1
-        elif position == '2':
-            # nondegenerate
-            sites[0] += 1
-    elif codon in {'CTA', 'CTG', 'CGA', 'CGG'}:
-        # check position
-        if position == '3':
-            # 4-fold
-            sites[2] += 1
-        elif position == '1':
-            # 2-fold
-            sites[1] += 1
-        elif position == '2':
-            # nondegenerate
-            sites[0] += 1
-           
-    return sites
+
 
 
 
