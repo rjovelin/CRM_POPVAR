@@ -7,8 +7,8 @@ Created on Fri Jun 26 17:16:38 2015
 
 
 from mk_test import *
+from genomic_coordinates import *
 from manipulate_sequences import *
-from diversity_chemo_partitions import *
 from sites_with_coverage import *
 import numpy as np
 import math
@@ -250,11 +250,78 @@ def count_nonsynonymous_synonymous_sites(SNPs):
 
 
 
-# use this function to compute theta for each gene   
-def compute_theta_diversity(snp_file, unique_transcripts, sites, threshold):
+# use this function to count the degenerate sites in a codon
+def count_degenerate_sites_in_codon(codon, position):
     '''
-    (file, file, str, int) -> dict
-    Take the file with SNPs in CDS, the file with valid transcripts (mapping a 
+    (str, str) -> list
+    Take a codon, and a string specifying the position of a given site in codon
+    and return a 3-item list with counts of the number of nondegenerate, 2-fold
+    and 4-fold degenerate sites in the codon
+    '''
+    
+    # verify that codon has correct case
+    codon = codon.upper()
+    
+    # initialise list [0-fold, 2-fold, 4-fold]
+    sites = [0, 0, 0]
+    
+    # check all codons and count the number of degenerate, 2-fold and 4-fold sites
+    # look up 2-fold degenerate codons
+    if codon in {'AAA', 'AAC', 'AAT', 'AGC', 'AGT', 'ATA', 'ATC', 'ATG', 'ATT',
+                     'CAA', 'CAC', 'CAG', 'CAT', 'GAA', 'GAC', 'GAG', 'GAT', 'TTC',
+                     'TTT', 'TGT', 'TGC', 'TAA', 'TAC', 'TAG', 'TAT'}:
+        # check position:
+        if position == '3':
+            # add 2-fold
+            sites[1] += 1
+        else:
+            # non-degenerate
+            sites[0] += 1
+    # look up nondegenerate codons
+    elif codon in {'TGG', 'AAG'}:
+        # nondegenerate
+        sites[0] += 1
+    # look up 4-fold degenerate codons
+    elif codon in {'ACA', 'ACC', 'ACG', 'ACT', 'CCA', 'CCC', 'CCG',
+                   'CCT', 'CGC', 'CGT', 'CTC', 'CTT', 'GCA', 'GCC', 'GCG', 'GCT',
+                   'GGA', 'GGC', 'GGG', 'GGT', 'GTA', 'GTC', 'GTG', 'GTT', 
+                   'TCA', 'TCC', 'TCG', 'TCT'}:
+        # check position
+        if position == '3':
+            # 4-fold
+            sites[2] += 1
+        else:
+            # nondegenerate
+            sites[0] += 1
+    # look up the special codons
+    elif codon in {'TTA', 'TTG', 'AGA', 'AGG'}:
+        # check position
+        if position == '3' or position == '1':
+            # 2-fold
+            sites[1] += 1
+        elif position == '2':
+            # nondegenerate
+            sites[0] += 1
+    elif codon in {'CTA', 'CTG', 'CGA', 'CGG'}:
+        # check position
+        if position == '3':
+            # 4-fold
+            sites[2] += 1
+        elif position == '1':
+            # 2-fold
+            sites[1] += 1
+        elif position == '2':
+            # nondegenerate
+            sites[0] += 1
+           
+    return sites
+
+
+# use this function to compute theta for each gene   
+def compute_theta_diversity(snp_file, valid_transcripts, sites, threshold):
+    '''
+    (file, set, str, int) -> dict
+    Take the file with SNPs in CDS, the set of valid transcripts (mapping a 
     single transcript to a parent gene) and the type of sites to consider
     (REP, SYN or coding), a threshold indicating the minimum sample size acceptable
     and return a dict with theta per site for replacement, synonymous or all
@@ -263,9 +330,7 @@ def compute_theta_diversity(snp_file, unique_transcripts, sites, threshold):
     
     # create a dict {gene: theta} to store theta per site for each gene
     theta_sites = {}
-    
         
-    
     # check site type
     if sites == 'coding':
         # count SNPs and number of sites for each gene
@@ -315,13 +380,10 @@ def compute_theta_diversity(snp_file, unique_transcripts, sites, threshold):
                         theta = theta / math.log(np.mean(sample_size[gene]) - 1)
                     theta_sites[gene] = theta
                 
-    # get set of valid genes
-    transcripts = get_valid_transcripts(unique_transcripts)
-    
     # remove genes from theta_sites that are not in transcripts
     # to avoid counting SNPs lutiple times for transcripts of the same parent gene
     # create a lit of gene to remove
-    to_remove = [gene for gene in theta_sites if gene not in transcripts]
+    to_remove = [gene for gene in theta_sites if gene not in valid_transcripts]
     # loop over genes to remove, delete from theta_sites
     for gene in to_remove:
         del theta_sites[gene]
