@@ -8,8 +8,8 @@ Created on Fri Jun 26 17:16:38 2015
 
 from mk_test import *
 from manipulate_sequences import *
-#from diversity_chemo_partitions import *
-#from sites_with_coverage import *
+from diversity_chemo_partitions import *
+from sites_with_coverage import *
 import numpy as np
 import math
 
