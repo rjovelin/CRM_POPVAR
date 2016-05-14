@@ -12,7 +12,7 @@ from manipulate_sequences import *
 from genomic_coordinates import *
 
 # convert genome fasta to dict
-genome = convert_fasta('noamb_356_v1_4.txt')
+genome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
 
 # create a dict with hairpin sequences
 hairpin = {}
@@ -67,9 +67,14 @@ for mirna in mature_coord:
     seq2 = genome[chromo][start:end]
     if orientation == '-':
         seq2 = reverse_complement(seq2)
-    if seq1 != seq2:
-        print(mirna)
+    assert seq1 == seq2, 'sequences are not identical'
+       
     
- 
-    
- 
+# save coordinates to file
+newfile = open('CRM_MatureCoordinatesFinal.txt', 'w')
+newfile.write('\t'.join(['Name', 'Chromo', 'Start', 'End', 'Orientation', 'Sequence']) + '\n')
+names = [i for i in mature_coord]
+names.sort()
+for mirna in names:
+    newfile.write(mirna + '\t' + '\t'.join(list(map(lambda x: str(x), mature_coord[mirna]))) + '\t' + mature[mirna] + '\n')
+newfile.close()
