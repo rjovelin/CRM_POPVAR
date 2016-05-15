@@ -5,6 +5,11 @@ Created on Thu Aug  6 22:00:54 2015
 @author: Richard
 """
 
+# use Agg backend on serves without X server
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+
 from sites_with_coverage import *
 from sliding_windows import *
 from manipulate_sequences import *
@@ -16,7 +21,8 @@ from miRNA_target import *
 import numpy as np
 import math
 from scipy import stats
-import matplotlib.pyplot as plt
+
+
 
 
 # convert genome fasta file to dict
