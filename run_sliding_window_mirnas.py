@@ -275,7 +275,7 @@ ax.set_xlim([0, len(Pos)])
 #ax.set_ylim([0, 1])
             
 # set title
-ax.set_title('{0} - Sliding windows in miRNA loci\n'.format(tumor), size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+ax.set_title('Sliding windows in miRNA loci\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
 # set y axis label
 ax.set_ylabel('Nucleotide polymorphism', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
