@@ -244,7 +244,7 @@ elif step == 'found':
             line = line.split('\t')
             # check that mature in hairpin
             assert line[4] in line[1], 'mature not in hairpin'
-            # check that seed  == 6bp
+            # check that seed  == 7bp
             assert len(line[5]) == 7, 'seed is not 6bp'
             # check that seed is seed
             assert line[4][1:8] == line[5], 'seed does not match'
