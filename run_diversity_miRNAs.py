@@ -47,15 +47,9 @@ print('got allele counts at all sites')
 mirna_coord = get_mirna_loci('CRM_miRNAsCoordinatesFinal.txt')
 print('got miRNA coordinates')
 
-
-
-########## change mature coordinates file########################
-
-
-
-## get mature coordinates {chromo: [[start, end orientation]]}
-#mature_coord = get_mirna_loci('../miRNA_Target_sites/crm_mature_miRBase_genomic_coordinates.txt')
-#print('got mature miR coordinates')
+# get mature coordinates {chromo: [[start, end orientation]]}
+mature_coord = get_mirna_loci('../miRNA_Target_sites/CRM_MatureCoordinatesFinal.txt')
+print('got mature miR coordinates')
 
 # compute theta for mirnas
 # create a list to store theta at miRNA loci
