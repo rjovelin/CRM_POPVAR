@@ -298,11 +298,15 @@ ax.get_yaxis().tick_left()
 
 plt.margins()
   
-# do not show lines around figure  
+# do not show lines around figure, keep bottow line  
 ax.spines["top"].set_visible(False)    
-ax.spines["bottom"].set_visible(False)    
+ax.spines["bottom"].set_visible(True)    
 ax.spines["right"].set_visible(False)    
 ax.spines["left"].set_visible(False)      
+  
+# offset the spines
+for spine in ax.spines.values():
+  spine.set_position(('outward', 5))
   
 # do not show ticks
 plt.tick_params(
