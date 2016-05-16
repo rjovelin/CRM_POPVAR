@@ -27,14 +27,6 @@ print('fasta converted to dict')
 
 ## create a dictionary with all sites with coverage in the genome
 ## consider only site with a minimum sample size of 10
-## file is already stored as json format for easy retrieval
-#infile = open('../Genome_Files/NonCodingSNPsOntario.json', 'r')
-#chromo_sites = json.load(infile)
-#infile.close()
-#print('got sites with coverage')
-#print(len(chromo_sites))
-
-# use code below to generate the dict instead of reading it from json file
 chromo_sites = get_non_coding_snps('../SNP_files/', 10)
 print('got sites with coverage')
 print(len(chromo_sites))
@@ -242,7 +234,6 @@ print('mir', len(mir_theta))
 print('down', len(down_theta))
 
 
-
 # create parallel lists with mean theta, low CI, high CI
 # do not consider windows with sample size < 50
 Mean, LCI, HCI = [], [], []
@@ -287,19 +278,19 @@ fig = plt.figure(1, figsize = (4.3,2.56))
 ax = fig.add_subplot(1, 1, 1)  
 
 # draw lines with confidence interval
-ax.plot(Pos, LCI, linewidth = 2, color = '#e0ecf4')
-ax.plot(Pos, HCI, linewidth = 2, color = '#e0ecf4')
+ax.plot(Pos, LCI, linewidth = 1.5, color = '#e0ecf4')
+ax.plot(Pos, HCI, linewidth = 1.5, color = '#e0ecf4')
 # fill in between
 ax.fill_between(Pos, LCI,HCI, color = '#e0ecf4')
 # add mean
-ax.plot(Pos, Mean, linewidth = 2, color = '#8856a7')
+ax.plot(Pos, Mean, linewidth = 1.5, color = '#8856a7')
 
 # restrict the x and y axis to the range of data
 ax.set_xlim([0, len(Pos)])
 #ax.set_ylim([0, 1])
             
 # set title
-ax.set_title('Sliding windows in miRNA loci\n', size = 10, ha = 'center', fontname = 'Arial')
+#ax.set_title('Sliding windows in miRNA loci\n', size = 10, ha = 'center', fontname = 'Arial')
 
 # set y axis label
 ax.set_ylabel('Nucleotide polymorphism', size = 10, ha = 'center', fontname = 'Arial')
@@ -310,7 +301,7 @@ ax.set_ylabel('Nucleotide polymorphism', size = 10, ha = 'center', fontname = 'A
 plt.yticks(fontsize = 10)
 
 # set x axis label
-ax.set_xlabel('Number of windows', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+ax.set_xlabel('Number of windows', size = 10, ha = 'center', fontname = 'Arial')
 
 # add a light grey horizontal grid to the plot, semi-transparent, 
 ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
@@ -340,76 +331,11 @@ plt.tick_params(
     labelbottom='on', # labels along the bottom edge are off 
     colors = 'black',
     labelsize = 10,
-    direction = 'out') # ticks are outside the frame when bottom = 'on 
+    direction = 'out', # ticks are outside the frame when bottom = 'on
+    fontname = 'Arial')  
   
-
- 
   
 # save figure
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('SlidingWindowsTheta_miRNAs.pdf', bbox_inches = 'tight')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-#       
-## create lambda function
-#Gstr = lambda x: str(x)
-#    
-## open file for writing
-#newfile = open('miRNAs_sliding_windows_theta.txt', 'w')
-## write header
-#newfile.write('\t'.join(['window_number', 'window_position_region', 'region', 'N', 'mean_theta', 'SEM', 'STD', 'low_95%_CI', 'high_95%_CI']) + '\n')
-#    
-## set up window counter
-#j = 0
-#    
-## loop over values in up_theta
-#for i in range(len(up_theta)):
-#    # update window counter        
-#    j += 1
-#    # write to file
-#    newfile.write(str(j) + '\t' + str(i) + '\t' + 'upstream' + '\t')
-#    newfile.write('\t'.join(list(map(Gstr, up_theta[i]))) + '\n')
-## loop over values in pi_theta
-#for i in range(len(mir_theta)):
-#    # update window counter
-#    j += 1
-#    # write to file
-#    newfile.write(str(j) + '\t' + str(i) + '\t' + 'miRNA' + '\t')
-#    newfile.write('\t'.join(list(map(Gstr, mir_theta[i]))) + '\n')
-## loop over values in down_theta
-#for i in range(len(down_theta)):
-#    # update window counter
-#    j += 1
-#    # write to file
-#    newfile.write(str(j) + '\t' + str(i) + '\t' + 'downstream' + '\t')
-#    newfile.write('\t'.join(list(map(Gstr, down_theta[i]))) + '\n')
-#        
-#        
-## close file after writing
-#newfile.close()
-#            
-#    
-#        
-#        
-#        
-#        
-#        
-#        
-#        
-#        
-#        
-#        
-#    
-#    
