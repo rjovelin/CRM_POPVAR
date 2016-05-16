@@ -259,7 +259,7 @@ ax = fig.add_subplot(1, 1, 1)
 mirnastart = positions.index('m')
 mirnaend = positions.index('d')
 boxpos = Pos[mirnastart: mirnaend]
-ax.fill_between(boxpos, 0, 0.035, color = '#e0ecf4', alpha = 0.5)
+ax.fill_between(boxpos, 0, 0.035, color = '#e0ecf4')
 
 # draw lines with confidence interval
 ax.plot(Pos, LCI, linewidth = 1.5, color = '#9ebcda')
