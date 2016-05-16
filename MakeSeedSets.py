@@ -30,10 +30,10 @@ CBN, CBR, CEL = set(), set(), set()
 # loop over mature sequences, convert U to T, and upper case and extract seed to sets
 for mirna in CBNmirna:
     seed = CBNmirna[mirna].upper().replace('U', 'T')[1:8]
-    CNB.add(seed)
+    CBN.add(seed)
 for mirna in CBRmirna:
     seed = CBRmirna[mirna].upper().replace('U', 'T')[1:8]
-    CNR.add(seed)
+    CBR.add(seed)
 for mirna in CELmirna:
     seed = CELmirna[mirna].upper().replace('U', 'T')[1:8]
     CEL.add(seed)
