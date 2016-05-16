@@ -219,20 +219,8 @@ for i in down_pos:
     down_theta.append([len(downstream_pos[i]), mean_theta, stderror, np.std(downstream_pos[i]), lCI, hCI])
         
 
-for i in upstream_pos:
-    print(i, len(upstream_pos[i]))
-for i in mirna_pos:
-    print(i, len(mirna_pos[i]))
-for i in downstream_pos:
-    print(i, len(downstream_pos[i]))
-
-# create a list of positions for which sample size >= 50
+# create a list of strings indicating where the different regions starte and end
 positions = []
-
-print('up', len(up_theta))
-print('mir', len(mir_theta))
-print('down', len(down_theta))
-
 
 # create parallel lists with mean theta, low CI, high CI
 # do not consider windows with sample size < 50
@@ -243,51 +231,47 @@ for i in range(len(up_theta)):
         Mean.append(up_theta[i][1])
         LCI.append(up_theta[i][4])
         HCI.append(up_theta[i][5])
-        positions.append(i)
+        positions.append('u')
 for i in range(len(mir_theta)):
     # consider windows with sample size >= 50
     if mir_theta[i][0] >= 50:
         Mean.append(mir_theta[i][1])
         LCI.append(mir_theta[i][4])
         HCI.append(mir_theta[i][5])
-        positions.append(i)
+        positions.append('m')
 for i in range(len(down_theta)):
     # consider windows with sample size >= 50
     if down_theta[i][0] >= 50:
         Mean.append(down_theta[i][1])
         LCI.append(down_theta[i][4])
         HCI.append(down_theta[i][5])
-        positions.append(i)
+        positions.append('d')
 
 # create a list with window numbers across the entire region, starting at position 1
 Pos = [(i+1) for i in range(len(positions))]
-
-print(len(positions))
-print(len(Pos))
-
-L = [i[0] for i in up_theta]
-L.extend([i[0] for i in mir_theta])
-L.extend([i[0] for i in down_theta])
-L.sort()
-print(L)
-
 
 # create figure
 fig = plt.figure(1, figsize = (4.3,2.56))
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)  
 
+# create a box to shpw the position of the miRNAs
+mirnastart = positions.index('m')
+mirnaend = positions.index('d')
+boxpos = Pos[mirnastart: mirnaend]
+ax.fill_between(boxpos, 0, 0.035, color = '#e0ecf4', alpha = 0.5)
+
 # draw lines with confidence interval
-ax.plot(Pos, LCI, linewidth = 1.5, color = '#e0ecf4')
-ax.plot(Pos, HCI, linewidth = 1.5, color = '#e0ecf4')
+ax.plot(Pos, LCI, linewidth = 1.5, color = '#9ebcda')
+ax.plot(Pos, HCI, linewidth = 1.5, color = '#9ebcda')
 # fill in between
-ax.fill_between(Pos, LCI,HCI, color = '#e0ecf4')
+ax.fill_between(Pos, LCI,HCI, color = '#9ebcda')
 # add mean
 ax.plot(Pos, Mean, linewidth = 1.5, color = '#8856a7')
 
 # restrict the x and y axis to the range of data
 ax.set_xlim([0, len(Pos)])
-#ax.set_ylim([0, 1])
+ax.set_ylim([0, 0.035])
             
 # set title
 #ax.set_title('Sliding windows in miRNA loci\n', size = 10, ha = 'center', fontname = 'Arial')
@@ -298,7 +282,8 @@ ax.set_ylabel('Nucleotide polymorphism', size = 10, ha = 'center', fontname = 'A
 # add labels to x-ticks, rotate and align right, set size to 14
 #ax.set_xticklabels([0, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000], rotation = 30, ha = 'right', size = 10, fontname = 'Helvetica', family = 'sans-serif')
 
-plt.yticks(fontsize = 10)
+plt.yticks(fontsize = 10, fontname = 'Arial')
+plt.xticks(fontsize = 10, fontname = 'Arial')
 
 # set x axis label
 ax.set_xlabel('Number of windows', size = 10, ha = 'center', fontname = 'Arial')
@@ -320,7 +305,6 @@ ax.spines["right"].set_visible(False)
 ax.spines["left"].set_visible(False)      
   
 # do not show ticks
-  
 plt.tick_params(
     axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
     which='both',      # both major and minor ticks are affected
@@ -331,11 +315,8 @@ plt.tick_params(
     labelbottom='on', # labels along the bottom edge are off 
     colors = 'black',
     labelsize = 10,
-    direction = 'out', # ticks are outside the frame when bottom = 'on
-    fontname = 'Arial')  
-  
-  
+    direction = 'out') # ticks are outside the frame when bottom = 'on
+      
 # save figure
 fig.savefig('SlidingWindowsTheta_miRNAs.pdf', bbox_inches = 'tight')
-
 
