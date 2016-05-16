@@ -86,7 +86,7 @@ if step == 'search':
     names.sort()
 
     # convert genome sequence to dict
-    genome = convert_fasta('noamb_356_v1_4.txt')
+    genome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
 
     # create a dict with hairpin and sequences (+ and rev complement) extracted from genome
     # {name :[hairpin, seq, reverse_complement]}
@@ -280,7 +280,7 @@ elif step == 'found':
         header.insert(j+i, coord[i])
 
     # convert genome sequence to dict
-    genome = convert_fasta('noamb_356_v1_4.txt')
+    genome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
     
     # loop over mirnas, modifiy conservation and coordinates
     for mir in mirnas:
