@@ -279,8 +279,8 @@ ax.set_ylim([0, 0.035])
 # set y axis label
 ax.set_ylabel('Nucleotide polymorphism', size = 10, ha = 'center', fontname = 'Arial')
 
-# add labels to x-ticks, rotate and align right, set size to 14
-#ax.set_xticklabels([0, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000], rotation = 30, ha = 'right', size = 10, fontname = 'Helvetica', family = 'sans-serif')
+# add labels to x-ticks
+#ax.set_xticklabels([list of values], rotation = 30, ha = 'right', size = 10, fontname = 'Arial', family = 'sans-serif')
 
 plt.yticks(fontsize = 10, fontname = 'Arial')
 plt.xticks(fontsize = 10, fontname = 'Arial')
@@ -288,10 +288,6 @@ plt.xticks(fontsize = 10, fontname = 'Arial')
 # set x axis label
 ax.set_xlabel('Number of windows', size = 10, ha = 'center', fontname = 'Arial')
 
-# add a light grey horizontal grid to the plot, semi-transparent, 
-ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
-# hide these grids behind plot objects
-ax.set_axisbelow(True)
 # remove top axes and right axes ticks
 ax.get_xaxis().tick_bottom()
 ax.get_yaxis().tick_left()
@@ -303,11 +299,16 @@ ax.spines["top"].set_visible(False)
 ax.spines["bottom"].set_visible(True)    
 ax.spines["right"].set_visible(False)    
 ax.spines["left"].set_visible(False)      
-  
+
 # offset the spines
 for spine in ax.spines.values():
   spine.set_position(('outward', 5))
   
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
+
 # do not show ticks
 plt.tick_params(
     axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
