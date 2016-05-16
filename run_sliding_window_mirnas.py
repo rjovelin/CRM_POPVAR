@@ -5,32 +5,36 @@ Created on Thu Aug  6 22:00:54 2015
 @author: Richard
 """
 
-# use Agg backend on serves without X server
+# use Agg backend on server without X server
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-
-from sites_with_coverage import *
-from sliding_windows import *
-from manipulate_sequences import *
-
-#### new ####
-from miRNA_target import *
-#############
-
+# load modules
 import numpy as np
 import math
 from scipy import stats
-
-
+import json
+# load custom modules
+from sites_with_coverage import *
+from sliding_windows import *
+from manipulate_sequences import *
+from miRNA_target import *
 
 
 # convert genome fasta file to dict
 genome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
 print('fasta converted to dict')
 
-# create a dictionary with all sites with coverage in the genome
-# consider only site with a minimum sample size of 10
+## create a dictionary with all sites with coverage in the genome
+## consider only site with a minimum sample size of 10
+## file is already stored as json format for easy retrieval
+#infile = open('../Genome_Files/NonCodingSNPsOntario.json', 'r')
+#chromo_sites = json.load(infile)
+#infile.close()
+#print('got sites with coverage')
+#print(len(chromo_sites))
+
+# use code below to generate the dict instead of reading it from json file
 chromo_sites = get_non_coding_snps('../SNP_files/', 10)
 print('got sites with coverage')
 print(len(chromo_sites))
@@ -173,9 +177,7 @@ up_pos.sort()
 up_pos.reverse()
 # create list of lists
 up_theta = []
-    
-    
-# loop over reverse soreted keys in up_pos
+# loop over reverse sorted keys in up_pos
 for i in up_pos:
     # compute the mean theta at that position
     mean_theta = np.mean(upstream_pos[i])
@@ -225,60 +227,82 @@ for i in down_pos:
     down_theta.append([len(downstream_pos[i]), mean_theta, stderror, np.std(downstream_pos[i]), lCI, hCI])
         
 
-# create a list of positions
-Pos = []
-for i in up_pos:
-    Pos.append(i)
+for i in upstream_pos:
+    print(i, len(upstream_pos[i]))
 for i in mirna_pos:
-    Pos.append(i)
-for i in down_pos:
-    Pos.append(i)
+    print(i, len(mirna_pos[i]))
+for i in downstream_pos:
+    print(i, len(downstream_pos[i]))
+
+# create a list of positions for which sample size >= 50
+positions = []
+
+print('up', len(up_theta))
+print('mir', len(mir_theta))
+print('down', len(down_theta))
+
+
 
 # create parallel lists with mean theta, low CI, high CI
+# do not consider windows with sample size < 50
 Mean, LCI, HCI = [], [], []
 for i in range(len(up_theta)):
-    Mean.append(up_theta[i][1])
-    LCI.append(up_theta[i][4])
-    HCI.append(up_theta[i][5])
+    # consider windows with sample size >= 50
+    if up_theta[i][0] >= 50:
+        Mean.append(up_theta[i][1])
+        LCI.append(up_theta[i][4])
+        HCI.append(up_theta[i][5])
+        positions.append(i)
 for i in range(len(mir_theta)):
-    Mean.append(mir_theta[i][1])
-    LCI.append(mir_theta[i][4])
-    HCI.append(mir_theta[i][5])
+    # consider windows with sample size >= 50
+    if mir_theta[i][0] >= 50:
+        Mean.append(mir_theta[i][1])
+        LCI.append(mir_theta[i][4])
+        HCI.append(mir_theta[i][5])
+        positions.append(i)
 for i in range(len(down_theta)):
-    Mean.append(down_theta[i][1])
-    LCI.append(down_theta[i][4])
-    HCI.append(down_theta[i][5])
+    # consider windows with sample size >= 50
+    if down_theta[i][0] >= 50:
+        Mean.append(down_theta[i][1])
+        LCI.append(down_theta[i][4])
+        HCI.append(down_theta[i][5])
+        positions.append(i)
 
+# create a list with window numbers across the entire region, starting at position 1
+Pos = [(i+1) for i in range(len(positions))]
 
+print(len(positions))
+print(len(Pos))
 
+L = [i[0] for i in up_theta]
+L.extend([i[0] for i in mir_theta])
+L.extend([i[0] for i in down_theta])
+L.sort()
+print(L)
 
-
-
-
-
-
-###############################
 
 # create figure
 fig = plt.figure(1, figsize = (4.3,2.56))
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)  
 
-ax.plot(Pos, Mean)
-ax.plot(Pos, LCI)
-ax.plot(Pos, HCI)
-
-
+# draw lines with confidence interval
+ax.plot(Pos, LCI, linewidth = 2, color = '#e0ecf4')
+ax.plot(Pos, HCI, linewidth = 2, color = '#e0ecf4')
+# fill in between
+ax.fill_between(Pos, LCI,HCI, color = '#e0ecf4')
+# add mean
+ax.plot(Pos, Mean, linewidth = 2, color = '#8856a7')
 
 # restrict the x and y axis to the range of data
 ax.set_xlim([0, len(Pos)])
 #ax.set_ylim([0, 1])
             
 # set title
-ax.set_title('Sliding windows in miRNA loci\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+ax.set_title('Sliding windows in miRNA loci\n', size = 10, ha = 'center', fontname = 'Arial')
 
 # set y axis label
-ax.set_ylabel('Nucleotide polymorphism', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+ax.set_ylabel('Nucleotide polymorphism', size = 10, ha = 'center', fontname = 'Arial')
 
 # add labels to x-ticks, rotate and align right, set size to 14
 #ax.set_xticklabels([0, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000], rotation = 30, ha = 'right', size = 10, fontname = 'Helvetica', family = 'sans-serif')
@@ -309,17 +333,20 @@ ax.spines["left"].set_visible(False)
 plt.tick_params(
     axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
     which='both',      # both major and minor ticks are affected
-    bottom='off',      # ticks along the bottom edge are off
+    bottom='on',      # ticks along the bottom edge are off
     top='off',         # ticks along the top edge are off
     right = 'off',
     left = 'off',          
-    labelbottom='off') # labels along the bottom edge are off  
+    labelbottom='on', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on 
   
-  
+
  
   
 # save figure
-fig.savefig(testfile.pdf, bbox_inches = 'tight')
+fig.savefig('testfile.pdf', bbox_inches = 'tight')
 
 
 
