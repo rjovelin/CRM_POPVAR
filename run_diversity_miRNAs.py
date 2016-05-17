@@ -125,16 +125,15 @@ for name in famCons:
             caeno_mirna_theta.append(theta)
 
 
-########################################
 
 # create list of data
 alldata = [SYN_theta, REP_theta, mirna_theta, mature_theta, caeno_mirna_theta, crmcla_mirna_theta, crm_mirna_theta]
 # make a list of datatype
 # create a list of corrsponding site type
-site_types = ['Syn', 'Rep', 'miRNA', 'miR', 'Large', 'Restricted', 'Specific']
+site_types = ['Syn', 'Rep', 'miRNA', 'miR', 'Caeno', 'Crm,Cla', 'Crm']
 
 # create figure
-fig = plt.figure(1, figsize = (8,5))
+fig = plt.figure(1, figsize = (6,4))
 # add a plot to figure (1 row, 1 column, 1st plot)
 ax = fig.add_subplot(1, 1, 1)
 
@@ -148,16 +147,16 @@ i = 0
 # change box, whisker color to black
 for box in bp['boxes']:
     # change line color
-    box.set(color = 'black')
+    box.set(color = 'black', linewidth = 1.5)
     box.set(facecolor = color_scheme[i])
     # upate color
     i += 1
 # change whisker color ro black
 for wk in bp['whiskers']:
-    wk.set(color = 'black', linestyle = '-')
+    wk.set(color = 'black', linestyle = '-', linewidth = 1.5)
 # change color of the caps
 for cap in bp['caps']:
-    cap.set(color = 'black')
+    cap.set(color = 'black', linewidth = 1.5)
 # change the color and line width of the medians
 for median in bp['medians']:
     median.set(color = 'black', linewidth = 1.5)
@@ -166,12 +165,7 @@ for median in bp['medians']:
 #    mean.set(marker = 'o', markeredgecolor = 'black', markerfacecolor = 'black', markersize = 4)
     
 # restrict the x and y axis to the range of data
-maximum = 0
-combined = [SYN_theta, REP_theta, mirna_theta, mature_theta, caeno_mirna_theta, crmcla_mirna_theta, crm_mirna_theta]  
-for i in range(len(combined)):
-    if max(combined[i]) > maximum:
-        maximum = max(combined[i])
-ax.set_ylim([0, maximum])
+ax.set_ylim([0, 0.15])
 # create a list with range of x-axis values
 xvals = [i + 0.5 for i in range(len(site_types) + 1)]
 # Set a buffer around the edge of the x-axis
@@ -182,7 +176,7 @@ plt.xlim([min(xvals)- 0.5, max(xvals)+ 0.5])
 plt.tick_params(
     axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
     which='both',      # both major and minor ticks are affected
-    bottom='on',      # ticks along the bottom edge are off
+    bottom='off',      # ticks along the bottom edge are off
     top='off',         # ticks along the top edge are off
     right = 'off',
     left = 'off',          
@@ -190,17 +184,18 @@ plt.tick_params(
     colors = 'black',
     labelsize = 10,
     direction = 'out')
-      
+
+   
 # Set the tick labels font name
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
 
 # write label for x and y axis
 ax.set_ylabel('Nucleotide polymorphism\n', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
-ax.set_xlabel('Site categories/n', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_xlabel('Site categories\n', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
 
 # add labels to x-ticks, rotate and align right
-ax.set_xticklabels(site_types, rotation = 30, ha = 'center', size = 10, fontname = 'Arial')
+ax.set_xticklabels(site_types, ha = 'center', size = 10, fontname = 'Arial')
 
 # remove lines around the frame
 ax.spines['top'].set_visible(False)
@@ -208,12 +203,8 @@ ax.spines['right'].set_visible(False)
 ax.spines['left'].set_visible(False)
 ax.spines['bottom'].set_visible(False)
 
-# remove top axes and right axes ticks
-ax.get_xaxis().tick_bottom()
-ax.get_yaxis().tick_left()
-
 # add a light grey horizontal grid to the plot, semi-transparent, 
-ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)  
+ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
 # hide these grids behind plot objects
 ax.set_axisbelow(True)
 
@@ -233,6 +224,58 @@ fig.subplots_adjust(left=0.2)
 ## get max and min y values
 #y_min, y_max = min(yvalues), max(yvalues)
 #
+ 
+ 
+ 
+ 
+ 
+ 
+#for i in range(len(theta_sites)):
+#    newfile.write('\t'.join([site_types[i], str(len(theta_sites[i])), str(np.mean(theta_sites[i])), str(np.std(theta_sites[i]) / math.sqrt(len(theta_sites[i])))])+'\n')
+#
+#newfile.write('\n')
+#
+#newfile.write('Wilcoxon rank sum test of mean differences\n')
+#newfile.write('-' * 43 + '\n')
+#newfile.write('sites' + '\t' + 'wilcoxon' + '\t' + 'P' + '\n')
+#
+## loop over list
+#for i in range(0, len(theta_sites) - 1):
+#    for j in range(i+1, len(theta_sites)):
+#        wilcoxon, p = stats.ranksums(theta_sites[i], theta_sites[j])
+#        newfile.write('\t'.join([site_types[i] + '_vs_' + site_types[j], str(wilcoxon), str(p)]) + '\n')
+## close file after writing
+#newfile.close()
+#
+## open file to dump all theta values
+#newfile = open('theta_values_miRNAs.txt', 'w')
+#for i in REP_theta:
+#    newfile.write('REP' + '\t' + str(i) + '\n')
+#for i in SYN_theta:
+#    newfile.write('SYN' + '\t' + str(i) + '\n')
+#for i in mirna_theta:
+#    newfile.write('miRNA' + '\t' + str(i) + '\n')
+#for i in mature_theta:
+#    newfile.write('mature' + '\t' + str(i) + '\n')
+## close file after writing
+#newfile.close()
+#
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 ## compare read depth between WGS and RNAseq for each cancer
 #for i in range(0, len(all_data), 2):
 #    # get the P value of Wilcoxon rank sum test
@@ -269,46 +312,3 @@ fig.subplots_adjust(left=0.2)
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
     
 
-#
-#
-#
-#
-## create a list of theta
-#theta_sites = [SYN_theta, REP_theta, mirna_theta, mature_theta]
-## create a list of corrsponding site type
-#site_types = ['SYN', 'REP', 'miRNA', 'mature_miR']
-#
-## open file to store the results of the analusis
-#newfile = open('diversity_miRNAs.txt', 'w')
-## write header
-#newfile.write('sites' + '\t' + 'N' + '\t' + 'mean_theta' + '\t' + 'SEM' + '\n')
-#for i in range(len(theta_sites)):
-#    newfile.write('\t'.join([site_types[i], str(len(theta_sites[i])), str(np.mean(theta_sites[i])), str(np.std(theta_sites[i]) / math.sqrt(len(theta_sites[i])))])+'\n')
-#
-#newfile.write('\n')
-#
-#newfile.write('Wilcoxon rank sum test of mean differences\n')
-#newfile.write('-' * 43 + '\n')
-#newfile.write('sites' + '\t' + 'wilcoxon' + '\t' + 'P' + '\n')
-#
-## loop over list
-#for i in range(0, len(theta_sites) - 1):
-#    for j in range(i+1, len(theta_sites)):
-#        wilcoxon, p = stats.ranksums(theta_sites[i], theta_sites[j])
-#        newfile.write('\t'.join([site_types[i] + '_vs_' + site_types[j], str(wilcoxon), str(p)]) + '\n')
-## close file after writing
-#newfile.close()
-#
-## open file to dump all theta values
-#newfile = open('theta_values_miRNAs.txt', 'w')
-#for i in REP_theta:
-#    newfile.write('REP' + '\t' + str(i) + '\n')
-#for i in SYN_theta:
-#    newfile.write('SYN' + '\t' + str(i) + '\n')
-#for i in mirna_theta:
-#    newfile.write('miRNA' + '\t' + str(i) + '\n')
-#for i in mature_theta:
-#    newfile.write('mature' + '\t' + str(i) + '\n')
-## close file after writing
-#newfile.close()
-#
