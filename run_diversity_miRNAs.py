@@ -56,7 +56,7 @@ print('got miRNA coordinates')
 mature_coord = get_mirna_loci('CRM_MatureCoordinatesFinal.txt')
 print('got mature miR coordinates')
 
-# make a dict with family level conservation for all miRNAs {name : [chromo, start, end, orientation, conservation]}
+# make a dict with family level conservation for all miRNAs {name : conservarion}
 famCons = {}
 infile = open('CRM_miRNAsCoordinatesFinal.txt')
 infile.readline()
@@ -64,8 +64,19 @@ for line in infile:
     line = line.rstrip()
     if line != '':
         line = line.split('\t')
-        name, chromo, start, end, orientation, conservation = line[0], line[1], int(line[2]) -1, int(line[3]), line[4], line[-1]
-        famCons[name] = [chromo, start, end, orientation, conservation]
+        name, conservation = line[0], line[-1]
+        famCons[name] = conservation
+infile.close()
+# create a dict with coordinates of mature sequences
+miR_coord = {}
+infile = open('CRM_MatureCoordinatesFinal.txt')
+infile.readline()
+for line in infile:
+    line = line.rstrip()
+    if line != '':
+        line = line.split('\t')
+        name, chromo, start, end, orientation = line[0], line[1], int(line[2]) -1, int(line[3]), line[4]
+        miR_coord[name] = [chromo, start, end, orientation]
 infile.close()
 
 # compute theta for mirnas
@@ -107,27 +118,34 @@ print('Sites\tmean\tmin\tmax')
 print('mature', np.mean(mature_theta), min(mature_theta), max(mature_theta))
 
 
-# compute thetas for miRNAs with different level of conservation
+# partition thetas for miRs according to level of conservation
 # create lists to store theta at miRNA for different level of family conservation
-caeno_mirna_theta, crmcla_mirna_theta, crm_mirna_theta = [], [], []
+caeno_mir_theta, crmcla_mir_theta, crm_mir_theta = [], [], []
 # loop over mirna name in {name : [chromo, start, end, orientation, conservation]}
-for name in famCons:
-    chromo, start, end, conservation = famCons[name][0], famCons[name][1], famCons[name][2], famCons[name][-1]
+for name in miR_coord:
+    chromo, start, end = miR_coord[name][0], miR_coord[name][1], miR_coord[name][2]
+    conservation = famCons[name]
     theta = compute_theta_non_coding(chromo_sites, chromo, start, end, 2)
     # check if theta is defined
     if theta != 'NA':
         # check conservation level
-        if famCons[name][-1] == 'Crm':
-            crm_mirna_theta.append(theta)
-        elif famCons[name][-1] == 'CrmCla':
-            crmcla_mirna_theta.append(theta)
-        elif famCons[name][-1] == 'Caeno':
-            caeno_mirna_theta.append(theta)
-
+        if conservation == 'Crm':
+            crm_mir_theta.append(theta)
+        elif conservation == 'CrmCla':
+            crmcla_mir_theta.append(theta)
+        elif conservation == 'Caeno':
+            caeno_mir_theta.append(theta)
+# verify that mirnas belong to all 3 levels of conservation
+assert len(caeno_mir_theta) != 0
+assert len(crmcla_mir_theta) != 0
+assert len(crm_mir_theta) != 0
+print(len(caeno_mir_theta))
+print(len(crmcla_mir_theta))
+print(len(crm_mir_theta))
 
 
 # create list of data
-alldata = [SYN_theta, REP_theta, mirna_theta, mature_theta, caeno_mirna_theta, crmcla_mirna_theta, crm_mirna_theta]
+alldata = [SYN_theta, REP_theta, mirna_theta, mature_theta, caeno_mir_theta, crmcla_mir_theta, crm_mir_theta]
 # make a list of datatype
 # create a list of corrsponding site type
 site_types = ['Syn', 'Rep', 'miRNA', 'miR', 'Caeno', 'Crm,Cla', 'Crm']
@@ -192,7 +210,7 @@ for label in ax.get_yticklabels():
 
 # write label for x and y axis
 ax.set_ylabel('Nucleotide polymorphism\n', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
-ax.set_xlabel('Genomic features\n', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_xlabel('Genomic features', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
 
 # add labels to x-ticks, rotate and align right
 ax.set_xticklabels(site_types, ha = 'center', size = 10, fontname = 'Arial')
@@ -214,6 +232,9 @@ fig.subplots_adjust(left=0.2)
 
 
 #################
+
+# compare the 
+
 
  
 ## annotate figure to add significance
