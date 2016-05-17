@@ -5,6 +5,9 @@ Created on Fri May 13 13:55:12 2016
 @author: RJovelin
 """
 
+
+# use this script to generate a graph comparing diversity at mirna target sites with adjacent windows
+
 from manipulate_sequences import *
 from sliding_windows import *
 from sites_with_coverage import *
@@ -18,20 +21,16 @@ import math
 # convert genome fasta to dict
 genome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
 print('converted genome fasta to dict')
-
 # get the allele counts for all sites with coverage, exclude sites with sample size < 10
 chromo_sites = get_non_coding_snps('../SNP_files/', 10) 
 print('got allele counts at all sites')
-
 # get mirna target coordinates 
 # {gene: [[chromo, start, end, orientation, seed, N_mirnas, site_type, conservation, utr]]}
 target_coord = get_miRNA_target_coord('Cremanei_miRNA_sites.txt')
 print('got miRNA target coordinates')
-
 # get the set of valid transcripts
 valid_transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
 print('made list of valid transcripts')
-
 # remove genes that are not not valid (ie to keep a single transcript per gene)
 to_remove = [gene for gene in target_coord if gene not in valid_transcripts]
 for gene in to_remove:
@@ -39,33 +38,9 @@ for gene in to_remove:
 print('deleted {0} non-valid genes'.format(len(to_remove)))
 print('filtered non-valid transcripts') 
 
-# compute theta at synonymous sites
-theta_syn = compute_theta_diversity('../Genome_Files/CDS_SNP_DIVERG.txt', valid_transcripts, 'SYN', 10)
-# make a list of theta values
-SYN_theta = []
-for gene in theta_syn:
-    SYN_theta.append(theta_syn[gene])
-print('sites\tmean\tmin\tmax\t')
-print('SYN', np.mean(SYN_theta), min(SYN_theta), max(SYN_theta))
-print('done computing theta at synonymous sites')
 
-# compute theta at nonsynonymous sites
-theta_rep = compute_theta_diversity('../Genome_Files/CDS_SNP_DIVERG.txt', valid_transcripts, 'REP', 10)
-# make a list of theta values
-REP_theta = []
-for gene in theta_rep:
-    REP_theta.append(theta_rep[gene])
-print('sites\tmean\tmin\tmax\t')
-print('REP', np.mean(REP_theta), min(REP_theta), max(REP_theta))
-print('done computing theta at replacement sites')
-
-
-# compute diversity for all mirna targets, remanei-specific, crem-cla and cremclacel conserved
-# create a list theta at target sites
-targets_theta, crm_targets_theta, crmcla_targets_theta, crmclacel_targets_theta =  [], [], [], []
-# from downstream or UTR
-nonUTR_targets_theta, UTR_targets_theta = [], []
-
+# compute diversity for all mirna targets
+targets_theta = [] 
 # loop over gene in target cood
 for gene in target_coord:
     # loop over targets in gene
@@ -87,153 +62,15 @@ for gene in target_coord:
             if theta != 'NA':
                 # add to list 
                 targets_theta.append(theta)
-                # check conservation
-                if conservation == 'crm':
-                    # add theta to specific targets
-                    crm_targets_theta.append(theta)
-                elif conservation == 'crm:cla':
-                    # add theta to the crm-cla conservaed targets
-                    crmcla_targets_theta.append(theta)
-                elif conservation == 'crm:cla:cel':
-                    # add theta to the crm-la-cel conserved targets
-                    crmclacel_targets_theta.append(theta)
-                # check the type of utr
-                if utr == 'UTR':
-                    # add theta to the annotated UTR
-                    UTR_targets_theta.append(theta)
-                elif utr == 'downstream':
-                    # add theta to the predicted UTR
-                    nonUTR_targets_theta.append(theta)
-
-
-a = [targets_theta, crm_targets_theta, crmcla_targets_theta, crmclacel_targets_theta, nonUTR_targets_theta, UTR_targets_theta]
-b = ['all', 'crm', 'crmcla', 'crmclacel', 'nonutr', 'utr']
-
-for i in range(len(a)):
-    print(b[i], np.mean(a[i]), min(a[i]), max(a[i]), sep = '\t')
-
-
-
-
-
-                
-print('done computing theta for target sites')
-print('all targets: ', len(targets_theta))
-print('remanei-specific targets:' , len(crm_targets_theta))
-print('remanei-latens conserved targets: ', len(crmcla_targets_theta))
-print('remanei-latens-elegans conserved targets: ', len(crmclacel_targets_theta))
-print('targets in UTR: ', len(UTR_targets_theta))
-print('targets in predicted UTR: ', len(nonUTR_targets_theta))
-            
-
-# open file to write results
-summary_file = open('summary_diversity_target_sites.txt', 'w')
-
-# compare diversity between targetsm REP and SYN
-
-# make a list of theta lists
-site_theta = [REP_theta, SYN_theta, targets_theta]
-# make a liust of site categories
-site_names = ['REP', 'SYN', 'all_targets']
-
-# write header in file
-summary_file.write('comparison of mean theta between protein coding genes and miRNA target sites\n')
-summary_file.write('-' * 77 + '\n')
-summary_file.write('\n')
-summary_file.write('sites' + '\t' + 'N' + '\t' + 'mean_theta' + '\t' + 'SEM' + '\n')
-
-for i in range(len(site_theta)):
-    # compute mean and SEM
-    summary_file.write('\t'.join([site_names[i], str(len(site_theta[i])), str(np.mean(site_theta[i])), str(np.std(site_theta[i]) / math.sqrt(len(site_theta[i])))]) + '\n')
-
-summary_file.write('\n')
-
-summary_file.write('sites' + '\t' + 'wilcoxon' + '\t' + 'P-val' + '\n')
-
-for i in range(len(site_theta)-1):
-    for j in range(i+1, len(site_theta)):
-        # compare mean differences
-        wilcoxon, p = stats.ranksums(site_theta[i], site_theta[j])
-        # write results to file
-        summary_file.write('\t'.join([site_names[i] + '_vs_' + site_names[j], str(wilcoxon), str(p)]) + '\n')
-        
-summary_file.write('\n')
-
-# open file to store theta values
-newfile = open('theta_values_all_target_sites.txt', 'w')
-for i in range(len(site_theta)):
-    for theta in site_theta[i]:
-        newfile.write(site_names[i] + '\t' + str(theta) + '\n')
-# close file
-newfile.close()        
-
-        
-# make a list of theta for different site categories
-theta_cons = [crm_targets_theta, crmcla_targets_theta, crmclacel_targets_theta]
-cons_names = ['crm-only', 'crm-cla', 'crm-cla-cel']
-
-summary_file.write('targets sites with varying conservation level\n')
-summary_file.write('-' *46 + '\n')
-summary_file.write('\n')
-summary_file.write('sites' + '\t' + 'N' + '\t' + 'mean_theta' + '\t' + 'SEM' + '\n')
-
-for i in range(len(theta_cons)):
-    # compute mean and sem
-   summary_file.write('\t'.join([cons_names[i], str(len(theta_cons[i])), str(np.mean(theta_cons[i])), str(np.std(theta_cons[i]) / math.sqrt(len(theta_cons[i])))]) + '\n')
-
-summary_file.write('\n')
-
-summary_file.write('sites' + '\t' + 'wilcoxon' + '\t' + 'P-val' + '\n')
-
-for i in range(len(theta_cons)-1):
-    for j in range(i+1, len(theta_cons)):
-        wilcoxon, p = stats.ranksums(theta_cons[i], theta_cons[j])
-        summary_file.write('\t'.join([cons_names[i] + '_vs_' + cons_names[j], str(wilcoxon), str(p)]) + '\n')
-        
-summary_file.write('\n')
-
-# open file to store theta values
-newfile = open('theta_target_sites_conservation.txt', 'w')
-for i in range(len(theta_cons)):
-    for theta in theta_cons[i]:
-        newfile.write(cons_names[i] + '\t' + str(theta) + '\n')
-# close file
-newfile.close()        
-
-# compare theta for target sites from different downstream sequences
-summary_file.write('targets sites with annotated UTRs\n')
-summary_file.write('-' * 34 + '\n')
-summary_file.write('\n')
-summary_file.write('sites' + '\t' + 'N' + '\t' + 'mean_theta' + '\t' + 'SEM' + '\n')
-
-summary_file.write('\t'.join(['downtream', str(len(nonUTR_targets_theta)), str(np.mean(nonUTR_targets_theta)), str(np.std(nonUTR_targets_theta) / math.sqrt(len(nonUTR_targets_theta)))]) + '\n')
-summary_file.write('\t'.join(['UTR', str(len(UTR_targets_theta)), str(np.mean(UTR_targets_theta)), str(np.std(UTR_targets_theta) / math.sqrt(len(UTR_targets_theta)))]) + '\n')
-
-summary_file.write('\n')
-summary_file.write('sites' + '\t' + 'wilcoxon' + '\t' + 'P-val' + '\n')
-wilcoxon, p = stats.ranksums(nonUTR_targets_theta, UTR_targets_theta)
-summary_file.write('downtream_vs_UTR' + '\t' + str(wilcoxon) + '\t' + str(p) + '\n')
-
-# open file to store the theta value os downand UTR sequences
-newfile = open('theta_target_sites_UTR.txt', 'w')
-for theta in nonUTR_targets_theta:
-    newfile.write('downstream' + '\t' + str(theta) + '\n')
-for theta in UTR_targets_theta:
-    newfile.write('UTR' + '\t' + str(theta) + '\n')
-newfile.close()    
-
-print('theta values written to files')
-
-# compare theta and flanking sites
+print('computed theta for miRNA targets')
 
 # create a dict for upstream and downstream flanking sites
 # {window_position : [list of thetas across all regions at that position]}
 upstream_pos, downstream_pos = {}, {}
 
 # compute theta for each non-overlapping windows upstream of target sites
-
 # loop over targets
-# compute theta theta for each upstream region
+# compute theta for each upstream region
 for gene in target_coord:
     # loop over target on gene
     for i in range(len(target_coord[gene])):
@@ -275,7 +112,6 @@ for gene in target_coord:
                     upstream_pos[j] = []
                     if len(theta_windows[j]) != 0:
                         upstream_pos[j].append(theta_windows[j][0])
-                
 print('computed sliding windows for upstream')                           
             
 # loop over targets
@@ -319,79 +155,187 @@ for gene in target_coord:
                     downstream_pos[j] = []
                     if len(theta_windows[j]) != 0:
                         downstream_pos[j].append(theta_windows[j][0])
-
 print('computed sliding windows for downstream')
 
-summary_file.write('\n')
 
-summary_file.write('Mean theta at all target sites and flanking sites\n')
-summary_file.write('-' * 50 + '\n')
-summary_file.write('sites' + '\t' +  'N' + '\t' + 'mean_theta' + '\t' + 'SEM' + '\n')
 
-# create lists of lists to store the mean theta at each position 
-# [sample size, mean, stderror]
-    
-# lower index in upstream_pos corresponds to end the upstream region
-# need to invert positions
-# create a list of keys in upstream
+
 up_pos = [i for i in upstream_pos]
-# sort keys
 up_pos.sort()
-# reverse sort keys
 up_pos.reverse()
-    
-# loop over reverse soreted keys in up_pos
-for i in up_pos:
-    # compute the mean theta at that position
-    mean_theta = np.mean(upstream_pos[i])
-    # compute standard error
-    stderror = np.std(upstream_pos[i]) / math.sqrt(len(upstream_pos[i]))
-    summary_file.write('\t'.join(['upstream_' + str(i), str(len(upstream_pos[i])), str(mean_theta), str(stderror)]) + '\n')
-    
-# write mean and SEM for targets
-summary_file.write('\t'.join(['targets', str(len(targets_theta)), str(np.mean(targets_theta)), str(np.std(targets_theta) / math.sqrt(len(targets_theta)))]) + '\n')   
-    
-# create a list of keys in downstream
+
 down_pos = [i for i in downstream_pos]
-# sort list
 down_pos.sort()
 
-# loop over sorted keys in down_pos
-for i in down_pos:
-    # compute the mean theta at that position
-    mean_theta = np.mean(downstream_pos[i])
-    # compyte the standard error
-    stderror = np.std(downstream_pos[i]) / math.sqrt(len(downstream_pos[i]))
-    summary_file.write('\t'.join(['downstream_' + str(i), str(len(downstream_pos[i])), str(mean_theta), str(stderror)]) + '\n')
-
-# save theta value for targets and flaning sites to a single file
-newfile = open('theta_target_flanking_sites.txt', 'w')
+alldata = []
 for i in up_pos:
-    for theta in upstream_pos[i]:
-        newfile.write('upstream_' + str(i) + '\t' + str(theta) + '\n')
-for theta in targets_theta:
-    newfile.write('targets' + '\t' + str(theta) + '\n')
+    alldata.append(upstream_pos[i])
+alldata.append(targets_theta)
 for i in down_pos:
-    for theta in downstream_pos[i]:
-        newfile.write('downstream_' + str(i) + '\t' + str(theta) + '\n')
-newfile.close()
+    alldata.append(downstream_pos[i])
 
-print('saved theta values to file')
 
-# test mean differences between theta at target sites and flanking sites
+for i in alldata:
+    print(np.mean(i))
+    
+    
 
-summary_file.write('\n')
-summary_file.write('Mean differences between all targets and flanking sites\n')
-summary_file.write('-' * 56 + '\n')
-summary_file.write('sites' + '\t' + 'wilcoxon' + 'P-val' + '\n')
-for i in up_pos:
-    wilcoxon, p = stats.ranksums(upstream_pos[i], targets_theta)
-    summary_file.write('\t'.join(['upstream_' + str(i) + '_vs_targets', str(wilcoxon), str(p)]) + '\n')
-for i in down_pos:
-    wilcoxon, p = stats.ranksums(downstream_pos[i], targets_theta)
-    summary_file.write('\t'.join(['downstream_' + str(i) + '_vs_targets', str(wilcoxon), str(p)]) + '\n')
 
-print('tested mean differences between targets and flanking sites')
 
-summary_file.close()
 
+## create lists of lists to store the mean theta at each position 
+## [sample size, mean, stderror]
+#    
+## lower index in upstream_pos corresponds to end the upstream region
+## need to invert positions
+## create a list of keys in upstream
+#up_pos = [i for i in upstream_pos]
+## sort keys
+#up_pos.sort()
+## reverse sort keys
+#up_pos.reverse()
+#    
+## loop over reverse sorted keys in up_pos
+#for i in up_pos:
+#    # compute the mean theta at that position
+#    mean_theta = np.mean(upstream_pos[i])
+#    # compute standard error
+#    stderror = np.std(upstream_pos[i]) / math.sqrt(len(upstream_pos[i]))
+#    summary_file.write('\t'.join(['upstream_' + str(i), str(len(upstream_pos[i])), str(mean_theta), str(stderror)]) + '\n')
+#    
+#   
+#    
+## create a list of keys in downstream
+#down_pos = [i for i in downstream_pos]
+## sort list
+#down_pos.sort()
+#
+## loop over sorted keys in down_pos
+#for i in down_pos:
+#    # compute the mean theta at that position
+#    mean_theta = np.mean(downstream_pos[i])
+#    # compyte the standard error
+#    stderror = np.std(downstream_pos[i]) / math.sqrt(len(downstream_pos[i]))
+#    summary_file.write('\t'.join(['downstream_' + str(i), str(len(downstream_pos[i])), str(mean_theta), str(stderror)]) + '\n')
+#
+## save theta value for targets and flaning sites to a single file
+#newfile = open('theta_target_flanking_sites.txt', 'w')
+#for i in up_pos:
+#    for theta in upstream_pos[i]:
+#        newfile.write('upstream_' + str(i) + '\t' + str(theta) + '\n')
+#for theta in targets_theta:
+#    newfile.write('targets' + '\t' + str(theta) + '\n')
+#for i in down_pos:
+#    for theta in downstream_pos[i]:
+#        newfile.write('downstream_' + str(i) + '\t' + str(theta) + '\n')
+#newfile.close()
+#
+#print('saved theta values to file')
+#
+## test mean differences between theta at target sites and flanking sites
+#
+#summary_file.write('\n')
+#summary_file.write('Mean differences between all targets and flanking sites\n')
+#summary_file.write('-' * 56 + '\n')
+#summary_file.write('sites' + '\t' + 'wilcoxon' + 'P-val' + '\n')
+#for i in up_pos:
+#    wilcoxon, p = stats.ranksums(upstream_pos[i], targets_theta)
+#    summary_file.write('\t'.join(['upstream_' + str(i) + '_vs_targets', str(wilcoxon), str(p)]) + '\n')
+#for i in down_pos:
+#    wilcoxon, p = stats.ranksums(downstream_pos[i], targets_theta)
+#    summary_file.write('\t'.join(['downstream_' + str(i) + '_vs_targets', str(wilcoxon), str(p)]) + '\n')
+#
+#print('tested mean differences between targets and flanking sites')
+#
+#summary_file.close()
+#
+#
+#
+## create list of data
+#alldata = [SYN_theta, REP_theta, mirna_theta, mature_theta, caeno_mir_theta, crmcla_mir_theta, crm_mir_theta]
+## make a list of datatype
+## create a list of corrsponding site type
+#site_types = ['Syn', 'Rep', 'miRNA', 'miR', 'Caeno', 'Crm,Cla', 'Crm']
+#
+## create figure
+#fig = plt.figure(1, figsize = (6,4))
+## add a plot to figure (1 row, 1 column, 1st plot)
+#ax = fig.add_subplot(1, 1, 1)
+#
+## use a boxplot
+#bp = ax.boxplot(alldata, showmeans = False, showfliers = False, widths = 0.7, labels = site_types, patch_artist = True) 
+# 
+## create a list of colors (seee http://colorbrewer2.org/)
+#color_scheme = ['#6e016b', '#88419d', '#8c6bb1', '#8c96c6','#9ebcda', '#bfd3e6', '#edf8fb']
+## color boxes for the different sites
+#i = 0    
+## change box, whisker color to black
+#for box in bp['boxes']:
+#    # change line color
+#    box.set(color = 'black', linewidth = 1.5)
+#    box.set(facecolor = color_scheme[i])
+#    # upate color
+#    i += 1
+## change whisker color ro black
+#for wk in bp['whiskers']:
+#    wk.set(color = 'black', linestyle = '-', linewidth = 1.5)
+## change color of the caps
+#for cap in bp['caps']:
+#    cap.set(color = 'black', linewidth = 1.5)
+## change the color and line width of the medians
+#for median in bp['medians']:
+#    median.set(color = 'black', linewidth = 1.5)
+## change the mean marker and marker if showmean is True
+##for mean in bp['means']:
+##    mean.set(marker = 'o', markeredgecolor = 'black', markerfacecolor = 'black', markersize = 4)
+#    
+## restrict the x and y axis to the range of data
+#ax.set_ylim([0, 0.15])
+## create a list with range of x-axis values
+#xvals = [i + 0.5 for i in range(len(site_types) + 1)]
+## Set a buffer around the edge of the x-axis
+#plt.xlim([min(xvals)- 0.5, max(xvals)+ 0.5])
+#
+#
+## do not show ticks
+#plt.tick_params(
+#    axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
+#    which='both',      # both major and minor ticks are affected
+#    bottom='off',      # ticks along the bottom edge are off
+#    top='off',         # ticks along the top edge are off
+#    right = 'off',
+#    left = 'off',          
+#    labelbottom= 'on', # labels along the bottom edge are off 
+#    colors = 'black',
+#    labelsize = 10,
+#    direction = 'out')
+#
+#   
+## Set the tick labels font name
+#for label in ax.get_yticklabels():
+#    label.set_fontname('Arial')
+#
+## write label for x and y axis
+#ax.set_ylabel('Nucleotide polymorphism\n', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
+#ax.set_xlabel('Genomic features', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
+#
+## add labels to x-ticks, rotate and align right
+#ax.set_xticklabels(site_types, ha = 'center', size = 10, fontname = 'Arial')
+#
+## remove lines around the frame
+#ax.spines['top'].set_visible(False)
+#ax.spines['right'].set_visible(False)
+#ax.spines['left'].set_visible(False)
+#ax.spines['bottom'].set_visible(False)
+#
+## add a light grey horizontal grid to the plot, semi-transparent, 
+#ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
+## hide these grids behind plot objects
+#ax.set_axisbelow(True)
+#
+## give more space to the y labels
+#fig.subplots_adjust(left=0.2)
+#
+## save figure
+#fig.savefig('DiversityMiRNAs.pdf', bbox_inches = 'tight')
+    
