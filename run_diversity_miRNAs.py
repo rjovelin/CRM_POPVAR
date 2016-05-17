@@ -233,8 +233,22 @@ fig.subplots_adjust(left=0.2)
 
 #################
 
-# compare the 
+diff = {}
 
+
+# compare mean differences among regions
+# loop over datalist
+for i in range(0, len(alldata) -1):
+    for j in range(i+1, len(alldata)):
+        wilcoxon, p = stats.ranksums(alldata[i], alldata[j])
+        if p < 0.05:
+            if site_types[i] not in diff:
+                diff[site_types[i]] = [site_types[j]]
+            else:
+                diff[site_types[i]].append(site_types[j])
+                
+for i in diff:
+    print(i, diff[i])
 
  
 ## annotate figure to add significance
@@ -249,17 +263,7 @@ fig.subplots_adjust(left=0.2)
  
  
  
- 
- 
-#for i in range(len(theta_sites)):
-#    newfile.write('\t'.join([site_types[i], str(len(theta_sites[i])), str(np.mean(theta_sites[i])), str(np.std(theta_sites[i]) / math.sqrt(len(theta_sites[i])))])+'\n')
-#
-#newfile.write('\n')
-#
-#newfile.write('Wilcoxon rank sum test of mean differences\n')
-#newfile.write('-' * 43 + '\n')
-#newfile.write('sites' + '\t' + 'wilcoxon' + '\t' + 'P' + '\n')
-#
+
 ## loop over list
 #for i in range(0, len(theta_sites) - 1):
 #    for j in range(i+1, len(theta_sites)):
