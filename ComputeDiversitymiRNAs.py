@@ -208,7 +208,7 @@ for label in ax.get_yticklabels():
 
 # write label for x and y axis
 ax.set_ylabel('Nucleotide polymorphism\n', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
-ax.set_xlabel('Genomic features', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_xlabel('Site categories', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
 
 # add labels to x-ticks, rotate and align right
 ax.set_xticklabels(site_types, ha = 'center', size = 10, fontname = 'Arial')
