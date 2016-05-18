@@ -158,7 +158,7 @@ ax.set_axisbelow(True)
 
 # compare mean differences among conservation levels
 for i in range(len(alldata) -1):
-    for j in range(len(i+1, len(alldata))):
+    for j in range(i+1, len(len(alldata))):
         # get the P value of Wilcoxon rank sum test
         Pval = stats.ranksums(alldata[i], alldata[j])[1]
         # get stars for significance
