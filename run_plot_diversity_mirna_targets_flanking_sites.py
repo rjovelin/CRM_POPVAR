@@ -8,6 +8,9 @@ Created on Fri May 13 13:55:12 2016
 
 # use this script to generate a graph comparing diversity at mirna target sites with adjacent windows
 
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 from manipulate_sequences import *
 from sliding_windows import *
 from sites_with_coverage import *
@@ -158,8 +161,12 @@ for gene in target_coord:
 print('computed sliding windows for downstream')
 
 
+# create a list of lists of diversity values ordered according to position around target sites
+alldata = []
 
-
+# lower index in upstream_pos corresponds to end the upstream region
+# need to invert positions
+# create a list of keys in upstream, reverse sorted
 up_pos = [i for i in upstream_pos]
 up_pos.sort()
 up_pos.reverse()
@@ -167,7 +174,6 @@ up_pos.reverse()
 down_pos = [i for i in downstream_pos]
 down_pos.sort()
 
-alldata = []
 for i in up_pos:
     alldata.append(upstream_pos[i])
 alldata.append(targets_theta)
@@ -179,7 +185,87 @@ for i in alldata:
     print(np.mean(i))
     
     
+##################################
+    
+# create figure
+fig = plt.figure(1, figsize = (6,4))
+# add a plot to figure (1 row, 1 column, 1st plot)
+ax = fig.add_subplot(1, 1, 1)
 
+width = 0.3
+ind = np.arange(len(alldata))
+Means = [np.mean(i) for i in alldata]
+SEM = []
+for i in alldata:
+    SEM.append(np.std(i) / math.sqrt(len(i)))
+
+# use a boxplot
+graph = ax.bar(ind, Means, yerr = SEM,
+               color = ['#99d8c9', '#99d8c9', '#99d8c9', '#2ca25f','#99d8c9', '#99d8c9', '#99d8c9'],
+               linewidth = 2)
+
+ax.margins(0.05)
+
+xvals = [i + 0.5 for i in range(len(alldata) + 1)]
+# Set a buffer around the edge of the x-axis
+plt.xlim([min(xvals)- 0.5, max(xvals)+ 0.5])
+
+
+# do not show ticks
+plt.tick_params(
+    axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='off',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom= 'on', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out')
+
+   
+# Set the tick labels font name
+for label in ax.get_yticklabels():
+    label.set_fontname('Arial')
+
+# write label for x and y axis
+ax.set_ylabel('Nucleotide polymorphism\n', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
+ax.set_xlabel('Upstream\tTargets\tDownstream', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
+
+# add labels to x-ticks, rotate and align right
+#ax.set_xticklabels(site_types, ha = 'center', size = 10, fontname = 'Arial')
+
+# remove lines around the frame
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_visible(False)
+ax.spines['bottom'].set_visible(False)
+
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
+
+# give more space to the y labels
+fig.subplots_adjust(left=0.2)
+
+        
+# save figure
+fig.savefig('testfile.pdf', bbox_inches = 'tight')
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+####################################
 
 
 
@@ -336,6 +422,4 @@ for i in alldata:
 ## give more space to the y labels
 #fig.subplots_adjust(left=0.2)
 #
-## save figure
-#fig.savefig('DiversityMiRNAs.pdf', bbox_inches = 'tight')
     
