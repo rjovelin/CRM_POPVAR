@@ -247,12 +247,12 @@ for i in range(len(alldata) -1):
 # annotate figure to add significance
 # get the x and y coordinates
 y_pos = [0.15, 0.05, 0.03, 0.05]
-x_pos = [i for i in range(len(site_types))]
+x_pos = [i+1 for i in range(len(site_types))]
 diff = ['A', 'B', 'C', 'D']
 
 for i in range(len(diff)):
     ax.text(x_pos[i], y_pos[i], diff[i], horizontalalignment='center',
-            verticalalignment='center', color = 'black', fontname = 'Arial')
+            verticalalignment='center', color = 'black', fontname = 'Arial', size = 10)
 
 # give more space to the y labels
 fig.subplots_adjust(left=0.2)
