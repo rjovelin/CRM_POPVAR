@@ -8,15 +8,18 @@ Created on Fri May 13 13:55:12 2016
 
 # use this script to generate a graph comparing diversity at mirna target sites with adjacent windows
 
+# load matplotlib, change backend when X server is not available
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+# load custome modules
 from manipulate_sequences import *
 from sliding_windows import *
 from sites_with_coverage import *
 from miRNA_target import *
 from divergence import *
 from genomic_coordinates import *
+# load scipy and numpy
 import numpy as np
 from scipy import stats
 import math
@@ -170,23 +173,15 @@ alldata = []
 up_pos = [i for i in upstream_pos]
 up_pos.sort()
 up_pos.reverse()
-
 down_pos = [i for i in downstream_pos]
 down_pos.sort()
-
 for i in up_pos:
     alldata.append(upstream_pos[i])
 alldata.append(targets_theta)
 for i in down_pos:
     alldata.append(downstream_pos[i])
-
-
-for i in alldata:
-    print(np.mean(i))
-    
-    
-##################################
-    
+  
+   
 # create figure
 fig = plt.figure(1, figsize = (6,4))
 # add a plot to figure (1 row, 1 column, 1st plot)
@@ -199,16 +194,21 @@ SEM = []
 for i in alldata:
     SEM.append(np.std(i) / math.sqrt(len(i)))
 
-# use a boxplot
+# use a bar plot
 graph = ax.bar(ind, Means, yerr = SEM,
                color = ['#99d8c9', '#99d8c9', '#99d8c9', '#2ca25f','#99d8c9', '#99d8c9', '#99d8c9'],
-               linewidth = 2)
+               linewidth = 2, error_kw=dict(elinewidth=2, ecolor='black'))               
 
 ax.margins(0.05)
+j = 0
 
-xvals = [i + 0.5 for i in range(len(alldata) + 1)]
+#xvals = [i + 0.5 for i in range(len(alldata) + 1)]
+xvals = [j + width for j in range(len(alldata))]
+
 # Set a buffer around the edge of the x-axis
 plt.xlim([min(xvals)- 0.5, max(xvals)+ 0.5])
+# zom in by setting up y limits
+plt.ylim([0.020, 0.025])
 
 
 # do not show ticks
@@ -219,7 +219,7 @@ plt.tick_params(
     top='off',         # ticks along the top edge are off
     right = 'off',
     left = 'off',          
-    labelbottom= 'on', # labels along the bottom edge are off 
+    labelbottom= 'off', # labels along the bottom edge are off 
     colors = 'black',
     labelsize = 10,
     direction = 'out')
@@ -231,7 +231,7 @@ for label in ax.get_yticklabels():
 
 # write label for x and y axis
 ax.set_ylabel('Nucleotide polymorphism\n', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
-ax.set_xlabel('Upstream\tTargets\tDownstream', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_xlabel('Upstream\t\tTargets\t\tDownstream', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
 
 # add labels to x-ticks, rotate and align right
 #ax.set_xticklabels(site_types, ha = 'center', size = 10, fontname = 'Arial')
