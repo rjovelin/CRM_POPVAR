@@ -145,13 +145,13 @@ print(len(crm_mir_theta))
 
 
 # create list of data
-alldata = [SYN_theta, REP_theta, mirna_theta, mature_theta, caeno_mir_theta, crmcla_mir_theta, crm_mir_theta]
+alldata = [SYN_theta, REP_theta, mirna_theta, mature_theta]
 # make a list of datatype
 # create a list of corrsponding site type
-site_types = ['Syn', 'Rep', 'miRNA', 'miR', 'Caeno', 'Crm,Cla', 'Crm']
+site_types = ['Syn', 'Rep', 'miRNA', 'miR']
 
 # create figure
-fig = plt.figure(1, figsize = (6,4))
+fig = plt.figure(1, figsize = (3,2))
 # add a plot to figure (1 row, 1 column, 1st plot)
 ax = fig.add_subplot(1, 1, 1)
 
@@ -159,7 +159,8 @@ ax = fig.add_subplot(1, 1, 1)
 bp = ax.boxplot(alldata, showmeans = False, showfliers = False, widths = 0.7, labels = site_types, patch_artist = True) 
  
 # create a list of colors (seee http://colorbrewer2.org/)
-color_scheme = ['#6e016b', '#88419d', '#8c6bb1', '#8c96c6','#9ebcda', '#bfd3e6', '#edf8fb']
+color_scheme = ['#88419d', '#8c96c6', '#b3cde3', '#edf8fb']
+
 # color boxes for the different sites
 i = 0    
 # change box, whisker color to black
@@ -178,9 +179,6 @@ for cap in bp['caps']:
 # change the color and line width of the medians
 for median in bp['medians']:
     median.set(color = 'black', linewidth = 1.5)
-# change the mean marker and marker if showmean is True
-#for mean in bp['means']:
-#    mean.set(marker = 'o', markeredgecolor = 'black', markerfacecolor = 'black', markersize = 4)
     
 # restrict the x and y axis to the range of data
 ax.set_ylim([0, 0.15])
@@ -225,6 +223,40 @@ ax.spines['bottom'].set_visible(False)
 ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
 # hide these grids behind plot objects
 ax.set_axisbelow(True)
+
+
+# compare mean differences among conservation levels
+for i in range(len(alldata) -1):
+    for j in range(i+1, len(len(alldata))):
+        # get the P value of Wilcoxon rank sum test
+        Pval = stats.ranksums(alldata[i], alldata[j])[1]
+        # get stars for significance
+        if Pval > 0.05:
+            P = 'N.S.'
+        elif Pval < 0.05 and Pval > 0.01:
+            P = '*'
+        elif Pval < 0.01 and Pval > 0.001:
+            P = '**'
+        elif Pval < 0.001:
+            P = '***'
+        
+        print(site_types[i], site_types[j], Pval)    
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # give more space to the y labels
 fig.subplots_adjust(left=0.2)
