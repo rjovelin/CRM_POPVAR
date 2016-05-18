@@ -183,11 +183,11 @@ for i in down_pos:
   
    
 # create figure
-fig = plt.figure(1, figsize = (6,4))
+fig = plt.figure(1, figsize = (4, 3))
 # add a plot to figure (1 row, 1 column, 1st plot)
 ax = fig.add_subplot(1, 1, 1)
 
-width = 0.3
+width = 0.8
 ind = np.arange(len(alldata))
 Means = [np.mean(i) for i in alldata]
 SEM = []
@@ -195,18 +195,16 @@ for i in alldata:
     SEM.append(np.std(i) / math.sqrt(len(i)))
 
 # use a bar plot
-graph = ax.bar(ind, Means, yerr = SEM,
+graph = ax.bar(ind, Means, width, yerr = SEM,
                color = ['#99d8c9', '#99d8c9', '#99d8c9', '#2ca25f','#99d8c9', '#99d8c9', '#99d8c9'],
-               linewidth = 2, error_kw=dict(elinewidth=2, ecolor='black'))               
+               linewidth = 1.5, error_kw=dict(elinewidth=1.5, ecolor='black', markeredgewidth = 1.5))               
 
 ax.margins(0.05)
-j = 0
 
-#xvals = [i + 0.5 for i in range(len(alldata) + 1)]
-xvals = [j + width for j in range(len(alldata))]
+xvals = [i + 0.5 for i in range(len(alldata))]
 
 # Set a buffer around the edge of the x-axis
-plt.xlim([min(xvals)- 0.5, max(xvals)+ 0.5])
+#plt.xlim([-0.5, len(alldata) + 0.5])
 # zom in by setting up y limits
 plt.ylim([0.020, 0.025])
 
@@ -230,8 +228,8 @@ for label in ax.get_yticklabels():
     label.set_fontname('Arial')
 
 # write label for x and y axis
-ax.set_ylabel('Nucleotide polymorphism\n', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
-ax.set_xlabel('Upstream\t\tTargets\t\tDownstream', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_ylabel('Nucleotide polymorphism', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
+ax.set_xlabel('\nUpstream\t\tTargets\t\tDownstream', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
 
 # add labels to x-ticks, rotate and align right
 #ax.set_xticklabels(site_types, ha = 'center', size = 10, fontname = 'Arial')
@@ -240,186 +238,46 @@ ax.set_xlabel('Upstream\t\tTargets\t\tDownstream', color = 'black', size = 10, h
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.spines['left'].set_visible(False)
-ax.spines['bottom'].set_visible(False)
+ax.spines['bottom'].set_visible(True)
+
+# offset the spines
+for spine in ax.spines.values():
+  spine.set_position(('outward', 5))
 
 # add a light grey horizontal grid to the plot, semi-transparent, 
 ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
 # hide these grids behind plot objects
 ax.set_axisbelow(True)
 
-# give more space to the y labels
-fig.subplots_adjust(left=0.2)
+# annotate figure to add significance
+# get the x and y coordinates
+y_min, y_max = 0.020, 0.025
 
-        
+# compare upstream and downstream bins to targets
+for i in range(len(list(ind))):
+    # do not compare targets with targets
+    if i != 3:
+        # get the P value of Wilcoxon rank sum test
+        Pval = stats.ranksums(alldata[i], alldata[3])[1]
+        # get stars for significance
+        if Pval > 0.05:
+            P = 'N.S.'
+        elif Pval < 0.05 and Pval > 0.01:
+            P = '*'
+        elif Pval < 0.01 and Pval > 0.001:
+            P = '**'
+        elif Pval < 0.001:
+            P = '***'
+    
+        # add stars for significance
+        if P == 'N.S.':
+            ax.text(i + width/2, y_max + abs(y_max - y_min)*0.03, P, horizontalalignment='center',
+                    verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
+        else:
+            ax.text(i + width/2, y_max + abs(y_max - y_min)*0.01, P, horizontalalignment='center',
+                    verticalalignment='center', color = 'grey', fontname = 'Arial')
+
 # save figure
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('DiversityTargetsFlankingSites.pdf', bbox_inches = 'tight')
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-####################################
-
-
-
-## create lists of lists to store the mean theta at each position 
-## [sample size, mean, stderror]
-#    
-## lower index in upstream_pos corresponds to end the upstream region
-## need to invert positions
-## create a list of keys in upstream
-#up_pos = [i for i in upstream_pos]
-## sort keys
-#up_pos.sort()
-## reverse sort keys
-#up_pos.reverse()
-#    
-## loop over reverse sorted keys in up_pos
-#for i in up_pos:
-#    # compute the mean theta at that position
-#    mean_theta = np.mean(upstream_pos[i])
-#    # compute standard error
-#    stderror = np.std(upstream_pos[i]) / math.sqrt(len(upstream_pos[i]))
-#    summary_file.write('\t'.join(['upstream_' + str(i), str(len(upstream_pos[i])), str(mean_theta), str(stderror)]) + '\n')
-#    
-#   
-#    
-## create a list of keys in downstream
-#down_pos = [i for i in downstream_pos]
-## sort list
-#down_pos.sort()
-#
-## loop over sorted keys in down_pos
-#for i in down_pos:
-#    # compute the mean theta at that position
-#    mean_theta = np.mean(downstream_pos[i])
-#    # compyte the standard error
-#    stderror = np.std(downstream_pos[i]) / math.sqrt(len(downstream_pos[i]))
-#    summary_file.write('\t'.join(['downstream_' + str(i), str(len(downstream_pos[i])), str(mean_theta), str(stderror)]) + '\n')
-#
-## save theta value for targets and flaning sites to a single file
-#newfile = open('theta_target_flanking_sites.txt', 'w')
-#for i in up_pos:
-#    for theta in upstream_pos[i]:
-#        newfile.write('upstream_' + str(i) + '\t' + str(theta) + '\n')
-#for theta in targets_theta:
-#    newfile.write('targets' + '\t' + str(theta) + '\n')
-#for i in down_pos:
-#    for theta in downstream_pos[i]:
-#        newfile.write('downstream_' + str(i) + '\t' + str(theta) + '\n')
-#newfile.close()
-#
-#print('saved theta values to file')
-#
-## test mean differences between theta at target sites and flanking sites
-#
-#summary_file.write('\n')
-#summary_file.write('Mean differences between all targets and flanking sites\n')
-#summary_file.write('-' * 56 + '\n')
-#summary_file.write('sites' + '\t' + 'wilcoxon' + 'P-val' + '\n')
-#for i in up_pos:
-#    wilcoxon, p = stats.ranksums(upstream_pos[i], targets_theta)
-#    summary_file.write('\t'.join(['upstream_' + str(i) + '_vs_targets', str(wilcoxon), str(p)]) + '\n')
-#for i in down_pos:
-#    wilcoxon, p = stats.ranksums(downstream_pos[i], targets_theta)
-#    summary_file.write('\t'.join(['downstream_' + str(i) + '_vs_targets', str(wilcoxon), str(p)]) + '\n')
-#
-#print('tested mean differences between targets and flanking sites')
-#
-#summary_file.close()
-#
-#
-#
-## create list of data
-#alldata = [SYN_theta, REP_theta, mirna_theta, mature_theta, caeno_mir_theta, crmcla_mir_theta, crm_mir_theta]
-## make a list of datatype
-## create a list of corrsponding site type
-#site_types = ['Syn', 'Rep', 'miRNA', 'miR', 'Caeno', 'Crm,Cla', 'Crm']
-#
-## create figure
-#fig = plt.figure(1, figsize = (6,4))
-## add a plot to figure (1 row, 1 column, 1st plot)
-#ax = fig.add_subplot(1, 1, 1)
-#
-## use a boxplot
-#bp = ax.boxplot(alldata, showmeans = False, showfliers = False, widths = 0.7, labels = site_types, patch_artist = True) 
-# 
-## create a list of colors (seee http://colorbrewer2.org/)
-#color_scheme = ['#6e016b', '#88419d', '#8c6bb1', '#8c96c6','#9ebcda', '#bfd3e6', '#edf8fb']
-## color boxes for the different sites
-#i = 0    
-## change box, whisker color to black
-#for box in bp['boxes']:
-#    # change line color
-#    box.set(color = 'black', linewidth = 1.5)
-#    box.set(facecolor = color_scheme[i])
-#    # upate color
-#    i += 1
-## change whisker color ro black
-#for wk in bp['whiskers']:
-#    wk.set(color = 'black', linestyle = '-', linewidth = 1.5)
-## change color of the caps
-#for cap in bp['caps']:
-#    cap.set(color = 'black', linewidth = 1.5)
-## change the color and line width of the medians
-#for median in bp['medians']:
-#    median.set(color = 'black', linewidth = 1.5)
-## change the mean marker and marker if showmean is True
-##for mean in bp['means']:
-##    mean.set(marker = 'o', markeredgecolor = 'black', markerfacecolor = 'black', markersize = 4)
-#    
-## restrict the x and y axis to the range of data
-#ax.set_ylim([0, 0.15])
-## create a list with range of x-axis values
-#xvals = [i + 0.5 for i in range(len(site_types) + 1)]
-## Set a buffer around the edge of the x-axis
-#plt.xlim([min(xvals)- 0.5, max(xvals)+ 0.5])
-#
-#
-## do not show ticks
-#plt.tick_params(
-#    axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
-#    which='both',      # both major and minor ticks are affected
-#    bottom='off',      # ticks along the bottom edge are off
-#    top='off',         # ticks along the top edge are off
-#    right = 'off',
-#    left = 'off',          
-#    labelbottom= 'on', # labels along the bottom edge are off 
-#    colors = 'black',
-#    labelsize = 10,
-#    direction = 'out')
-#
-#   
-## Set the tick labels font name
-#for label in ax.get_yticklabels():
-#    label.set_fontname('Arial')
-#
-## write label for x and y axis
-#ax.set_ylabel('Nucleotide polymorphism\n', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
-#ax.set_xlabel('Genomic features', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
-#
-## add labels to x-ticks, rotate and align right
-#ax.set_xticklabels(site_types, ha = 'center', size = 10, fontname = 'Arial')
-#
-## remove lines around the frame
-#ax.spines['top'].set_visible(False)
-#ax.spines['right'].set_visible(False)
-#ax.spines['left'].set_visible(False)
-#ax.spines['bottom'].set_visible(False)
-#
-## add a light grey horizontal grid to the plot, semi-transparent, 
-#ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
-## hide these grids behind plot objects
-#ax.set_axisbelow(True)
-#
-## give more space to the y labels
-#fig.subplots_adjust(left=0.2)
-#
     
