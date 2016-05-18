@@ -6,6 +6,9 @@ Created on Wed May 18 16:20:05 2016
 """
 
 # use this script to make a box plot comparing theta for mature miRNAs with different levels of conservation
+# usage ComputeDiversityConservationMature.py [options]
+# [box/bar] : type of graphich to plot
+
 
 # use Agg backend on server without X server
 import matplotlib as mpl
@@ -15,13 +18,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 from scipy import stats
+import sys
 # load custom modules
 from manipulate_sequences import *
 from divergence import *
 from miRNA_target import *
 from sites_with_coverage import *
 
-
+# get graph type from command
+graphtype = sys.argv[1]
 
 # get the allele counts for all sites with coverage
 chromo_sites = get_non_coding_snps('../SNP_files/', 10)
@@ -83,41 +88,62 @@ alldata = [caeno_mir_theta, crmcla_mir_theta, crm_mir_theta]
 site_types = ['Conserved', 'Restricted', 'Specific']
 
 # create figure
-fig = plt.figure(1, figsize = (6,4))
+fig = plt.figure(1, figsize = (3,2))
 # add a plot to figure (1 row, 1 column, 1st plot)
 ax = fig.add_subplot(1, 1, 1)
 
-# use a boxplot
-bp = ax.boxplot(alldata, showmeans = False, showfliers = False, widths = 0.7, labels = site_types, patch_artist = True) 
- 
-# create a list of colors (seee http://colorbrewer2.org/)
-color_scheme = ['#8856a7', '#9ebcda', '#e0ecf4']
-
-# color boxes for the different sites
-i = 0    
-# change box, whisker color to black
-for box in bp['boxes']:
-    # change line color
-    box.set(color = 'black', linewidth = 1.5)
-    box.set(facecolor = color_scheme[i])
-    # upate color
-    i += 1
-# change whisker color ro black
-for wk in bp['whiskers']:
-    wk.set(color = 'black', linestyle = '-', linewidth = 1.5)
-# change color of the caps
-for cap in bp['caps']:
-    cap.set(color = 'black', linewidth = 1.5)
-# change the color and line width of the medians
-for median in bp['medians']:
-    median.set(color = 'black', linewidth = 1.5)
+# check graphich type in option
+if graphtype == 'box':
+    # use a boxplot
+    bp = ax.boxplot(alldata, showmeans = False, showfliers = False, widths = 0.7, labels = site_types, patch_artist = True) 
     
-# restrict the x and y axis to the range of data
-ax.set_ylim([0, 0.08])
-# create a list with range of x-axis values
-xvals = [i + 0.5 for i in range(len(site_types) + 1)]
-# Set a buffer around the edge of the x-axis
-plt.xlim([min(xvals)- 0.5, max(xvals)+ 0.5])
+    # create a list of colors (seee http://colorbrewer2.org/)
+    color_scheme = ['#8856a7', '#9ebcda', '#e0ecf4']
+
+    # color boxes for the different sites
+    i = 0    
+    # change box, whisker color to black
+    for box in bp['boxes']:
+        # change line color
+        box.set(color = 'black', linewidth = 1.5)
+        box.set(facecolor = color_scheme[i])
+        # upate color
+        i += 1
+    # change whisker color ro black
+    for wk in bp['whiskers']:
+        wk.set(color = 'black', linestyle = '-', linewidth = 1.5)
+    # change color of the caps
+    for cap in bp['caps']:
+        cap.set(color = 'black', linewidth = 1.5)
+    # change the color and line width of the medians
+    for median in bp['medians']:
+        median.set(color = 'black', linewidth = 1.5)
+    
+    # restrict the x and y axis to the range of data
+    ax.set_ylim([0, 0.08])
+    # create a list with range of x-axis values
+    xvals = [i + 0.5 for i in range(len(site_types) + 1)]
+    # Set a buffer around the edge of the x-axis
+    plt.xlim([min(xvals)- 0.5, max(xvals)+ 0.5])
+
+
+############################
+elif graphtype == 'bar':
+    width = 0.4
+    ind = np.arange(len(alldata))
+    Means = [np.mean(i) for i in alldata]
+    SEM = []
+    for i in alldata:
+        SEM.append(np.std(i) / math.sqrt(len(i)))
+    # use a bar plot
+    graph = ax.bar(ind, Means, width, yerr = SEM,
+                   color = ['#8856a7', '#9ebcda', '#e0ecf4'], labels = site_types, 
+                   linewidth = 1.5, error_kw=dict(elinewidth=1.5, ecolor='black', markeredgewidth = 1.5))               
+    ax.margins(0.05)
+    # restrict the x and y axis to the range of data
+    ax.set_ylim([0, 0.025])
+
+###########################
 
 # do not show ticks
 plt.tick_params(
@@ -132,7 +158,6 @@ plt.tick_params(
     labelsize = 10,
     direction = 'out')
 
-   
 # Set the tick labels font name
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
@@ -141,24 +166,30 @@ for label in ax.get_yticklabels():
 ax.set_ylabel('Nucleotide polymorphism\n', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
 ax.set_xlabel('Phylogenic conservation', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
 
-# add labels to x-ticks, rotate and align right
+# add labels to x-ticks
 ax.set_xticklabels(site_types, ha = 'center', size = 10, fontname = 'Arial')
 
 # remove lines around the frame
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.spines['left'].set_visible(False)
-ax.spines['bottom'].set_visible(False)
+
+if graphtype == 'box':
+    ax.spines['bottom'].set_visible(False)
+elif graphtype == 'bar':
+    ax.spines['bottom'].set_visible(True)
+    # offset the spines
+    for spine in ax.spines.values():
+        spine.set_position(('outward', 5))
 
 # add a light grey horizontal grid to the plot, semi-transparent, 
 ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
 # hide these grids behind plot objects
 ax.set_axisbelow(True)
 
-
 # compare mean differences among conservation levels
 for i in range(len(alldata) -1):
-    for j in range(i+1, len(len(alldata))):
+    for j in range(i+1, len(alldata)):
         # get the P value of Wilcoxon rank sum test
         Pval = stats.ranksums(alldata[i], alldata[j])[1]
         # get stars for significance
@@ -182,11 +213,10 @@ for i in range(len(alldata) -1):
 #                    verticalalignment='center', color = 'grey', fontname = 'Arial')
 
 
-
-
-
-
-# save figure
-fig.savefig('DiversityMatureConservation.pdf', bbox_inches = 'tight')
-    
+if graphtype == 'box':
+    # save figure
+    fig.savefig('DiversityMatureConservation_box.pdf', bbox_inches = 'tight')
+elif graphtype == 'bar':
+    # save figure
+    fig.savefig('DiversityMatureConservation_bar.pdf', bbox_inches = 'tight')
 
