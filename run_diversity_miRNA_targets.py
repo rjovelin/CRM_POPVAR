@@ -4,7 +4,10 @@ Created on Sat Aug 15 23:09:46 2015
 
 @author: Richard
 """
-
+# use Agg backend on server without X server
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 from manipulate_sequences import *
 from sliding_windows import *
 from sites_with_coverage import *
@@ -14,6 +17,7 @@ from genomic_coordinates import *
 import numpy as np
 from scipy import stats
 import math
+
 
 # convert genome fasta to dict
 genome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
