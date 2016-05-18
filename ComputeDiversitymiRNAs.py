@@ -227,7 +227,7 @@ ax.set_axisbelow(True)
 
 # compare mean differences among conservation levels
 for i in range(len(alldata) -1):
-    for j in range(i+1, len(len(alldata))):
+    for j in range(i+1, len(alldata)):
         # get the P value of Wilcoxon rank sum test
         Pval = stats.ranksums(alldata[i], alldata[j])[1]
         # get stars for significance
@@ -239,24 +239,20 @@ for i in range(len(alldata) -1):
             P = '**'
         elif Pval < 0.001:
             P = '***'
-        
         print(site_types[i], site_types[j], Pval)    
         
+# I already determined that all site categories are significantly different
+# using Wilcoxon rank sum tests, so we need now to add letters to show significance
 
+# annotate figure to add significance
+# get the x and y coordinates
+y_pos = [0.15, 0.05, 0.03, 0.05]
+x_pos = [i for i in range(len(site_types))]
+diff = ['A', 'B', 'C', 'D']
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+for i in range(len(diff)):
+    ax.text(x_pos[i], y_pos[i], diff[i], horizontalalignment='center',
+            verticalalignment='center', color = 'black', fontname = 'Arial')
 
 # give more space to the y labels
 fig.subplots_adjust(left=0.2)
