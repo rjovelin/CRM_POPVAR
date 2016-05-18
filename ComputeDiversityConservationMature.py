@@ -124,7 +124,7 @@ if graphtype == 'box':
     # create a list with range of x-axis values
     xvals = [i + 0.5 for i in range(len(site_types) + 1)]
     # Set a buffer around the edge of the x-axis
-    plt.xlim([min(xvals)- 0.5, max(xvals)+ 0.5])
+    plt.xlim([-0.3, len(site_types) + 0.3])
 
 
 ############################
@@ -137,7 +137,7 @@ elif graphtype == 'bar':
         SEM.append(np.std(i) / math.sqrt(len(i)))
     # use a bar plot
     graph = ax.bar(ind, Means, width, yerr = SEM,
-                   color = ['#8856a7', '#9ebcda', '#e0ecf4'], labels = site_types, 
+                   color = ['#8856a7', '#9ebcda', '#e0ecf4'],  
                    linewidth = 1.5, error_kw=dict(elinewidth=1.5, ecolor='black', markeredgewidth = 1.5))               
     ax.margins(0.05)
     # restrict the x and y axis to the range of data
