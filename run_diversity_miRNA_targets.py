@@ -98,13 +98,10 @@ for gene in target_coord:
 
 # compare diversity between targetsm REP and SYN
 # make a list of theta lists
-alldata = [REP_theta, SYN_theta, targets_theta]
+alldata = [SYN_theta, REP_theta, targets_theta]
 # make a list of site categories
-site_types = ['Rep', 'Syn', 'Targets']
+site_types = ['Syn', 'Rep', 'Targets']
 
-
-
-##########################################
 
 # create figure
 fig = plt.figure(1, figsize = (2,2))
@@ -137,8 +134,8 @@ if graphtype == 'box':
     for median in bp['medians']:
         median.set(color = 'black', linewidth = 1.5)
     
-#    # restrict the x and y axis to the range of data
-#    ax.set_ylim([0, 0.07])
+    # restrict the x and y axis to the range of data
+    ax.set_ylim([0, 0.14])
 
 elif graphtype == 'bar':
     width = 0.8
@@ -152,8 +149,8 @@ elif graphtype == 'bar':
            color = ['#2ca25f', '#99d8c9', '#e5f5f9'], linewidth = 1.5,
            error_kw=dict(elinewidth=1.5, ecolor='black', markeredgewidth = 1.5))               
     
-#    # restrict the x and y axis to the range of data
-#    ax.set_ylim([0, 0.025])
+    # restrict the x and y axis to the range of data
+    ax.set_ylim([0, 0.05])
 
 # remove lines around the frame
 ax.spines['top'].set_visible(False)
@@ -170,7 +167,7 @@ elif graphtype == 'bar':
 # set up tick positions and labels
 if graphtype == 'box':
     # set x tick positions
-    xtickpos = [i + 0.5 for i in range(len(alldata))]
+    xtickpos = [i + 1 for i in range(len(alldata))]
 elif graphtype == 'bar':
     # set x tick positions
     xtickpos = [i + width/2 for i in range(len(alldata))]
@@ -190,9 +187,9 @@ plt.tick_params(
     direction = 'out')
 
 if graphtype == 'box':
-    plt.xticks(xtickpos, site_types, rotation = 20, ha = 'center', size = 10, fontname = 'Arial')
+    plt.xticks(xtickpos, site_types, ha = 'center', size = 10, fontname = 'Arial')
 elif graphtype == 'bar':
-    plt.xticks(xtickpos, site_types, rotation = 20, ha = 'right', size = 10, fontname = 'Arial')
+    plt.xticks(xtickpos, site_types, ha = 'center', size = 10, fontname = 'Arial')
 
 # Set the tick labels font name
 for label in ax.get_yticklabels():
@@ -232,10 +229,10 @@ for i in range(len(alldata) -1):
 # annotate figure to add significance
 # get the x and y coordinates
 if graphtype == 'bar':
-    y_pos = [0.004, 0.0125, 0.026]
+    y_pos = [0.055, 0.015, 0.035]
     x_pos = [i + width/2 for i in range(len(site_types))]
 elif graphtype == 'box':
-    y_pos = [0.035, 0.035, 0.065]
+    y_pos = [0.145, 0.05, 0.11]
     x_pos = [i + 1 for i in range(len(site_types))]
 diff = ['A', 'B', 'C']
 
