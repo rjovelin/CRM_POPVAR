@@ -122,13 +122,8 @@ if graphtype == 'box':
     
     # restrict the x and y axis to the range of data
     ax.set_ylim([0, 0.07])
-    # create a list with range of x-axis values
-    #xvals = [i + 0.5 for i in range(len(site_types) + 1)]
-    # Set a buffer around the edge of the x-axis
-    #plt.xlim([-0.1, len(site_types) + 0.1])
 
 
-############################
 elif graphtype == 'bar':
     width = 0.8
     ind = np.arange(len(alldata))
@@ -145,8 +140,19 @@ elif graphtype == 'bar':
     # restrict the x and y axis to the range of data
     ax.set_ylim([0, 0.025])
 
-###########################
+# remove lines around the frame
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_visible(False)
+if graphtype == 'box':
+    ax.spines['bottom'].set_visible(False)
+elif graphtype == 'bar':
+    ax.spines['bottom'].set_visible(True)
+    # offset the spines
+    for spine in ax.spines.values():
+        spine.set_position(('outward', 5))
 
+# set up tick positions and labels
 if graphtype == 'box':
     # set x tick positions
     xtickpos = [i + 0.5 for i in range(len(alldata))]
@@ -154,7 +160,6 @@ elif graphtype == 'bar':
     # set x tick positions
     xtickpos = [i + width/2 for i in range(len(alldata))]
 ax.set_xticks(xtickpos)
-
 
 # do not show ticks
 plt.tick_params(
@@ -169,14 +174,10 @@ plt.tick_params(
     labelsize = 10,
     direction = 'out')
 
-# add labels to x-ticks
-if graphtype == 'bar':
-    ax.set_xticklabels(site_types, rotation = 20, ha = 'center', size = 10, fontname = 'Arial')
-elif graphtype == 'box':
+if graphtype == 'box':
     plt.xticks(xtickpos, site_types, rotation = 20, ha = 'center', size = 10, fontname = 'Arial')
-
-# add margins
-#ax.margins(0.05)
+elif graphtype == 'bar':
+    plt.xticks(xtickpos, site_types, rotation = 20, ha = 'right', size = 10, fontname = 'Arial')
 
 # Set the tick labels font name
 for label in ax.get_yticklabels():
@@ -186,18 +187,8 @@ for label in ax.get_yticklabels():
 ax.set_ylabel('Nucleotide polymorphism', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
 ax.set_xlabel('Phylogenetic conservation', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
 
-# remove lines around the frame
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_visible(False)
-
-if graphtype == 'box':
-    ax.spines['bottom'].set_visible(False)
-elif graphtype == 'bar':
-    ax.spines['bottom'].set_visible(True)
-    # offset the spines
-    for spine in ax.spines.values():
-        spine.set_position(('outward', 5))
+# add margins
+ax.margins(0.05)
 
 # add a light grey horizontal grid to the plot, semi-transparent, 
 ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
