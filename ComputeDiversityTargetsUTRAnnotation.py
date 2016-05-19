@@ -171,10 +171,10 @@ ax.annotate("", xy=(ind[0] + width/2, 0.026), xycoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
 if P == 'N.S.':
-    ax.text(ind[0] + 0.75, 0.032, P, horizontalalignment='center',
+    ax.text(ind[0] + 0.75, 0.029, P, horizontalalignment='center',
                 verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 else:
-    ax.text(ind[0] + 0.75, 0.032, P, horizontalalignment='center',
+    ax.text(ind[0] + 0.75, 0.029, P, horizontalalignment='center',
                 verticalalignment='center', color = 'grey', fontname = 'Arial')
 
 # save figure
