@@ -88,14 +88,15 @@ alldata = [caeno_mir_theta, crmcla_mir_theta, crm_mir_theta]
 site_types = ['Conserved', 'Restricted', 'Specific']
 
 # create figure
-fig = plt.figure(1, figsize = (3,2))
+fig = plt.figure(1, figsize = (2,2))
 # add a plot to figure (1 row, 1 column, 1st plot)
 ax = fig.add_subplot(1, 1, 1)
 
 # check graphich type in option
 if graphtype == 'box':
+    width = 0.7
     # use a boxplot
-    bp = ax.boxplot(alldata, showmeans = False, showfliers = False, widths = 0.7, labels = site_types, patch_artist = True) 
+    bp = ax.boxplot(alldata, showmeans = False, showfliers = False, widths = width, labels = site_types, patch_artist = True) 
     
     # create a list of colors (seee http://colorbrewer2.org/)
     color_scheme = ['#8856a7', '#9ebcda', '#e0ecf4']
@@ -120,30 +121,37 @@ if graphtype == 'box':
         median.set(color = 'black', linewidth = 1.5)
     
     # restrict the x and y axis to the range of data
-    ax.set_ylim([0, 0.08])
+    ax.set_ylim([0, 0.07])
     # create a list with range of x-axis values
-    xvals = [i + 0.5 for i in range(len(site_types) + 1)]
+    #xvals = [i + 0.5 for i in range(len(site_types) + 1)]
     # Set a buffer around the edge of the x-axis
-    plt.xlim([-0.3, len(site_types) + 0.3])
+    #plt.xlim([-0.1, len(site_types) + 0.1])
 
 
 ############################
 elif graphtype == 'bar':
-    width = 0.4
+    width = 0.8
     ind = np.arange(len(alldata))
     Means = [np.mean(i) for i in alldata]
     SEM = []
     for i in alldata:
         SEM.append(np.std(i) / math.sqrt(len(i)))
     # use a bar plot
-    graph = ax.bar(ind, Means, width, yerr = SEM,
-                   color = ['#8856a7', '#9ebcda', '#e0ecf4'],  
-                   linewidth = 1.5, error_kw=dict(elinewidth=1.5, ecolor='black', markeredgewidth = 1.5))               
-    ax.margins(0.05)
+    ax.bar(ind, Means, width, yerr = SEM,
+           color = ['#8856a7', '#9ebcda', '#e0ecf4'],
+           label = site_types,
+           linewidth = 1.5, error_kw=dict(elinewidth=1.5, ecolor='black', markeredgewidth = 1.5))               
+    
     # restrict the x and y axis to the range of data
     ax.set_ylim([0, 0.025])
 
 ###########################
+
+ax.margins(0.05)
+
+
+ax.set_xticks([i + width / 2 for i in range(len(alldata))])
+
 
 # do not show ticks
 plt.tick_params(
@@ -158,16 +166,17 @@ plt.tick_params(
     labelsize = 10,
     direction = 'out')
 
+# add labels to x-ticks
+ax.set_xticklabels(site_types, rotation = 20, ha = 'center', size = 10, fontname = 'Arial')
+#plt.xticks(rotation = 30)
+
 # Set the tick labels font name
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
 
 # write label for x and y axis
-ax.set_ylabel('Nucleotide polymorphism\n', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
+ax.set_ylabel('Nucleotide polymorphism', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
 ax.set_xlabel('Phylogenic conservation', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
-
-# add labels to x-ticks
-ax.set_xticklabels(site_types, ha = 'center', size = 10, fontname = 'Arial')
 
 # remove lines around the frame
 ax.spines['top'].set_visible(False)
@@ -201,16 +210,34 @@ for i in range(len(alldata) -1):
             P = '**'
         elif Pval < 0.001:
             P = '***'
-        
         print(site_types[i], site_types[j], Pval)    
         
-#        # add stars for significance
-#        if P == 'N.S.':
-#            ax.text(i + width/2, y_max + abs(y_max - y_min)*0.03, P, horizontalalignment='center',
-#                    verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
-#        else:
-#            ax.text(i + width/2, y_max + abs(y_max - y_min)*0.01, P, horizontalalignment='center',
-#                    verticalalignment='center', color = 'grey', fontname = 'Arial')
+# I already determined that all site categories are significantly different
+# using Wilcoxon rank sum tests, so we need now to add letters to show significance
+
+# annotate figure to add significance
+# get the x and y coordinates
+y_pos = [0.15, 0.05, 0.03, 0.05]
+x_pos = [i + width/2 for i in range(len(site_types))]
+diff = ['A', 'B', 'C']
+
+for i in range(len(diff)):
+    ax.text(x_pos[i], y_pos[i], diff[i], horizontalalignment='center',
+            verticalalignment='center', color = 'black', fontname = 'Arial', size = 10)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if graphtype == 'box':
