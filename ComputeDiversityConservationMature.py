@@ -94,9 +94,9 @@ ax = fig.add_subplot(1, 1, 1)
 
 # check graphich type in option
 if graphtype == 'box':
-    width = 0.7
+    width = 0.8
     # use a boxplot
-    bp = ax.boxplot(alldata, showmeans = False, showfliers = False, widths = width, labels = site_types, patch_artist = True) 
+    bp = ax.boxplot(alldata, showmeans = False, showfliers = False, widths = width, patch_artist = True) 
     
     # create a list of colors (seee http://colorbrewer2.org/)
     color_scheme = ['#8856a7', '#9ebcda', '#e0ecf4']
@@ -139,7 +139,7 @@ elif graphtype == 'bar':
     # use a bar plot
     ax.bar(ind, Means, width, yerr = SEM,
            color = ['#8856a7', '#9ebcda', '#e0ecf4'],
-           label = site_types,
+           
            linewidth = 1.5, error_kw=dict(elinewidth=1.5, ecolor='black', markeredgewidth = 1.5))               
     
     # restrict the x and y axis to the range of data
@@ -147,10 +147,13 @@ elif graphtype == 'bar':
 
 ###########################
 
-ax.margins(0.05)
-
-
-ax.set_xticks([i + width / 2 for i in range(len(alldata))])
+if graphtype == 'box':
+    # set x tick positions
+    xtickpos = [i + 0.5 for i in range(len(alldata))]
+elif graphtype == 'bar':
+    # set x tick positions
+    xtickpos = [i + width/2 for i in range(len(alldata))]
+ax.set_xticks(xtickpos)
 
 
 # do not show ticks
@@ -167,8 +170,13 @@ plt.tick_params(
     direction = 'out')
 
 # add labels to x-ticks
-ax.set_xticklabels(site_types, rotation = 20, ha = 'center', size = 10, fontname = 'Arial')
-#plt.xticks(rotation = 30)
+if graphtype == 'bar':
+    ax.set_xticklabels(site_types, rotation = 20, ha = 'center', size = 10, fontname = 'Arial')
+elif graphtype == 'box':
+    plt.xticks(xtickpos, site_types, rotation = 20, ha = 'center', size = 10, fontname = 'Arial')
+
+# add margins
+#ax.margins(0.05)
 
 # Set the tick labels font name
 for label in ax.get_yticklabels():
@@ -176,7 +184,7 @@ for label in ax.get_yticklabels():
 
 # write label for x and y axis
 ax.set_ylabel('Nucleotide polymorphism', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
-ax.set_xlabel('Phylogenic conservation', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_xlabel('Phylogenetic conservation', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
 
 # remove lines around the frame
 ax.spines['top'].set_visible(False)
@@ -217,28 +225,17 @@ for i in range(len(alldata) -1):
 
 # annotate figure to add significance
 # get the x and y coordinates
-y_pos = [0.15, 0.05, 0.03, 0.05]
-x_pos = [i + width/2 for i in range(len(site_types))]
+if graphtype == 'bar':
+    y_pos = [0.004, 0.0125, 0.026]
+    x_pos = [i + width/2 for i in range(len(site_types))]
+elif graphtype == 'box':
+    y_pos = [0.035, 0.035, 0.065]
+    x_pos = [i + 1 for i in range(len(site_types))]
 diff = ['A', 'B', 'C']
 
 for i in range(len(diff)):
     ax.text(x_pos[i], y_pos[i], diff[i], horizontalalignment='center',
             verticalalignment='center', color = 'black', fontname = 'Arial', size = 10)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 if graphtype == 'box':
     # save figure
