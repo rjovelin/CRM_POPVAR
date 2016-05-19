@@ -85,11 +85,11 @@ site_types = ['Non-UTR', 'UTR']
 
 
 # create figure
-fig = plt.figure(1, figsize = (1.5,2))
+fig = plt.figure(1, figsize = (1.2,2))
 # add a plot to figure (1 row, 1 column, 1st plot)
 ax = fig.add_subplot(1, 1, 1)
 
-width = 0.5
+width = 0.6
 ind = np.arange(len(alldata))
 Means = [np.mean(i) for i in alldata]
 SEM = []
@@ -129,7 +129,7 @@ plt.tick_params(
     labelsize = 10,
     direction = 'out')
 
-plt.xticks(xtickpos, site_types, ha = 'right', size = 10, fontname = 'Arial')
+plt.xticks(xtickpos, site_types, ha = 'center', size = 10, fontname = 'Arial')
 
 # Set the tick labels font name
 for label in ax.get_yticklabels():
@@ -160,23 +160,22 @@ elif Pval < 0.01 and Pval > 0.001:
 elif Pval < 0.001:
     P = '***'
 print(site_types[0], site_types[1], Pval)    
-        
-## I already determined that all site categories are significantly different
-## using Wilcoxon rank sum tests, so we need now to add letters to show significance
-#
-## annotate figure to add significance
-## get the x and y coordinates
-#if graphtype == 'bar':
-#    y_pos = [0.004, 0.0125, 0.026]
-#    x_pos = [i + width/2 for i in range(len(site_types))]
-#elif graphtype == 'box':
-#    y_pos = [0.035, 0.035, 0.065]
-#    x_pos = [i + 1 for i in range(len(site_types))]
-#diff = ['A', 'B', 'C']
-#
-#for i in range(len(diff)):
-#    ax.text(x_pos[i], y_pos[i], diff[i], horizontalalignment='center',
-#            verticalalignment='center', color = 'black', fontname = 'Arial', size = 10)
+   
+# I already determined that all site categories are significantly different
+# using Wilcoxon rank sum tests, so we need now to add letters to show significance
+
+# annotate figure to add significance
+# add bracket
+ax.annotate("", xy=(ind[0] + width/2, 0.026), xycoords='data',
+            xytext=(ind[1] + width/2, 0.026), textcoords='data',
+            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
+# add stars for significance
+if P == 'N.S.':
+    ax.text(ind[0] + 1.5, 0.032, P, horizontalalignment='center',
+                verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
+else:
+    ax.text(ind[0] + 1.5, 0.032, P, horizontalalignment='center',
+                verticalalignment='center', color = 'grey', fontname = 'Arial')
 
 # save figure
 fig.savefig('DiversityTargetsDownstreamUTR.pdf', bbox_inches = 'tight')
