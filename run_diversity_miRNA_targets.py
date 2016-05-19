@@ -4,6 +4,10 @@ Created on Sat Aug 15 23:09:46 2015
 
 @author: Richard
 """
+
+# use this script to plot a graph of nucleotide diversity at miRNA target sites and other types of sites
+
+
 # use Agg backend on server without X server
 import matplotlib as mpl
 mpl.use('Agg')
@@ -64,12 +68,9 @@ print('REP', np.mean(REP_theta), min(REP_theta), max(REP_theta))
 print('done computing theta at replacement sites')
 
 
-# compute diversity for all mirna targets, remanei-specific, crem-cla and cremclacel conserved
+# compute diversity for all mirna targets
 # create a list theta at target sites
-targets_theta, crm_targets_theta, crmcla_targets_theta, crmclacel_targets_theta =  [], [], [], []
-# from downstream or UTR
-nonUTR_targets_theta, UTR_targets_theta = [], []
-
+targets_theta =  [] 
 # loop over gene in target cood
 for gene in target_coord:
     # loop over targets in gene
@@ -91,54 +92,12 @@ for gene in target_coord:
             if theta != 'NA':
                 # add to list 
                 targets_theta.append(theta)
-                # check conservation
-                if conservation == 'crm':
-                    # add theta to specific targets
-                    crm_targets_theta.append(theta)
-                elif conservation == 'crm:cla':
-                    # add theta to the crm-cla conservaed targets
-                    crmcla_targets_theta.append(theta)
-                elif conservation == 'crm:cla:cel':
-                    # add theta to the crm-la-cel conserved targets
-                    crmclacel_targets_theta.append(theta)
-                # check the type of utr
-                if utr == 'UTR':
-                    # add theta to the annotated UTR
-                    UTR_targets_theta.append(theta)
-                elif utr == 'downstream':
-                    # add theta to the predicted UTR
-                    nonUTR_targets_theta.append(theta)
-
-
-a = [targets_theta, crm_targets_theta, crmcla_targets_theta, crmclacel_targets_theta, nonUTR_targets_theta, UTR_targets_theta]
-b = ['all', 'crm', 'crmcla', 'crmclacel', 'nonutr', 'utr']
-
-for i in range(len(a)):
-    print(b[i], np.mean(a[i]), min(a[i]), max(a[i]), sep = '\t')
-
-
-
-
-
-                
-print('done computing theta for target sites')
-print('all targets: ', len(targets_theta))
-print('remanei-specific targets:' , len(crm_targets_theta))
-print('remanei-latens conserved targets: ', len(crmcla_targets_theta))
-print('remanei-latens-elegans conserved targets: ', len(crmclacel_targets_theta))
-print('targets in UTR: ', len(UTR_targets_theta))
-print('targets in predicted UTR: ', len(nonUTR_targets_theta))
-            
-
-# open file to write results
-summary_file = open('summary_diversity_target_sites.txt', 'w')
 
 # compare diversity between targetsm REP and SYN
-
 # make a list of theta lists
-site_theta = [REP_theta, SYN_theta, targets_theta]
+alldata = [REP_theta, SYN_theta, targets_theta]
 # make a liust of site categories
-site_names = ['REP', 'SYN', 'all_targets']
+site_types = ['Rep', 'Syn', 'targets']
 
 # write header in file
 summary_file.write('comparison of mean theta between protein coding genes and miRNA target sites\n')
