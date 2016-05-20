@@ -87,7 +87,6 @@ diversity = {}
 # loop over mirna name in {name : [chromo, start, end, orientation, conservation]}
 for name in miR_coord:
     chromo, start, end = miR_coord[name][0], miR_coord[name][1], miR_coord[name][2]
-    conservation = famCons[name]
     theta = compute_theta_non_coding(chromo_sites, chromo, start, end, 2)
     # check if theta is defined
     if theta != 'NA':
@@ -102,6 +101,15 @@ print('remove {0} mirnas with expression but no diversity'.format(len(to_remove)
 if len(to_remove) != 0:
     for mirna in to_remove:
         del mature_expression[mirna]
+# removes mirnas with no expression
+to_remove = []
+for mirna in diversity:
+    if mirna not in mature_expression:
+        to_remove.append(mirna)
+print('remove {0} mirnas with diversity but no expression'.format(len(to_remove)))        
+if len(to_remove) != 0:
+    for mirna in to_remove:
+        del diversity[mirna]
 # check that dicts have same keys
 assert mature_expression.keys() == diversity.keys(), 'expression and diversity should have same mirna keys'
 
@@ -138,7 +146,7 @@ ax.get_xaxis().tick_bottom()
 ax.get_yaxis().tick_left()
 
 # add data to plot
-ax.scatter(expression_level, mature_theta, edgecolor = 'red', facecolor = 'r', alpha = 0.8)
+ax.scatter(expression_level, mature_theta, edgecolor = '#f03b20', facecolor = '#f03b20', alpha = 0.8)
 
 # calc the trendline
 z = np.polyfit(expression_level, mature_theta, 1)
@@ -217,7 +225,7 @@ for label in ax.get_yticklabels():
 #plt.title('Heteroplasmies as a function of the {0} read depth\n'.format(read_depth), size = 12, fontname = 'Arial')  
 
 # save figure
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('testfile_' + expression + '.pdf', bbox_inches = 'tight')
     
     
  
