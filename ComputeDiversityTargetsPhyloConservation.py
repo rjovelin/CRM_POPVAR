@@ -168,7 +168,7 @@ for i in range(len(alldata) -1):
 
 # annotate figure to add significance
 # get the x and y coordinates
-y_pos = [0.0075, 0.0125, 0.028]
+y_pos = [0.0075, 0.013, 0.030]
 x_pos = [i + width/2 for i in range(len(site_types))]
 diff = ['A', 'B', 'C']
 
