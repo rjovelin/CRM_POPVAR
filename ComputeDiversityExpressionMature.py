@@ -220,7 +220,7 @@ for i in range(len(alldata) -1):
 
 # annotate figure to add significance
 # get the x and y coordinates
-y_pos = [0.0142, 0.0123, 0.0045, 0.0025]
+y_pos = [0.0142, 0.0123, 0.005, 0.003]
 x_pos = [i + width/2 for i in range(len(ExpLevels))]
 diff = ['A', 'A,B', 'B,C', 'C']
 
