@@ -6,7 +6,7 @@ Created on Tue May 17 13:43:10 2016
 """
 
 
-# use this script to generate a graph comparing diversity at mirna target sites
+# use this script to generate a bar graph comparing diversity at mirna target sites
 # with different levels of phylogenetic conservation
 
 # use Agg backend on server without X server
@@ -23,9 +23,6 @@ import numpy as np
 from scipy import stats
 import math
 import sys
-
-
-graphtype = sys.argv[1]
 
 
 # convert genome fasta to dict
@@ -91,69 +88,32 @@ fig = plt.figure(1, figsize = (2,2))
 # add a plot to figure (1 row, 1 column, 1st plot)
 ax = fig.add_subplot(1, 1, 1)
 
-# check graphich type in option
-if graphtype == 'box':
-    width = 0.8
-    # use a boxplot
-    bp = ax.boxplot(alldata, showmeans = False, showfliers = False, widths = width, patch_artist = True) 
-    # create a list of colors (seee http://colorbrewer2.org/)
-    color_scheme = ['#2ca25f', '#99d8c9', '#e5f5f9']
-    # color boxes for the different sites
-    i = 0    
-    # change box, whisker color to black
-    for box in bp['boxes']:
-        # change line color
-        box.set(color = 'black', linewidth = 1.5)
-        box.set(facecolor = color_scheme[i])
-        # upate color
-        i += 1
-    # change whisker color ro black
-    for wk in bp['whiskers']:
-        wk.set(color = 'black', linestyle = '-', linewidth = 1.5)
-    # change color of the caps
-    for cap in bp['caps']:
-        cap.set(color = 'black', linewidth = 1.5)
-    # change the color and line width of the medians
-    for median in bp['medians']:
-        median.set(color = 'black', linewidth = 1.5)
+width = 0.8
+ind = np.arange(len(alldata))
+Means = [np.mean(i) for i in alldata]
+SEM = []
+for i in alldata:
+    SEM.append(np.std(i) / math.sqrt(len(i)))
+# use a bar plot
+ax.bar(ind, Means, width, yerr = SEM,
+       color = ['#2ca25f', '#99d8c9', '#e5f5f9'], linewidth = 1.5,
+       error_kw=dict(elinewidth=1.5, ecolor='black', markeredgewidth = 1.5))               
     
-#    # restrict the x and y axis to the range of data
-#    ax.set_ylim([0, 0.14])
-
-elif graphtype == 'bar':
-    width = 0.8
-    ind = np.arange(len(alldata))
-    Means = [np.mean(i) for i in alldata]
-    SEM = []
-    for i in alldata:
-        SEM.append(np.std(i) / math.sqrt(len(i)))
-    # use a bar plot
-    ax.bar(ind, Means, width, yerr = SEM,
-           color = ['#2ca25f', '#99d8c9', '#e5f5f9'], linewidth = 1.5,
-           error_kw=dict(elinewidth=1.5, ecolor='black', markeredgewidth = 1.5))               
-    
-#    # restrict the x and y axis to the range of data
-#    ax.set_ylim([0, 0.05])
+# restrict the x and y axis to the range of data
+ax.set_ylim([0, 0.030])
 
 # remove lines around the frame
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.spines['left'].set_visible(False)
-if graphtype == 'box':
-    ax.spines['bottom'].set_visible(False)
-elif graphtype == 'bar':
-    ax.spines['bottom'].set_visible(True)
-    # offset the spines
-    for spine in ax.spines.values():
-        spine.set_position(('outward', 5))
+ax.spines['bottom'].set_visible(True)
+# offset the spines
+for spine in ax.spines.values():
+    spine.set_position(('outward', 5))
 
 # set up tick positions and labels
-if graphtype == 'box':
-    # set x tick positions
-    xtickpos = [i + 1 for i in range(len(alldata))]
-elif graphtype == 'bar':
-    # set x tick positions
-    xtickpos = [i + width/2 for i in range(len(alldata))]
+# set x tick positions
+xtickpos = [i + width/2 for i in range(len(alldata))]
 ax.set_xticks(xtickpos)
 
 # do not show ticks
@@ -169,18 +129,15 @@ plt.tick_params(
     labelsize = 10,
     direction = 'out')
 
-if graphtype == 'box':
-    plt.xticks(xtickpos, site_types, ha = 'center', size = 10, fontname = 'Arial')
-elif graphtype == 'bar':
-    plt.xticks(xtickpos, site_types, ha = 'center', size = 10, fontname = 'Arial')
+plt.xticks(xtickpos, site_types, rotation = 20, ha = 'center', size = 10, fontname = 'Arial')
 
 # Set the tick labels font name
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
 
 # write label for x and y axis
-ax.set_ylabel('Nucleotide polymorphism', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
-ax.set_xlabel('Site categories', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_ylabel('Diversity at target sites', color = 'black',  size = 10, ha = 'center', fontname = 'Arial')
+ax.set_xlabel('Phylogenetic conservation', color = 'black', size = 10, ha = 'center', fontname = 'Arial')
 
 # add margins
 ax.margins(0.05)
@@ -206,37 +163,19 @@ for i in range(len(alldata) -1):
             P = '***'
         print(site_types[i], site_types[j], Pval)    
         
-## I already determined that all site categories are significantly different
-## using Wilcoxon rank sum tests, so we need now to add letters to show significance
-#
-## annotate figure to add significance
-## get the x and y coordinates
-#if graphtype == 'bar':
-#    y_pos = [0.055, 0.015, 0.035]
-#    x_pos = [i + width/2 for i in range(len(site_types))]
-#elif graphtype == 'box':
-#    y_pos = [0.145, 0.05, 0.11]
-#    x_pos = [i + 1 for i in range(len(site_types))]
-#diff = ['A', 'B', 'C']
-#
-#for i in range(len(diff)):
-#    ax.text(x_pos[i], y_pos[i], diff[i], horizontalalignment='center',
-#            verticalalignment='center', color = 'black', fontname = 'Arial', size = 10)
+# I already determined that all site categories are significantly different
+# using Wilcoxon rank sum tests, so we need now to add letters to show significance
 
-if graphtype == 'box':
-    # save figure
-    fig.savefig('truc_box.pdf', bbox_inches = 'tight')
-elif graphtype == 'bar':
-    # save figure
-    fig.savefig('truc_bar.pdf', bbox_inches = 'tight')
+# annotate figure to add significance
+# get the x and y coordinates
+y_pos = [0.0075, 0.0125, 0.028]
+x_pos = [i + width/2 for i in range(len(site_types))]
+diff = ['A', 'B', 'C']
 
+for i in range(len(diff)):
+    ax.text(x_pos[i], y_pos[i], diff[i], horizontalalignment='center',
+            verticalalignment='center', color = 'black', fontname = 'Arial', size = 10)
 
-
-
-
-
-
-###################################################################
-
-
+# save figure
+fig.savefig('DiversityTargetsConservation.pdf', bbox_inches = 'tight')
 
