@@ -215,12 +215,16 @@ print('chromo positions', len(LG_positions))
 
 # create a dict to store theta for each widow interval
 diversity = {}
+# set up interval counter
+j = 0
 # loop over start position in LG:
 for i in LG_positions:
     # compute theta per window
     # use a large threshold > window length to accept any number of missing site  
     theta = compute_theta_non_coding(chromo_sites, chromosome, i, i + 50000, 100000)
-    diversity[i] = theta
+    diversity[j] = theta
+    # update j
+    j += 1
 print('computed diversity')
 
 # create a list of positions for which diversity is calculated, sort positions
@@ -230,11 +234,18 @@ divpos.sort()
 polymorphism = [diversity[i] for i in divpos]
 print('positions diversity windows', len(divpos))
 
+
+print('positions', positions)
+print('divpos', divpos)
+
+assert positions == divpos[:-1]
+
+
 # add another graph on top of previous one
 ax2 = ax1.twinx()
 
 # plot theta per window
-ax1.plot(divpos, polymorphism, linewidth = 1, color = '#1f78b4')
+ax2.plot(positions, polymorphism[:-1], linewidth = 1, color = '#1f78b4')
 
 ## restrict the x and y axis to the range of data
 ##ax.set_xlim([0, len(Pos)])
@@ -245,11 +256,8 @@ ax1.plot(divpos, polymorphism, linewidth = 1, color = '#1f78b4')
             
 
 # set y axis label
-ax2.set_ylabel('Nucleotide polymorphism', size = 10, ha = 'center', fontname = 'Arial')
+ax2.set_ylabel('Polymorphism', size = 10, ha = 'center', fontname = 'Arial')
  
-# add labels to x-ticks
-#ax.set_xticklabels([list of values], rotation = 30, ha = 'right', size = 10, fontname = 'Arial', family = 'sans-serif')
-
 #plt.yticks(fontsize = 10, fontname = 'Arial')
 
 ## determine tick position on x axis
@@ -263,25 +271,18 @@ ax2.set_ylabel('Nucleotide polymorphism', size = 10, ha = 'center', fontname = '
 ## set x axis label
 #ax1.set_xlabel('Position along linkage group (Mb)', size = 10, ha = 'center', fontname = 'Arial')
 #
-## remove top axes and right axes ticks
-#ax1.get_xaxis().tick_bottom()
-#ax1.get_yaxis().tick_left()
+# remove top axes and right axes ticks
+ax2.get_xaxis().tick_bottom()
+ax2.get_yaxis().tick_right()
 #
 # 
-## do not show lines around figure, keep bottow line  
-#ax1.spines["top"].set_visible(False)    
-#ax1.spines["bottom"].set_visible(True)    
-#ax1.spines["right"].set_visible(False)    
-#ax1.spines["left"].set_visible(False)      
-## offset the spines
-#for spine in ax1.spines.values():
-#  spine.set_position(('outward', 5))
-#  
-## add a light grey horizontal grid to the plot, semi-transparent, 
-#ax1.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
-## hide these grids behind plot objects
-#ax1.set_axisbelow(True)
-#
+# do not show lines around figure, keep bottow line  
+ax2.spines["top"].set_visible(False)    
+ax2.spines["bottom"].set_visible(False)    
+ax2.spines["right"].set_visible(False)    
+ax2.spines["left"].set_visible(False)      
+
+
 ## do not show ticks
 #plt.tick_params(
 #    axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
@@ -294,9 +295,11 @@ ax2.set_ylabel('Nucleotide polymorphism', size = 10, ha = 'center', fontname = '
 #    colors = 'black',
 #    labelsize = 10,
 #    direction = 'out') # ticks are outside the frame when bottom = 'on
-#
-#
 
+
+# Set the tick labels font name
+for label in ax2.get_yticklabels():
+    label.set_fontname('Arial')
 
 # save figure
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
