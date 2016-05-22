@@ -157,12 +157,9 @@ ax1.set_ylabel(YaxisText, size = 10, ha = 'center', fontname = 'Arial')
 
 # determine tick position on x axis
 xpos =  [j for j in range(0, len(positions) + 50, 50)]
-print(xpos)
 # convert interval windows numbers to genomic positions
 xtext = list(map(lambda x : (x * 50000) / 1000000, xpos))
-print(xtext)
 xtext = list(map(lambda x : str(x), xtext))
-print(xtext)
 # set up tick positions and labels
 plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
 
@@ -202,50 +199,6 @@ plt.tick_params(
     direction = 'out') # ticks are outside the frame when bottom = 'on
       
 
-
-########################### REMOVE function
-
-## use this function to generate save the number of pirnas per window
-#def cluster_pirnas(pirna_start, genome, chromo, window_size, outputfile):
-#    '''
-#    (dict, dict, str, int, file) -> file
-#    Take a dictionnary with chromo: list of start position pairs, a dict
-#    with chromo : sequence pairs, the focal chromosome, the size of the window,
-#    and save the number of pirnas per window in outputfile
-#    '''
-#    
-#    # make list of size window that contains only 0s:
-#    # each value in the list is the count of position for the range [0 - window[ etc
-#    range_counts = [0] * (len(genome[chromo]) // window_size)
-#    
-#    # loop over starting positions
-#    for start in pirna_start[chromo]:
-#        # determine the index in the list range_count where the position should be added
-#        which_range = start // window_size
-#        if which_range == len(range_counts):
-#            which_range -= 1
-#        # count pirnas
-#        range_counts[which_range] += 1
-#        
-#    # open file for writing
-#    newfile = open(outputfile, 'w')
-#    # write header
-#    newfile.write('Range' + '\t' + 'Lower_point' + '\t' + 'Midpoint' + '\t' + 'Higher_point' + '\t' + 'Count' + '\t' + '\n')
-#        
-#    # loop over indices of list
-#    for i in range(len(range_counts)):
-#        newfile.write('[' + str(i * window_size) + '-' + str((i * window_size) + window_size -1) + ']' + '\t')
-#        newfile.write(str(i * window_size) + '\t')
-#        newfile.write(str(int(((i * window_size) + window_size) / 2)) + '\t')
-#        newfile.write(str((i * window_size) + window_size) + '\t')
-#        newfile.write(str(range_counts[i]) + '\n')
-#        
-#    newfile.close()
-
-
-
-
-
 # compute theta per 50 Kb window
 # get the allele counts for all sites with coverage, keep all sites 
 if strains == 'noPB':
@@ -270,12 +223,79 @@ for i in LG_positions:
     diversity[i] = theta
 print('computed diversity')
 
-
-
+# create a list of positions for which diversity is calculated, sort positions
+divpos = [i for i in diversity]
+divpos.sort()
+# create parallel list with theta values
+polymorphism = [diversity[i] for i in divpos]
+print('positions diversity windows', len(divpos))
 
 # add another graph on top of previous one
 ax2 = ax1.twinx()
 
+# plot theta per window
+ax1.plot(divpos, polymorphism, linewidth = 1, color = '#1f78b4')
+
+## restrict the x and y axis to the range of data
+##ax.set_xlim([0, len(Pos)])
+#if density == 'genes':
+#    ax1.set_ylim([0,25])
+#elif density == 'repeats':
+#    ax1.set_ylim([0, 200])
+            
+
+# set y axis label
+ax2.set_ylabel('Nucleotide polymorphism', size = 10, ha = 'center', fontname = 'Arial')
+ 
+# add labels to x-ticks
+#ax.set_xticklabels([list of values], rotation = 30, ha = 'right', size = 10, fontname = 'Arial', family = 'sans-serif')
+
+#plt.yticks(fontsize = 10, fontname = 'Arial')
+
+## determine tick position on x axis
+#xpos =  [j for j in range(0, len(positions) + 50, 50)]
+## convert interval windows numbers to genomic positions
+#xtext = list(map(lambda x : (x * 50000) / 1000000, xpos))
+#xtext = list(map(lambda x : str(x), xtext))
+## set up tick positions and labels
+#plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+#
+## set x axis label
+#ax1.set_xlabel('Position along linkage group (Mb)', size = 10, ha = 'center', fontname = 'Arial')
+#
+## remove top axes and right axes ticks
+#ax1.get_xaxis().tick_bottom()
+#ax1.get_yaxis().tick_left()
+#
+# 
+## do not show lines around figure, keep bottow line  
+#ax1.spines["top"].set_visible(False)    
+#ax1.spines["bottom"].set_visible(True)    
+#ax1.spines["right"].set_visible(False)    
+#ax1.spines["left"].set_visible(False)      
+## offset the spines
+#for spine in ax1.spines.values():
+#  spine.set_position(('outward', 5))
+#  
+## add a light grey horizontal grid to the plot, semi-transparent, 
+#ax1.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
+## hide these grids behind plot objects
+#ax1.set_axisbelow(True)
+#
+## do not show ticks
+#plt.tick_params(
+#    axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
+#    which='both',      # both major and minor ticks are affected
+#    bottom='on',      # ticks along the bottom edge are off
+#    top='off',         # ticks along the top edge are off
+#    right = 'off',
+#    left = 'off',          
+#    labelbottom='on', # labels along the bottom edge are off 
+#    colors = 'black',
+#    labelsize = 10,
+#    direction = 'out') # ticks are outside the frame when bottom = 'on
+#
+#
 
 
 # save figure
