@@ -6,11 +6,12 @@ Created on Thu Aug 20 13:17:35 2015
 """
 
 # use this script to plot nucleotide diversity with repeat or gene density for 
-# linkage groups LG1, LG2 and LG4
+# linkage groups LG1, LG2 or LG4
 
 # usage python3 PlotChromoWideGeneRepeatDiversity.py [options]
 #- [repeats/genes] : plot gene or repeat density along with nucleotide diversity
-
+#- [LG1/LG2/LG4] : chromo to plot
+#- [PB, noPB] : if diversity is computed using Ontario strains only (noPB) ot with all strains (PB)
 
 # use Agg backend on server without X server
 import matplotlib as mpl
@@ -30,6 +31,20 @@ from sliding_windows import *
 from sites_with_coverage import *
 from divergence import *
 
+
+# get density to plot with nucleotide diversity
+density = sys.argv[1]
+# get chromo 
+LG = sys.argv[2]
+# get corresponding chromos
+if LG == 'LG1':
+    chromosome = 'linkage_group_1'
+elif LG == 'LG2':
+    chromosome = 'linkage_group_2'
+elif LG == 'LG4':
+    chromosome = 'linkage_group_4'
+# choose strains to compute diversity
+strains = sys.argv[3]
 
 # convert genome fasta to dict
 genome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
@@ -87,207 +102,181 @@ for chromo in repeats_start:
 print('got the repeats\'s first positions')
 
 
-
-
-########################## REMOVE function
-
-# use this function to generate save the number of pirnas per window
-def cluster_pirnas(pirna_start, genome, chromo, window_size, outputfile):
-    '''
-    (dict, dict, str, int, file) -> file
-    Take a dictionnary with chromo: list of start position pairs, a dict
-    with chromo : sequence pairs, the focal chromosome, the size of the window,
-    and save the number of pirnas per window in outputfile
-    '''
-    
-    # make list of size window that contains only 0s:
-    # each value in the list is the count of position for the range [0 - window[ etc
-    range_counts = [0] * (len(genome[chromo]) // window_size)
-    
-    # loop over starting positions
-    for start in pirna_start[chromo]:
-        # determine the index in the list range_count where the position should be added
-        which_range = start // window_size
+# create list with count of gene o repeat in 50000 bp windows
+range_counts = [0] * (len(genome[chromosome]) // 50000)
+# check if gene or repeat density is recorded
+if density == 'repeats':
+    for start in repeats_start[chromosome]:
+        which_range = start // 50000
         if which_range == len(range_counts):
             which_range -= 1
-        # count pirnas
+        # count repeats
         range_counts[which_range] += 1
-        
-    # open file for writing
-    newfile = open(outputfile, 'w')
-    # write header
-    newfile.write('Range' + '\t' + 'Lower_point' + '\t' + 'Midpoint' + '\t' + 'Higher_point' + '\t' + 'Count' + '\t' + '\n')
-        
-    # loop over indices of list
-    for i in range(len(range_counts)):
-        newfile.write('[' + str(i * window_size) + '-' + str((i * window_size) + window_size -1) + ']' + '\t')
-        newfile.write(str(i * window_size) + '\t')
-        newfile.write(str(int(((i * window_size) + window_size) / 2)) + '\t')
-        newfile.write(str((i * window_size) + window_size) + '\t')
-        newfile.write(str(range_counts[i]) + '\n')
-        
-    newfile.close()
+elif density == 'genes':
+    for start in genes_start[chromosome]:
+        which_range = start // 50000
+        if which_range == len(range_counts):
+            which_range -= 1
+        # counts genes
+        range_counts[which_range] += 1
+
+# create a list with the position of each window interval
+positions = [i for i in range(len(range_counts))]      
+
+print('position', len(positions))
+print(LG, len(genome[chromosome]))
+print('interval length', len(genome[chromosome]) // 50000)
+
+# create figure
+fig = plt.figure(1, figsize = (4, 1))
+# add a plot to figure (1 row, 1 column, 1 plot)
+ax1 = fig.add_subplot(1, 1, 1)  
+
+# plot the repeat of gene density per window
+ax1.plot(positions, range_counts, linewidth = 1, color = '#b2df8a')
+
+# restrict the x and y axis to the range of data
+#ax.set_xlim([0, len(Pos)])
+if density == 'genes':
+    ax1.set_ylim([0,25])
+elif density == 'repeats':
+    ax1.set_ylim([0, 200])
+            
+
+# set y axis label
+if density == 'genes':
+    YaxisText = 'Gene density'    
+elif density == 'repeats':
+    YaxisText = 'Repeat density'
+ax1.set_ylabel(YaxisText, size = 10, ha = 'center', fontname = 'Arial')
+ 
+# add labels to x-ticks
+#ax.set_xticklabels([list of values], rotation = 30, ha = 'right', size = 10, fontname = 'Arial', family = 'sans-serif')
+
+#plt.yticks(fontsize = 10, fontname = 'Arial')
+
+# determine tick position on x axis
+xpos =  [j for j in range(0, len(positions) + 50, 50)]
+print(xpos)
+# convert interval windows numbers to genomic positions
+xtext = list(map(lambda x : (x * 50000) / 1000000, xpos))
+print(xtext)
+xtext = list(map(lambda x : str(x), xtext))
+print(xtext)
+# set up tick positions and labels
+plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+
+# set x axis label
+ax1.set_xlabel('Position along linkage group (Mb)', size = 10, ha = 'center', fontname = 'Arial')
+
+# remove top axes and right axes ticks
+ax1.get_xaxis().tick_bottom()
+ax1.get_yaxis().tick_left()
+
+ 
+# do not show lines around figure, keep bottow line  
+ax1.spines["top"].set_visible(False)    
+ax1.spines["bottom"].set_visible(True)    
+ax1.spines["right"].set_visible(False)    
+ax1.spines["left"].set_visible(False)      
+# offset the spines
+for spine in ax1.spines.values():
+  spine.set_position(('outward', 5))
+  
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax1.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
+# hide these grids behind plot objects
+ax1.set_axisbelow(True)
+
+# do not show ticks
+plt.tick_params(
+    axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='on',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='on', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on
+      
+
+
+########################### REMOVE function
+
+## use this function to generate save the number of pirnas per window
+#def cluster_pirnas(pirna_start, genome, chromo, window_size, outputfile):
+#    '''
+#    (dict, dict, str, int, file) -> file
+#    Take a dictionnary with chromo: list of start position pairs, a dict
+#    with chromo : sequence pairs, the focal chromosome, the size of the window,
+#    and save the number of pirnas per window in outputfile
+#    '''
+#    
+#    # make list of size window that contains only 0s:
+#    # each value in the list is the count of position for the range [0 - window[ etc
+#    range_counts = [0] * (len(genome[chromo]) // window_size)
+#    
+#    # loop over starting positions
+#    for start in pirna_start[chromo]:
+#        # determine the index in the list range_count where the position should be added
+#        which_range = start // window_size
+#        if which_range == len(range_counts):
+#            which_range -= 1
+#        # count pirnas
+#        range_counts[which_range] += 1
+#        
+#    # open file for writing
+#    newfile = open(outputfile, 'w')
+#    # write header
+#    newfile.write('Range' + '\t' + 'Lower_point' + '\t' + 'Midpoint' + '\t' + 'Higher_point' + '\t' + 'Count' + '\t' + '\n')
+#        
+#    # loop over indices of list
+#    for i in range(len(range_counts)):
+#        newfile.write('[' + str(i * window_size) + '-' + str((i * window_size) + window_size -1) + ']' + '\t')
+#        newfile.write(str(i * window_size) + '\t')
+#        newfile.write(str(int(((i * window_size) + window_size) / 2)) + '\t')
+#        newfile.write(str((i * window_size) + window_size) + '\t')
+#        newfile.write(str(range_counts[i]) + '\n')
+#        
+#    newfile.close()
 
 
 
 
-
-
-
-
-
-
-
-
-################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# create files with gene densities per 50 Kb window 
-cluster_pirnas(genes_start, genome, 'linkage_group_1', 50000, 'LG1_gene_density_50Kb.txt')
-cluster_pirnas(genes_start, genome, 'linkage_group_2', 50000, 'LG2_gene_density_50Kb.txt')
-cluster_pirnas(genes_start, genome, 'linkage_group_4', 50000, 'LG4_gene_density_50Kb.txt')
-print('saved gene densities to files')
-
-# create files with repeat densities per 50 Kb window
-cluster_pirnas(repeats_start, genome, 'linkage_group_1', 50000, 'LG1_repeat_density_50Kb.txt')
-cluster_pirnas(repeats_start, genome, 'linkage_group_2', 50000, 'LG2_repeat_density_50Kb.txt')
-cluster_pirnas(repeats_start, genome, 'linkage_group_4', 50000, 'LG4_repeat_density_50Kb.txt')
-print('saved repeat densities to files')
 
 # compute theta per 50 Kb window
 # get the allele counts for all sites with coverage, keep all sites 
-chromo_sites = get_non_coding_snps('../SNP_files/', 0) 
-print('got allele counts at all sites')
+if strains == 'noPB':
+    chromo_sites = get_non_coding_snps('../SNP_files/', 0) 
+elif strains == 'PB':
+    # compute theta per 50 Kb window in all strains
+    chromo_sites = get_all_strains_snps('../PB_ON_SNP_files/', 0)
+print('got allele counts')
+
 
 # create a list of starting positions of each window on chromo
-LG1_positions = [i for i in range(0, len(genome['linkage_group_1']), 50000)]
-LG2_positions = [i for i in range(0, len(genome['linkage_group_2']), 50000)]
-LG4_positions = [i for i in range(0, len(genome['linkage_group_4']), 50000)]
+LG_positions = [i for i in range(0, len(genome[chromosome]), 50000)]
+print('chromo positions', len(LG_positions))
 
-# open file for writing
-newfile = open('LG1_theta_50Kb.txt', 'w')
-# loop over start position in LG1:
-for i in LG1_positions:
+# create a dict to store theta for each widow interval
+diversity = {}
+# loop over start position in LG:
+for i in LG_positions:
     # compute theta per window
     # use a large threshold > window length to accept any number of missing site  
-    theta = compute_theta_non_coding(chromo_sites, 'linkage_group_1', i, i + 50000, 100000)
-    newfile.write(str(i) + '\t' + str(theta) + '\n')
-# close file
-newfile.close()
-print('theta per windows saved to file for LG1')
-
-# open file for writing
-newfile = open('LG2_theta_50Kb.txt', 'w')
-# loop over start positions in LG2
-for i in LG2_positions:
-    # compute theta per window
-    # use a large threshold > window length to accept any number of missing site 
-    theta = compute_theta_non_coding(chromo_sites, 'linkage_group_2', i, i + 50000, 100000)
-    newfile.write(str(i) + '\t' + str(theta) + '\n')
-# close file
-newfile.close()
-print('theta per windows saved to file for LG2')
-
-# open file for writing
-newfile = open('LG4_theta_50Kb.txt', 'w')
-# loop over start positions in LG4:
-for i in LG4_positions:
-    # compute theta per window
-    # use a large threshold > window length to accept any number of missing site  
-    theta = compute_theta_non_coding(chromo_sites, 'linkage_group_4', i, i + 50000, 100000)
-    newfile.write(str(i) + '\t' + str(theta) + '\n')
-# close file
-newfile.close()
-print('theta per windows saved to file for LG4')
-
-
-###################################################################
-
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Sep 11 21:10:55 2015
-
-@author: Richard
-"""
-
-
-
-from accessories import *
-from piRNAs import *
-from miRNA_target import *
-from repeats_TEs import *
-from sliding_windows import *
-from sites_with_coverage import *
-from divergence import *
-import numpy as np
-from scipy import stats
-import math
-
-
-# convert genome fasta to dict
-genome = convert_fasta('noamb_356_v1_4.txt')
-print('genome converted to fasta dict')
-
-# compute theta per 50 Kb window in all strains
-# get the allele counts for all sites with coverage, keep all sites 
-chromo_sites = get_all_strains_snps('../PB_ON_SNP_files/', 0)
-print('got allele counts at all sites')
-
-# create a list of starting positions of each window on chromo
-LG1_positions = [i for i in range(0, len(genome['linkage_group_1']), 50000)]
-LG2_positions = [i for i in range(0, len(genome['linkage_group_2']), 50000)]
-LG4_positions = [i for i in range(0, len(genome['linkage_group_4']), 50000)]
-
-# open file for writing
-newfile = open('LG1_theta_PB+ON_50Kb.txt', 'w')
-# loop over start position in LG1:
-for i in LG1_positions:
-    # compute theta per window
-    # use a large threshold > window length to accept any number of missing site  
-    theta = compute_theta_non_coding(chromo_sites, 'linkage_group_1', i, i + 50000, 100000)
-    newfile.write(str(i) + '\t' + str(theta) + '\n')
-# close file
-newfile.close()
-print('theta per windows saved to file for LG1')
-
-# open file for writing
-newfile = open('LG2_theta_PB+ON_50Kb.txt', 'w')
-# loop over start positions in LG2
-for i in LG2_positions:
-    # compute theta per window
-    # use a large threshold > window length to accept any number of missing site 
-    theta = compute_theta_non_coding(chromo_sites, 'linkage_group_2', i, i + 50000, 100000)
-    newfile.write(str(i) + '\t' + str(theta) + '\n')
-# close file
-newfile.close()
-print('theta per windows saved to file for LG2')
-
-# open file for writing
-newfile = open('LG4_theta_PB+ON_50Kb.txt', 'w')
-# loop over start positions in LG4:
-for i in LG4_positions:
-    # compute theta per window
-    # use a large threshold > window length to accept any number of missing site  
-    theta = compute_theta_non_coding(chromo_sites, 'linkage_group_4', i, i + 50000, 100000)
-    newfile.write(str(i) + '\t' + str(theta) + '\n')
-# close file
-newfile.close()
-print('theta per windows saved to file for LG4')
+    theta = compute_theta_non_coding(chromo_sites, chromosome, i, i + 50000, 100000)
+    diversity[i] = theta
+print('computed diversity')
 
 
 
 
+# add another graph on top of previous one
+ax2 = ax1.twinx()
+
+
+
+# save figure
+fig.savefig('testfile.pdf', bbox_inches = 'tight')
