@@ -17,6 +17,8 @@ Created on Thu Aug 20 13:17:35 2015
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib import rc
+rc('mathtext', default='regular')
 # import modules
 import numpy as np
 from scipy import stats
@@ -24,7 +26,6 @@ import math
 import sys
 # import custom modules
 from manipulate_sequences import *
-#from piRNAs import *
 from miRNA_target import *
 from repeats_TEs import *
 from sliding_windows import *
@@ -101,7 +102,6 @@ for chromo in repeats_start:
     repeats_start[chromo].sort()
 print('got the repeats\'s first positions')
 
-
 # create list with count of gene o repeat in 50000 bp windows
 range_counts = [0] * (len(genome[chromosome]) // 50000)
 # check if gene or repeat density is recorded
@@ -122,7 +122,6 @@ elif density == 'genes':
 
 # create a list with the position of each window interval
 positions = [i for i in range(len(range_counts))]      
-
 print('position', len(positions))
 print(LG, len(genome[chromosome]))
 print('interval length', len(genome[chromosome]) // 50000)
@@ -133,15 +132,14 @@ fig = plt.figure(1, figsize = (4, 1))
 ax1 = fig.add_subplot(1, 1, 1)  
 
 # plot the repeat of gene density per window
-ax1.plot(positions, range_counts, linewidth = 1, color = '#b2df8a')
+graph1 = ax1.plot(positions, range_counts, linewidth = 1, color = '#b2df8a')
 
 # restrict the x and y axis to the range of data
-#ax.set_xlim([0, len(Pos)])
 if density == 'genes':
     ax1.set_ylim([0,25])
 elif density == 'repeats':
     ax1.set_ylim([0, 200])
-            
+
 # set y axis label
 if density == 'genes':
     YaxisText = 'Gene density'    
@@ -209,87 +207,28 @@ divpos.sort()
 # create parallel list with theta values
 polymorphism = [diversity[i] for i in divpos]
 print('positions diversity windows', len(divpos))
-print('positions', positions)
-print('divpos', divpos)
 assert positions == divpos[:-1]
 
-
-########################
-
-#
-#for start in genes_start[chromosome]:
-#    which_range = start // 50000
-#    if which_range == len(range_counts):
-#        which_range -= 1
-#    # counts genes
-#    range_counts[which_range] += 1
-
-
-
-
-##############################
 
 # add another graph on top of previous one
 ax2 = ax1.twinx()
 
 # plot theta per window
-ax2.plot(positions, polymorphism[:-1], linewidth = 1, color = '#1f78b4')
+graph2 = ax2.plot(positions, polymorphism[:-1], linewidth = 1, color = '#1f78b4')
 
-
-### restrict the x and y axis to the range of data
-###ax.set_xlim([0, len(Pos)])
-##if density == 'genes':
-##    ax1.set_ylim([0,25])
-##elif density == 'repeats':
-##    ax1.set_ylim([0, 200])
-#            
-#
 # set y axis label
 ax2.set_ylabel('Polymorphism', size = 10, ha = 'center', fontname = 'Arial')
-# 
-#plt.yticks(fontsize = 10, fontname = 'Arial')
-#
-### determine tick position on x axis
-##xpos =  [j for j in range(0, len(positions) + 50, 50)]
-### convert interval windows numbers to genomic positions
-##xtext = list(map(lambda x : (x * 50000) / 1000000, xpos))
-##xtext = list(map(lambda x : str(x), xtext))
-### set up tick positions and labels
-##plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
-##
-### set x axis label
-##ax1.set_xlabel('Position along linkage group (Mb)', size = 10, ha = 'center', fontname = 'Arial')
-#
-#
-### remove top axes and right axes ticks
-#ax2.get_xaxis().tick_bottom()
-#ax2.get_yaxis().tick_right()
-#
-# 
+
 # do not show lines around figure, keep bottow line  
 ax2.spines["top"].set_visible(False)    
 ax2.spines["bottom"].set_visible(False)    
 ax2.spines["right"].set_visible(False)    
 ax2.spines["left"].set_visible(False)      
 
-#
-# do not show ticks
+
+# do not show ticks for 2nd graph
 ax2.tick_params(
-    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
-    which='both',      # both major and minor ticks are affected
-    bottom='on',      # ticks along the bottom edge are off
-    top='off',         # ticks along the top edge are off
-    right = 'off',
-    left = 'off',          
-    labelbottom='on', # labels along the bottom edge are off 
-    colors = 'black',
-    labelsize = 10,
-    direction = 'out') # ticks are outside the frame when bottom = 'on
-#
-#
-# do not show ticks
-ax2.tick_params(
-    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
+    axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
     which='both',      # both major and minor ticks are affected
     bottom='off',      # ticks along the bottom edge are off
     top='off',         # ticks along the top edge are off
@@ -300,9 +239,7 @@ ax2.tick_params(
     labelsize = 10,
     direction = 'out') # ticks are outside the frame when bottom = 'on
 
-
-
-# do not show ticks
+# do not show ticks on 1st graph
 ax1.tick_params(
     axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
     which='both',      # both major and minor ticks are affected
@@ -330,22 +267,30 @@ ax1.tick_params(
     direction = 'out') # ticks are outside the frame when bottom = 'on
 
 
+for label in ax2.get_yticklabels():
+    label.set_fontname('Arial')
 
-
-
-
-
-##
-#
-#
-#
-## Set the tick labels font name
-#for label in ax2.get_yticklabels():
-#    label.set_fontname('Arial')
-#
-##plt.legend(loc = 'upper left', numpoints = 1)
-
+# add lines
+lns = graph1+graph2
+# get labels
+if density == 'genes':
+    labs = ['Genes', 'Diversity']
+elif density == 'repeats':
+    labs = ['Repeats', 'Diversity']
+# plot legend
+ax2.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
 
 
 # save figure
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+if density == 'genes':
+    data = 'GeneDensity'
+elif density == 'repeats':
+    data = 'RepeatDensity'
+if strains == 'noPB':
+    snps = 'KSRPXSnps' 
+elif strains == 'PB':
+    snps = 'KSRPXPBSnps'
+
+outputfile = 'PlotDiversity' + data + snps + LG
+print(outputfile)
+fig.savefig(outputfile + '.pdf', bbox_inches = 'tight')
