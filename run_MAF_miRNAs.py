@@ -26,7 +26,8 @@ from sliding_windows import *
 from sites_with_coverage import *
 from divergence import *
 from premature_stops import *
-
+from randomize_SNPs import *
+from get_coding_sequences import *
 
 
 # make a list with MAF of replacement SNPs, excluding sites with sample size < 10
@@ -34,110 +35,176 @@ MAF_REP = MAF_SNP('../Genome_Files/CDS_SNP_DIVERG.txt', '../Genome_Files/unique_
                   '../Genome_Files/transcripts_indels_CDS.txt', 'REP', 10)
 print('REP', len(MAF_REP))
 print('MAF for replacement sites done')
-
 # make a list with MAF of synonymous sites, excluding sites with sample size < 10
 MAF_SYN = MAF_SNP('../Genome_Files/CDS_SNP_DIVERG.txt', '../Genome_Files/unique_transcripts.txt', 
                   '../Genome_Files/transcripts_indels_CDS.txt', 'SYN', 10)
 print('SNP', len(MAF_SYN))
 print('MAF for synonymous sites done')
 
-# create figure
-fig = plt.figure(1, figsize = (4, 2))
-# add a plot to figure (1 row, 1 column, 1 plot)
-ax = fig.add_subplot(1, 1, 1)  
+# express frequencies in %
+for i in range(len(MAF_REP)):
+    MAF_REP[i] = MAF_REP[i] * 100
+for i in range(len(MAF_SYN)):
+    MAF_SYN[i] = MAF_SYN[i] * 100
+MAF_REP_hist = np.histogram(MAF_REP, range(0, 51, 10))
+MAF_SYN_hist = np.histogram(MAF_SYN, range(0, 51, 10))
 
-# plot the repeat of gene density per window
-ax.hist([MAF_REP,MAF_SYN])
+# get the allele counts for all sites with coverage, exclude sites with sample size < 10
+chromo_sites = get_non_coding_snps('../SNP_files/', 10)
+print('got allele counts in genome')
 
-#ax.hist([MAF_REP,MAF_SYN], list(map(lambda x : x / 100, range(0, 100, 10))))
+# get the coordinates of the miRNA loci
+mirnas_coord = get_mirna_loci('CRM_miRNAsCoordinatesFinal.txt')
+print('got miRNA coordinates')
+
+# get the allele counts for miRNA sites
+mirna_sites = get_feature_sites(chromo_sites, mirnas_coord)
+print('got allele counts for miRNAs')
+
+# compute MAF for mirna sites (sites with sample size < 10 are already excluded)
+MAF_mirna = MAF_non_coding(mirna_sites)
+print('miRNAs', len(MAF_mirna))
+print('MAF for miRNA sites done')
+
+# get all the miRNA positions in genome
+mirna_pos = get_small_rna_sites('CRM_miRNAsCoordinatesFinal.txt', 'miRNA')
+print('got miRNA positions')
+
+# get all the predicted UTR positions in the genome
+UTR_pos = get_UTR_sites('../Genome_Files/356_10172014.gff3',
+                        '../Genome_Files/c_elegans.PRJNA13758.WS248.annotations.gff3',
+                        '../Genome_Files/noamb_356_v1_4.txt', 99)
+print('got UTR positions')
+
+# get all the gene positions in the genome
+gene_pos = get_gene_sites('../Genome_Files/356_10172014.gff3')
+print('got gene positions')
+
+# get SNPs flanking miRNAs within 500 bp of the miRNAs
+mirna_flanking_snps = get_small_rna_flanking_SNPs(chromo_sites, 'CRM_miRNAsCoordinatesFinal.txt', 'miRNA', 500)
+print('got allele counts in miRNA flanking regions')
+# remove positions falling in coding sequences
+# get CDS_coord {TS1: [chromo, sense, [(s1, end1), (s2, end2)]]}
+CDS_coord = get_CDS_positions('../Genome_Files/356_10172014.gff3')
+# create new dict in the form {chromo: {set of positions}}
+CDS_pos = {}
+for gene in CDS_coord:
+    # get chromo
+    chromo = CDS_coord[gene][0]
+    # loop over cds coordinates 
+    for i in range(len(CDS_coord[gene][2])):
+        # get start and end positions in a list
+        # convert to 0-based index
+        start  = CDS_coord[gene][2][i][0] - 1
+        end = CDS_coord[gene][2][i][1]
+        # check if chromo in CDS_pos
+        if chromo not in CDS_pos:
+            CDS_pos[chromo] = set()
+        for j in range(start, end):
+            CDS_pos[chromo].add(j)
+print('got CDS indices')
+# remove positions falling in coding sequences
+for chromo in CDS_pos:
+    # check if chromo in flanking sites
+    if chromo in mirna_flanking_snps:
+        # loop over CDS positions
+        for i in CDS_pos[chromo]:
+            # check if site in flanking
+            if i in mirna_flanking_snps[chromo]:
+                # remove site
+                del mirna_flanking_snps[chromo][i]
+print('removed coding positions from miRNA flanking sites')
+
+# count the number of snps in the vicinty of mirnas
+mirna_snps = 0
+for chromo in mirna_flanking_snps:
+    mirna_snps += len(mirna_flanking_snps[chromo])
+print('SNPs within 500 bp of miRNAs: ', mirna_snps)
+
+# resample SNPs and compute MAF {replicate_number : [list of MAF values]}
+# sampled 5000 SNPs 1000 times among the number of SNPs near miRNAs
+mirna_resampled_MAF = SNP_MAF_randomization(mirna_flanking_snps, 5000, 1000)
+
+###################### CONTNUE HERE
+
+## obsolete code
+## get the proportions of SNPs in each MAF bin 
+#mirna_MAF_proportions = get_MAF_distribution_from_replicates(mirna_resampled_MAF)
+## get the SNP proportions for the observed SNPs
+#empirical_mirna_MAF = SNP_proportions_MAF_bin(MAF_mirna)
+## creat a list of keys, being the MAF lower bound in the dicts with MAF proportions
+#maf_limit = [i for i in empirical_mirna_MAF]
+## sort list
+#maf_limit.sort()
+#
+#
+#average = np.mean(mirna_MAF_proportions[i])
+#stdev = np.std(mirna_MAF_proportions[i])
+#observed = empirical_mirna_MAF[i]
+#z_score = (observed - average) / stdev
+## critical values for 1-sample 2-tailed z-test: 0.05: +- 1.96, 0.01: +- 2.58, 0.001: +-3.27
+## Ho : obsvered == mean, H1: observed != mean
+#if z_score < -1.96 or z_score > 1.96:
+#     P5 = '*'
+#elif -1.96 <= z_score <= 1.96:
+#     P5 = 'NS'
+#if z_score < -2.58 or z_score > 2.58:
+#     P1 = '*'
+#elif -2.58 <= z_score <= 2.58:
+#     P1 = 'NS'
+#if z_score < -3.27 or z_score > 3.27:
+#    P01 = '*'
+#elif -3.27 <= z_score <= 3.27:
+#    P01 = 'NS'
 
 
+#####################
 
 
+# get the coodinates of the intergenic sites
+# this modifies the dict of allele counts for all sites
+intergenic_sites = get_intergenic_sites(chromo_sites, gene_pos, pirna_pos, mirna_pos, UTR_pos, True)
+print('got intergenic positions')
 
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+# get the MAF for intergenic sites, (sites with sample size < 10 are already excluded)
+MAF_intergenic = MAF_non_coding(intergenic_sites)
+print('MAF for intergenic sites done')
 
-## get the allele counts for all sites with coverage, exclude sites with sample size < 10
-#chromo_sites = get_non_coding_snps('../SNP_files/', 10)
-#
-#print('got allele counts in genome')
-#
-## get the coordinates of the miRNA loci
-#mirnas_coord = get_mirna_loci('../miRNA_Target_sites/crm_miRBase21_premina_coordinates.txt')
-#
-## get the allele counts for miRNA sites
-#mirna_sites = get_feature_sites(chromo_sites, mirnas_coord)
-#
-## compute MAF for mirna sites (sites with sample size < 10 are already excluded)
-#MAF_mirna = MAF_non_coding(mirna_sites)
-#
-#print('MAF for miRNA sites done')
-#
-#
-## get the coordinates of the piRNA loci
-#pirnas_coord = get_pirna_loci('PX356_piRNA_coord.txt')
-#
-## get the allele counts for piRNA sites
-#pirna_sites = get_feature_sites(chromo_sites, pirnas_coord)
-#
-## compute MAF for piRNA sites, (sites with sample size < 10 are already excluded)
-#MAF_pirna = MAF_non_coding(pirna_sites)
-#
-#print('MAF for piRNA sites done')
-#
-## get all the miRNA positions in genome
-#mirna_pos = get_small_rna_sites('../miRNA_Target_sites/crm_miRBase21_premina_coordinates.txt', 'miRNA')
-#
-#print('got miRNA positions')
-#
-## get all the piRNAs positions in the genome
-#pirna_pos = get_small_rna_sites('PX356_piRNA_coord.txt', 'piRNA')
-#
-#print('got piRNA positions')
-#
-## get all the predicted UTR positions in the genome
-#UTR_pos = get_UTR_sites('../CREM_CLA_protein_divergence/356_10172014.gff3', '../miRNA_Target_sites/c_elegans.PRJNA13758.WS248.annotations.gff3', '../CREM_CLA_protein_divergence/noamb_356_v1_4.txt', 99)
-#
-#print('got UTR positions')
-#
-## get all the gene positions in the genome
-#gene_pos = get_gene_sites('../CREM_CLA_protein_divergence/356_10172014.gff3')
-#
-#print('got gene positions')
-#
-## get the coodinates of the intergenic sites
-## this modifies the dict of allele counts for all sites
-#
-#intergenic_sites = get_intergenic_sites(chromo_sites, gene_pos, pirna_pos, mirna_pos, UTR_pos, True)
-#
-#print('got intergenic positions')
-#
-## get the MAF for intergenic sites, (sites with sample size < 10 are already excluded)
-#MAF_intergenic = MAF_non_coding(intergenic_sites)
-#
-#print('MAF for intergenic sites done')
-#
-#
-## express frequencies in %
-#for i in range(len(MAF_REP)):
-#    MAF_REP[i] = MAF_REP[i] * 100
-#for i in range(len(MAF_SYN)):
-#    MAF_SYN[i] = MAF_SYN[i] * 100
-#for i in range(len(MAF_mirna)):
-#    MAF_mirna[i] = MAF_mirna[i] * 100
-#for i in range(len(MAF_pirna)):
-#    MAF_pirna[i] = MAF_pirna[i] * 100
-#for i in range(len(MAF_intergenic)):
-#    MAF_intergenic[i] = MAF_intergenic[i] * 100
-#    
-#print('conversion to % frequencies done')
+
+# express MAF frequencies in %
+for i in range(len(MAF_REP)):
+    MAF_REP[i] = MAF_REP[i] * 100
+for i in range(len(MAF_SYN)):
+    MAF_SYN[i] = MAF_SYN[i] * 100
+for i in range(len(MAF_mirna)):
+    MAF_mirna[i] = MAF_mirna[i] * 100
+for i in range(len(MAF_intergenic)):
+    MAF_intergenic[i] = MAF_intergenic[i] * 100
+for i in mirna_resampled_MAF:
+    for j in range(len(mirna_resampled_MAF[i])):
+        mirna_resampled_MAF[i][j] = mirna_resampled_MAF[i][j] * 100
+print('conversion to % frequencies done')
+
+# make a list of maximum frequencies
+maxfreq = []
+for i in mirna_resampled_MAF:
+    maxfreq.append(max(mirna_resampled_MAF))
+for i in [MAF_REP, MAF_SYN, MAF_mirna, MAF_intergenic]:
+    maxfreq.append(max(i))
+print(max(maxfreq))
+assert max(maxfreq) <= 50, 'MAF should be lower than 50%'
+
 #
 ## make histograms
 #MAF_REP_hist = np.histogram(MAF_REP, range(0, 51, 10))
 #MAF_SYN_hist = np.histogram(MAF_SYN, range(0, 51, 10))
 #MAF_mirna_hist = np.histogram(MAF_mirna, range(0, 51, 10))
-#MAF_pirna_hist = np.histogram(MAF_pirna, range(0, 51, 10))
 #MAF_intergenic_hist = np.histogram(MAF_intergenic, range(0, 51, 10))
+## create a dict to store counts in MAF bins {replicate_number : [MAF counts]}
+#MAF_resampling = {}
+#for i in mirna_resampled_MAF:
+#    MAF_resampling[i] = np.histogram(mirna_resampled_MAF[i], range(0, 51, ))
+#
 #
 #print('histograms done')
 #
@@ -233,156 +300,125 @@ fig.savefig('testfile.pdf', bbox_inches = 'tight')
 #
 #
 #
+################################################### SAVE FIG
+#
+#
+## create figure
+#fig = plt.figure(1, figsize = (4, 2))
+## add a plot to figure (1 row, 1 column, 1 plot)
+#ax = fig.add_subplot(1, 1, 1)  
+#
+#
+##colorscheme = ['#810f7c', '#8856a7', '#8c96c6', '#b3cde3', '#edf8fb']
+#
+#
+#colorscheme = ['#810f7c', '#8856a7']
+#
+#
+#
+#repfreq = []
+#for i in MAF_REP_hist[0]:
+#    repfreq.append(i / sum(MAF_REP_hist[0]))
+#synfreq = []
+#for i in MAF_SYN_hist[0]:
+#    synfreq.append(i / sum(MAF_SYN_hist[0]))
+#
+## plot the repeat of gene density per window
+##ax.hist([MAF_REP,MAF_SYN], color = colorscheme)
+#
+#width = 0.2
+#
+#print('REP', MAF_REP_hist[0], MAF_REP_hist[1])
+#
+#ax.bar([0, 0.4, 0.8, 1.2, 1.6], repfreq, width, yerr = [0.1, 0.2, 0.05, 0, 0.3], color = '#810f7c',
+#       error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
+#ax.bar([0.2, 0.6, 1, 1.4, 1.8], synfreq, width, color = '#8856a7')
 #
 #
 #
 #
-#############################
+#ax.set_ylabel('Proportion of SNPs', size = 10, ha = 'center', fontname = 'Arial')
+#
+#
+#
+# 
+### determine tick position on x axis
+##xpos =  [j for j in range(0, len(positions) + 50, 50)]
+### convert interval windows numbers to genomic positions
+##xtext = list(map(lambda x : (x * 50000) / 1000000, xpos))
+##xtext = list(map(lambda x : str(x), xtext))
+### set up tick positions and labels
+##plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+##plt.yticks(fontsize = 0)
+#
+## set x axis label
+#ax.set_xlabel('Minor Allele Frequency', size = 10, ha = 'center', fontname = 'Arial')
+#
+#
+## do not show lines around figure, keep bottow line  
+#ax.spines["top"].set_visible(False)    
+#ax.spines["bottom"].set_visible(True)    
+#ax.spines["right"].set_visible(False)    
+#ax.spines["left"].set_visible(False)      
+## offset the spines
+#for spine in ax.spines.values():
+#  spine.set_position(('outward', 5))
+#  
+## add a light grey horizontal grid to the plot, semi-transparent, 
+#ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
+## hide these grids behind plot objects
+#ax.set_axisbelow(True)
+#
+#
+## do not show ticks on 1st graph
+#ax.tick_params(
+#    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
+#    which='both',      # both major and minor ticks are affected
+#    bottom='on',      # ticks along the bottom edge are off
+#    top='off',         # ticks along the top edge are off
+#    right = 'off',
+#    left = 'off',          
+#    labelbottom='on', # labels along the bottom edge are off 
+#    colors = 'black',
+#    labelsize = 10,
+#    direction = 'out') # ticks are outside the frame when bottom = 'on
+##
+##
+## do not show ticks
+#ax.tick_params(
+#    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
+#    which='both',      # both major and minor ticks are affected
+#    bottom='off',      # ticks along the bottom edge are off
+#    top='off',         # ticks along the top edge are off
+#    right = 'off',
+#    left = 'off',          
+#    labelbottom='off', # labels along the bottom edge are off 
+#    colors = 'black',
+#    labelsize = 10,
+#    direction = 'out') # ticks are outside the frame when bottom = 'on
+#
+#
+#for label in ax.get_yticklabels():
+#    label.set_fontname('Arial')
+#
+### add lines
+##lns = graph1+graph2
+### get labels
+##if density == 'genes':
+##    labs = ['Genes', 'Diversity']
+##elif density == 'repeats':
+##    labs = ['Repeats', 'Diversity']
+### plot legend
+##ax2.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
 #
 #
 #
 #
-## -*- coding: utf-8 -*-
-#"""
-#Created on Tue Aug 18 22:50:48 2015
-#
-#@author: Richard
-#"""
 #
 #
 #
-#import math
-#import numpy as np
-#from premature_stops import *
-#from scipy import stats
-#from accessories import *
-#from miRNA_target import *
-#from piRNAs import *
-#from sites_with_coverage import *
-#from Cel_UTR import *
-#from cel_UTR_length import *
-#from randomize_SNPs import *
-#from get_coding_sequences import *
-#
-#
-#Gstr = lambda x : str(x)
-#
-#
-## get the allele counts for all sites with coverage, exclude sites with sample size < 10
-#chromo_sites = get_non_coding_snps('../SNP_files/', 10)
-#
-#print('got allele counts in genome')
-#
-#
-## get CDS_coord {TS1: [chromo, sense, [(s1, end1), (s2, end2)]]}
-#CDS_coord = get_CDS_positions('../CREM_CLA_protein_divergence/356_10172014.gff3')
-## create new dict in the form {chromo: {set of positions}}
-#CDS_pos = {}
-#for gene in CDS_coord:
-#    # get chromo
-#    chromo = CDS_coord[gene][0]
-#    # loop over cds coordinates 
-#    for i in range(len(CDS_coord[gene][2])):
-#        # get start and end positions in a list
-#        # convert to 0-based index
-#        start  = CDS_coord[gene][2][i][0] - 1
-#        end = CDS_coord[gene][2][i][1]
-#        # check if chromo in CDS_pos
-#        if chromo not in CDS_pos:
-#            CDS_pos[chromo] = set()
-#        for j in range(start, end):
-#            CDS_pos[chromo].add(j)
-#        
-#print('got CDS coord')
-#
-## get the coordinates of the miRNA loci
-#mirnas_coord = get_mirna_loci('crm_miRBase21_premina_coordinates.txt')
-#
-## get the allele counts for miRNA sites
-#mirna_sites = get_feature_sites(chromo_sites, mirnas_coord)
-#
-## compute MAF for mirna sites (sites with sample size < 10 are already excluded)
-#MAF_mirna = MAF_non_coding(mirna_sites)
-#
-#print('MAF for miRNA sites done')
-#
-## get SNPs flanking miRNAs within 500 bp of the miRNAs
-#mirna_flanking_snps = get_small_rna_flanking_SNPs(chromo_sites, 'crm_miRBase21_premina_coordinates.txt',
-#                                                  'miRNA', 500)
-#
-## remove positions falling in coding sequences
-#for chromo in CDS_pos:
-#    # check if chromo in flanking sites
-#    if chromo in mirna_flanking_snps:
-#        # loop over CDS positions
-#        for i in CDS_pos[chromo]:
-#            # check if site in flanking
-#            if i in mirna_flanking_snps[chromo]:
-#                # remove site
-#                del mirna_flanking_snps[chromo][i]
-#                
-#print('got SNPs flanking miRNAs')
-#
-#mirna_snps = 0
-#for chromo in mirna_flanking_snps:
-#    mirna_snps += len(mirna_flanking_snps[chromo])
-#print('SNPs within 500 bp of miRNAs: ', mirna_snps)
-#
-## resample SNPs and compute MAF
-#mirna_resampled_MAF = SNP_MAF_randomization(mirna_flanking_snps, 5000, 1000)
-#
-## get the proportions of SNPs in each MAF bin
-#mirna_MAF_proportions = get_MAF_distribution_from_replicates(mirna_resampled_MAF)
-#
-## get the SNP proportions for the observed SNPs
-#empirical_mirna_MAF = SNP_proportions_MAF_bin(MAF_mirna)
-#
-## creat a list of keys, being the MAF lower bound in the dicts with MAF proportions
-#maf_limit = [i for i in empirical_mirna_MAF]
-## sort list
-#maf_limit.sort()
-#
-## open file to save results of Z-test
-#newfile = open('summary_MAF_resampled_SNPs_miRNAs.txt', 'w')
-#
-#newfile.write('Z-test of SNP proportions in MAF bins\n')
-#newfile.write('random resampling of 5000 SNPs within 500 bp of miRNAs, exluding miRNA and CDS sites with 1000 replicates\n')
-#
-#newfile.write('\t'.join(['MAF', 'mean_sample', 'margin', 'stdev_sample', 'l95', 'h95', 'observed', 'z-score', 'alpha_0.05', 'alpha_0.01', 'alpha_0.001']) + '\n')
-#
-## loop over sorted keys
-#for i in maf_limit:
-#    # compute mean
-#    average = np.mean(mirna_MAF_proportions[i])
-#    # get standard deviation
-#    stdev = np.std(mirna_MAF_proportions[i])
-#    # compute 95% CI
-#    stderror = stdev / math.sqrt(len(mirna_MAF_proportions[i]))
-#    # compute the margin error (critical value = 1.96 for 95% CI)
-#    margin = 1.96 * stderror
-#    lCI = average - margin
-#    hCI = average + margin
-#    observed = empirical_mirna_MAF[i]
-#    z_score = (observed - average) / stdev
-#    # critical values for 1-sample 2-tailed z-test: 0.05: +- 1.96, 0.01: +- 2.58, 0.001: +-3.27
-#    # Ho : obsvered == mean, H1: observed != mean
-#    if z_score < -1.96 or z_score > 1.96:
-#        P5 = '*'
-#    elif -1.96 <= z_score <= 1.96:
-#        P5 = 'NS'
-#    if z_score < -2.58 or z_score > 2.58:
-#        P1 = '*'
-#    elif -2.58 <= z_score <= 2.58:
-#        P1 = 'NS'
-#    if z_score < -3.27 or z_score > 3.27:
-#        P01 = '*'
-#    elif -3.27 <= z_score <= 3.27:
-#        P01 = 'NS'
-#    newfile.write('\t'.join([str(i), str(average), str(margin), str(stdev), str(lCI), str(hCI), str(observed), str(z_score), str(P5), str(P1), str(P01)]) + '\n')
-#    
-## close file after writing
-#newfile.close()
-#    
 #
 #
 #
+#
+#fig.savefig('testfile.pdf', bbox_inches = 'tight')
