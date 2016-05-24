@@ -142,19 +142,13 @@ if density == 'genes':
 elif density == 'repeats':
     ax1.set_ylim([0, 200])
             
-
-## set y axis label
-#if density == 'genes':
-#    YaxisText = 'Gene density'    
-#elif density == 'repeats':
-#    YaxisText = 'Repeat density'
-#ax1.set_ylabel(YaxisText, size = 10, ha = 'center', fontname = 'Arial')
+# set y axis label
+if density == 'genes':
+    YaxisText = 'Gene density'    
+elif density == 'repeats':
+    YaxisText = 'Repeat density'
+ax1.set_ylabel(YaxisText, size = 10, ha = 'center', fontname = 'Arial')
  
-# add labels to x-ticks
-#ax.set_xticklabels([list of values], rotation = 30, ha = 'right', size = 10, fontname = 'Arial', family = 'sans-serif')
-
-#plt.yticks(fontsize = 10, fontname = 'Arial')
-
 # determine tick position on x axis
 xpos =  [j for j in range(0, len(positions) + 50, 50)]
 # convert interval windows numbers to genomic positions
@@ -167,166 +161,120 @@ plt.yticks(fontsize = 0)
 # set x axis label
 ax1.set_xlabel('Position along linkage group (Mb)', size = 10, ha = 'center', fontname = 'Arial')
 
-# remove top axes and right axes ticks
-ax1.get_xaxis().tick_bottom()
-#ax1.get_yaxis().tick_left()
-
- 
 # do not show lines around figure, keep bottow line  
 ax1.spines["top"].set_visible(False)    
 ax1.spines["bottom"].set_visible(True)    
 ax1.spines["right"].set_visible(False)    
 ax1.spines["left"].set_visible(False)      
-## offset the spines
-#for spine in ax1.spines.values():
-#  spine.set_position(('outward', 5))
+# offset the spines
+for spine in ax1.spines.values():
+  spine.set_position(('outward', 5))
   
 # add a light grey horizontal grid to the plot, semi-transparent, 
 ax1.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
 # hide these grids behind plot objects
 ax1.set_axisbelow(True)
 
-# do not show ticks
-plt.tick_params(
-    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
-    which='both',      # both major and minor ticks are affected
-    bottom='on',      # ticks along the bottom edge are off
-    top='off',         # ticks along the top edge are off
-    right = 'off',
-    left = 'off',          
-    labelbottom='on', # labels along the bottom edge are off 
-    colors = 'black',
-    labelsize = 10,
-    direction = 'out') # ticks are outside the frame when bottom = 'on
-      
-# do not show ticks
-plt.tick_params(
-    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
-    which='both',      # both major and minor ticks are affected
-    bottom='off',      # ticks along the bottom edge are off
-    top='off',         # ticks along the top edge are off
-    right = 'off',
-    left = 'off',          
-    labelbottom='off', # labels along the bottom edge are off 
-    colors = 'black',
-    labelsize = 10,
-    direction = 'out') # ticks are outside the frame when bottom = 'on
-
-# set y axis label
-if density == 'genes':
-    YaxisText = 'Gene density'    
-elif density == 'repeats':
-    YaxisText = 'Repeat density'
-#ax1.set_ylabel(YaxisText, size = 10, ha = 'center', fontname = 'Arial')
-
-## compute theta per 50 Kb window
-## get the allele counts for all sites with coverage, keep all sites 
-#if strains == 'noPB':
-#    chromo_sites = get_non_coding_snps('../SNP_files/', 0) 
-#elif strains == 'PB':
-#    # compute theta per 50 Kb window in all strains
-#    chromo_sites = get_all_strains_snps('../PB_ON_SNP_files/', 0)
-#print('got allele counts')
-
+# compute theta per 50 Kb window
+# get the allele counts for all sites with coverage, keep all sites 
+if strains == 'noPB':
+    chromo_sites = get_non_coding_snps('../SNP_files/', 0) 
+elif strains == 'PB':
+    # compute theta per 50 Kb window in all strains
+    chromo_sites = get_all_strains_snps('../PB_ON_SNP_files/', 0)
+print('got allele counts')
 
 # create a list of starting positions of each window on chromo
 LG_positions = [i for i in range(0, len(genome[chromosome]), 50000)]
 print('chromo positions', len(LG_positions))
 
-## create a dict to store theta for each widow interval
-#diversity = {}
-## set up interval counter
-#j = 0
-## loop over start position in LG:
-#for i in LG_positions:
-#    # compute theta per window
-#    # use a large threshold > window length to accept any number of missing site  
-#    theta = compute_theta_non_coding(chromo_sites, chromosome, i, i + 50000, 100000)
-#    diversity[j] = theta
-#    # update j
-#    j += 1
-#print('computed diversity')
-#
-## create a list of positions for which diversity is calculated, sort positions
-#divpos = [i for i in diversity]
-#divpos.sort()
-## create parallel list with theta values
-#polymorphism = [diversity[i] for i in divpos]
-#print('positions diversity windows', len(divpos))
-#
-#
-#print('positions', positions)
-#print('divpos', divpos)
-#
-#assert positions == divpos[:-1]
+# create a dict to store theta for each widow interval
+diversity = {}
+# set up interval counter
+j = 0
+# loop over start position in LG:
+for i in LG_positions:
+    # compute theta per window
+    # use a large threshold > window length to accept any number of missing site  
+    theta = compute_theta_non_coding(chromo_sites, chromosome, i, i + 50000, 100000)
+    diversity[j] = theta
+    # update j
+    j += 1
+print('computed diversity')
+
+
+# create a list of positions for which diversity is calculated, sort positions
+divpos = [i for i in diversity]
+divpos.sort()
+# create parallel list with theta values
+polymorphism = [diversity[i] for i in divpos]
+print('positions diversity windows', len(divpos))
+print('positions', positions)
+print('divpos', divpos)
+assert positions == divpos[:-1]
 
 
 ########################
 
-
-for start in genes_start[chromosome]:
-    which_range = start // 50000
-    if which_range == len(range_counts):
-        which_range -= 1
-    # counts genes
-    range_counts[which_range] += 1
+#
+#for start in genes_start[chromosome]:
+#    which_range = start // 50000
+#    if which_range == len(range_counts):
+#        which_range -= 1
+#    # counts genes
+#    range_counts[which_range] += 1
 
 
 
 
 ##############################
 
-
 # add another graph on top of previous one
 ax2 = ax1.twinx()
 
-## plot theta per window
-#ax2.plot(positions, polymorphism[:-1], linewidth = 1, color = '#1f78b4')
-
 # plot theta per window
-ax2.plot(positions, range_counts, linewidth = 1, color = '#1f78b4')
+ax2.plot(positions, polymorphism[:-1], linewidth = 1, color = '#1f78b4')
 
 
-
-## restrict the x and y axis to the range of data
-##ax.set_xlim([0, len(Pos)])
-#if density == 'genes':
-#    ax1.set_ylim([0,25])
-#elif density == 'repeats':
-#    ax1.set_ylim([0, 200])
-            
-
+### restrict the x and y axis to the range of data
+###ax.set_xlim([0, len(Pos)])
+##if density == 'genes':
+##    ax1.set_ylim([0,25])
+##elif density == 'repeats':
+##    ax1.set_ylim([0, 200])
+#            
+#
 # set y axis label
 ax2.set_ylabel('Polymorphism', size = 10, ha = 'center', fontname = 'Arial')
- 
+# 
 #plt.yticks(fontsize = 10, fontname = 'Arial')
-
-## determine tick position on x axis
-#xpos =  [j for j in range(0, len(positions) + 50, 50)]
-## convert interval windows numbers to genomic positions
-#xtext = list(map(lambda x : (x * 50000) / 1000000, xpos))
-#xtext = list(map(lambda x : str(x), xtext))
-## set up tick positions and labels
-#plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
 #
-## set x axis label
-#ax1.set_xlabel('Position along linkage group (Mb)', size = 10, ha = 'center', fontname = 'Arial')
-
-
-## remove top axes and right axes ticks
+### determine tick position on x axis
+##xpos =  [j for j in range(0, len(positions) + 50, 50)]
+### convert interval windows numbers to genomic positions
+##xtext = list(map(lambda x : (x * 50000) / 1000000, xpos))
+##xtext = list(map(lambda x : str(x), xtext))
+### set up tick positions and labels
+##plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+##
+### set x axis label
+##ax1.set_xlabel('Position along linkage group (Mb)', size = 10, ha = 'center', fontname = 'Arial')
+#
+#
+### remove top axes and right axes ticks
 #ax2.get_xaxis().tick_bottom()
 #ax2.get_yaxis().tick_right()
-
- 
+#
+# 
 # do not show lines around figure, keep bottow line  
 ax2.spines["top"].set_visible(False)    
 ax2.spines["bottom"].set_visible(False)    
 ax2.spines["right"].set_visible(False)    
 ax2.spines["left"].set_visible(False)      
 
-
+#
 # do not show ticks
-plt.tick_params(
+ax2.tick_params(
     axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
     which='both',      # both major and minor ticks are affected
     bottom='on',      # ticks along the bottom edge are off
@@ -337,10 +285,39 @@ plt.tick_params(
     colors = 'black',
     labelsize = 10,
     direction = 'out') # ticks are outside the frame when bottom = 'on
+#
+#
+# do not show ticks
+ax2.tick_params(
+    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='off',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='off', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on
+
 
 
 # do not show ticks
-plt.tick_params(
+ax1.tick_params(
+    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='on',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='on', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on
+#
+#
+# do not show ticks
+ax1.tick_params(
     axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
     which='both',      # both major and minor ticks are affected
     bottom='off',      # ticks along the bottom edge are off
@@ -355,11 +332,18 @@ plt.tick_params(
 
 
 
-# Set the tick labels font name
-for label in ax2.get_yticklabels():
-    label.set_fontname('Arial')
 
-#plt.legend(loc = 'upper left', numpoints = 1)
+
+
+##
+#
+#
+#
+## Set the tick labels font name
+#for label in ax2.get_yticklabels():
+#    label.set_fontname('Arial')
+#
+##plt.legend(loc = 'upper left', numpoints = 1)
 
 
 
