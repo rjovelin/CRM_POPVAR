@@ -142,41 +142,27 @@ def get_small_rna_flanking_SNPs(chromo_sites, rna_coord, flanking_size):
     
     
 # use this function to get indices of SNPs in UTR
-def get_UTR_SNPs(chromo_sites, caeno_gff, elegans_gff, genome_fasta, quantile, unique_transcripts, mirna_target_coord_file):
+def get_UTR_SNPs(chromo_sites, UTR_coord, targets_coord):
     '''
-    (dict, file, file, file, int, file, file)
+    (dict, dict,
+    file, file, int, file, file)
     Take the dictionary with allele counts at each position with coverage, 
-    the remanei gff file, the elegans gff file, the remanei genome fasta file,
-    the quantile of the distribution of elegans annotated UTRs, the file with 
-    valid transcripts (ie. a single transcript per gene), the file with miRNA
-    target coordinates and return a dictionary with chromo as key and indices
+    a dictionnary with UTR coordinates, a dictionary with miRNA targets
+    coordinates for all targets return a dictionary with chromo as key and indices
     of SNPs in UTR with their allele counts excluding miRNA target sites
-    Precondition: All position are 0-based indices
+    Precondition: All position are 0-based indices and non-valid transcripts are removed
+    UTR and target coordinates dictionnaries
     '''
-    
-    # compute threshold based on the distribution of elegans UTR length
-    UTR_length = celegans_three_prime_UTR_length(elegans_gff)
-    threshold = get_percentile(UTR_length, quantile)
-    # get UTR coord {TS1 : [chromo, start, end, orientation]}
-    three_prime = get_three_prime_UTR_positions(caeno_gff, genome_fasta, threshold)    
-    # get a set of valid transcripts
-    valid_transcripts = get_valid_transcripts(unique_transcripts)
-    
-    # remove UTR of non-valid transscripts
-    to_remove = [gene for gene in three_prime if gene not in valid_transcripts]
-    if len(to_remove) != 0:
-        for gene in to_remove:
-            del three_prime[gene]
     
     # create a dict UTR_pos
     UTR_pos = {}
     # loop over genes in three_prime
-    for gene in three_prime:
+    for gene in UTR_coord:
         # get chromo
-        chromo = three_prime[gene][0]
+        chromo = UTR_coord[gene][0]
         # convert to 0-based
-        start = three_prime[gene][1] -1
-        end = three_prime[gene][2]
+        start = UTR_coord[gene][1] -1
+        end = UTR_coord[gene][2]
         # check if chromo in UTR_pos
         if chromo in UTR_pos:
             for j in range(start, end):
@@ -186,24 +172,20 @@ def get_UTR_SNPs(chromo_sites, caeno_gff, elegans_gff, genome_fasta, quantile, u
             for j in range(start, end):
                 UTR_pos[chromo].add(j)
     
-    # get the positions of the miRNA targets {chromo: [[start, end, orientation]]}
-    targets = get_miRNA_target_loci(mirna_target_coord_file, unique_transcripts, 'all')
-    
     # create a dict with the positions of the targets on each chromo
     # {chromo: {set of positions}}
     targets_pos = {}
-    for chromo in targets:
+    for chromo in targets_coord:
         if chromo not in targets_pos:
             targets_pos[chromo] = set()
-        for i in range(len(targets[chromo])):
-            start = targets[chromo][i][0]
-            end = targets[chromo][i][1]
+        for i in range(len(targets_coord[chromo])):
+            start = targets_coord[chromo][i][0]
+            end = targets_coord[chromo][i][1]
             for j in range(start, end):
                 targets_pos[chromo].add(j)
     
     # create a dict with positions of SNPs in UTR
     UTR_snps = {}    
-    
     # loop over chromo in UTR_pos
     for chromo in UTR_pos:
         # check if chromo in chromo_sites
