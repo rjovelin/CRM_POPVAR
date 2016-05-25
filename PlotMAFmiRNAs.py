@@ -324,8 +324,7 @@ graph6 = ax.bar([1, 2.2, 3.4, 4.6, 5.8], target_samplefreq, width, yerr = target
                 error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
 
-print(mirna_samplefreq)
-print(mirna_sem)
+
 #
 #width = 0.2
 #
