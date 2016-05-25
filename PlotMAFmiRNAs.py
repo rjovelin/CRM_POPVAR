@@ -18,6 +18,7 @@ import numpy as np
 from scipy import stats
 import math
 import sys
+import json
 # import custom modules
 from manipulate_sequences import *
 from miRNA_target import *
@@ -71,11 +72,16 @@ print('MAF for miRNA sites done')
 mirna_pos = get_small_rna_sites(mirnas_coord)
 print('got miRNA positions')
 
-# compute threshold based on the distribution of elegans UTR length
-UTR_length = celegans_three_prime_UTR_length('../Genome_Files/c_elegans.PRJNA13758.WS248.annotations.gff3')
-threshold = get_percentile(UTR_length, 99)
-# get UTR coord {TS1 : [chromo, start, end, orientation]}
-three_prime = get_three_prime_UTR_positions('../Genome_Files/356_10172014.gff3', '../Genome_Files/noamb_356_v1_4.txt', threshold)
+# get UTR coordinates from json file
+infile = open('CremUTRCoordsNo.json')
+three_prime = json.load(infile)
+infile.close()
+
+## compute threshold based on the distribution of elegans UTR length
+#UTR_length = celegans_three_prime_UTR_length('../Genome_Files/c_elegans.PRJNA13758.WS248.annotations.gff3')
+#threshold = get_percentile(UTR_length, 99)
+## get UTR coord {TS1 : [chromo, start, end, orientation]}
+#three_prime = get_three_prime_UTR_positions('../Genome_Files/356_10172014.gff3', '../Genome_Files/noamb_356_v1_4.txt', threshold)
 # get all the predicted UTR positions in the genome
 UTR_pos = get_UTR_sites(three_prime)
 print('got UTR positions')
