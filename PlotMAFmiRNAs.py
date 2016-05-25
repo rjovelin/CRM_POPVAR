@@ -392,12 +392,12 @@ for label in ax.get_yticklabels():
     label.set_fontname('Arial')
 
 # create legend
-syn = mpatches.Patch(color = '#810f7c' , edgecolor = 'black', fontsize = 8, label= 'Syn')
-rep = mpatches.Patch(color = '#8856a7', edgecolor = 'black', fontsize = 8, label = 'Rep')
-mirna = mpatches.Patch(color = '#8c96c6', edgecolor = 'black', fontsize = 8, label = 'miRNA')
-nearmirna = mpatches.Patch(color = '#9ebcda', edgecolor = 'black', fontsize = 8, label = 'near miRNA')
-targets = mpatches.Patch(color = '#bfd3e6', edgecolor = 'black', fontsize = 8, label = 'target')
-utr = mpatches.Patch(color = '#edf8fb', edgecolor = 'black', fontsize = 8, label = 'UTR')
+syn = mpatches.Patch(color = '#810f7c' , edgecolor = 'black', linewidth = 1, label= 'Syn')
+rep = mpatches.Patch(color = '#8856a7', edgecolor = 'black', linewidth = 1, label = 'Rep')
+mirna = mpatches.Patch(color = '#8c96c6', edgecolor = 'black', linewidth = 1, label = 'miRNA')
+nearmirna = mpatches.Patch(color = '#9ebcda', edgecolor = 'black', linewidth = 1, label = 'near miRNA')
+targets = mpatches.Patch(color = '#bfd3e6', edgecolor = 'black', linewidth = 1, label = 'target')
+utr = mpatches.Patch(color = '#edf8fb', edgecolor = 'black', linewidth = 1, label = 'UTR')
 plt.legend(handles=[syn, rep, mirna, nearmirna, targets, utr], loc = 1, fontsize = 8, frameon = False)
 
 # add margin on the x-axis
