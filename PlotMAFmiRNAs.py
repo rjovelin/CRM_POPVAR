@@ -43,14 +43,6 @@ MAF_SYN = MAF_SNP('../Genome_Files/CDS_SNP_DIVERG.txt', '../Genome_Files/unique_
 print('SNP', len(MAF_SYN))
 print('MAF for synonymous sites done')
 
-# express frequencies in %
-for i in range(len(MAF_REP)):
-    MAF_REP[i] = MAF_REP[i] * 100
-for i in range(len(MAF_SYN)):
-    MAF_SYN[i] = MAF_SYN[i] * 100
-MAF_REP_hist = np.histogram(MAF_REP, range(0, 51, 10))
-MAF_SYN_hist = np.histogram(MAF_SYN, range(0, 51, 10))
-
 # get the allele counts for all sites with coverage, exclude sites with sample size < 10
 chromo_sites = get_non_coding_snps('../SNP_files/', 10)
 print('got allele counts in genome')
@@ -58,19 +50,17 @@ print('got allele counts in genome')
 # get the coordinates of the miRNA loci
 mirnas_coord = get_mirna_loci('CRM_miRNAsCoordinatesFinal.txt')
 print('got miRNA coordinates')
-
 # get the allele counts for miRNA sites
 mirna_sites = get_feature_sites(chromo_sites, mirnas_coord)
 print('got allele counts for miRNAs')
-
 # compute MAF for mirna sites (sites with sample size < 10 are already excluded)
 MAF_mirna = MAF_non_coding(mirna_sites)
 print('miRNAs', len(MAF_mirna))
 print('MAF for miRNA sites done')
 
-# get all the miRNA positions in genome
-mirna_pos = get_small_rna_sites(mirnas_coord)
-print('got miRNA positions')
+## get all the miRNA positions in genome
+#mirna_pos = get_small_rna_sites(mirnas_coord)
+#print('got miRNA positions')
 
 # get SNPs flanking miRNAs within 500 bp of the miRNAs
 mirna_flanking_snps = get_small_rna_flanking_SNPs(chromo_sites, mirnas_coord, 500)
@@ -117,6 +107,44 @@ print('SNPs within 500 bp of miRNAs: ', mirna_snps)
 # sampled 5000 SNPs 1000 times among the number of SNPs near miRNAs
 mirna_resampled_MAF = SNP_MAF_randomization(mirna_flanking_snps, 5000, 1000)
 print('resampled SNPs near miRNAs')
+
+
+
+
+
+
+###################### maf targets
+
+# get the coordinates of all target sites
+target_coord = get_miRNA_target_loci('Cremanei_miRNA_sites.txt', '../Genome_Files/unique_transcripts.txt', 'all')
+print('got miRNA target site coordinates')
+# get the allele counts for all targets
+target_sites = get_feature_sites(chromo_sites, target_coord)
+print('got allele counts for target sites')
+
+# compute MAF for all targets
+MAF_targets = MAF_non_coding(target_sites)
+print('MAF for miRNA targets done')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###############
+
 
 
 
@@ -173,7 +201,7 @@ print('conversion to % frequencies done')
 maxfreq = []
 for i in mirna_resampled_MAF:
     maxfreq.append(max(mirna_resampled_MAF))
-for i in [MAF_REP, MAF_SYN, MAF_mirna, MAF_intergenic]:
+for i in [MAF_REP, MAF_SYN, MAF_mirna]:
     maxfreq.append(max(i))
 print(max(maxfreq))
 assert max(maxfreq) <= 50, 'MAF should be lower than 50%'
