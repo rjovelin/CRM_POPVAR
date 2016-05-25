@@ -264,7 +264,7 @@ def ZScoreTest(zscore):
         elif -2.58 <= zscore <= 2.58:
             P = 'NS'
     if P == 'NS':
-        if zscore < -1.96 or z_score > 1.96:
+        if zscore < -1.96 or zscore > 1.96:
             P = 0.05
         elif -1.96 <= zscore <= 1.96:
             P = 'NS'
