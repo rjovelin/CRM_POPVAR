@@ -307,21 +307,21 @@ width = 0.2
 
 
 # plot SNP proportions SYN
-ax.bar([0, 1.2, 2.4, 3.6, 4.8], SYN_freq, width, color = '#810f7c', edgecolor = 'black', linewidth = 1)
+graph1 = ax.bar([0, 1.2, 2.4, 3.6, 4.8], SYN_freq, width, color = '#810f7c', edgecolor = 'black', linewidth = 1)
 # plot SNP proportions REP
-ax.bar([0.2, 1.4, 2.6, 3.8, 5], REP_freq, width, color = '#8856a7', edgecolor = 'black', linewidth = 1)
+graph2 = ax.bar([0.2, 1.4, 2.6, 3.8, 5], REP_freq, width, color = '#8856a7', edgecolor = 'black', linewidth = 1)
 # plot SNP proportions miRNAs
-ax.bar([0.4, 1.6, 2.8, 4, 5.2], mirna_freq, width, color = '#8c96c6', edgecolor = 'black', linewidth = 1)
+graph3 = ax.bar([0.4, 1.6, 2.8, 4, 5.2], mirna_freq, width, color = '#8c96c6', edgecolor = 'black', linewidth = 1)
 # plot SNP proportions for resampled SNPs near mirnas
-ax.bar([0.6, 1.8, 3, 4.2, 5.4], mirna_samplefreq, width, yerr = mirna_sem, color = '#9ebcda',
-       edgecolor = 'black', linewidth = 1, 
-       error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
+graph4 = ax.bar([0.6, 1.8, 3, 4.2, 5.4], mirna_samplefreq, width, yerr = mirna_sem, color = '#9ebcda', 
+                edgecolor = 'black', linewidth = 1,
+                error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 # plot SNP proportions for resampled SNPs near miRNAs
-ax.bar([0.8, 2, 3.2, 4.4, 5.6], targets_freq, width, color = '#bfd3e6', edgecolor = 'black', linewidth = 1)
+graph5 = ax.bar([0.8, 2, 3.2, 4.4, 5.6], targets_freq, width, color = '#bfd3e6', edgecolor = 'black', linewidth = 1)
 # plot SNP proportions for resampled SNPs in UTRs
-ax.bar([1, 2.2, 3.4, 4.6, 5.8], target_samplefreq, width, yerr = target_sem, color = '#edf8fb',
-       edgecolor = 'black', linewidth = 1,
-       error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
+graph6 = ax.bar([1, 2.2, 3.4, 4.6, 5.8], target_samplefreq, width, yerr = target_sem, color = '#edf8fb',
+                edgecolor = 'black', linewidth = 1,
+                error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
 #
 #width = 0.2
@@ -388,14 +388,11 @@ ax.tick_params(
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
 
-## add lines
-#lns = graph1+graph2
-## get labels
-#if density == 'genes':
-#    labs = ['Genes', 'Diversity']
-#elif density == 'repeats':
-#    labs = ['Repeats', 'Diversity']
-## plot legend
-#ax2.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
+# add lines
+lns = graph1+graph2+graph3+graph4+graph5+graph6
+# get labels
+labs = ['Syn', 'Rep', 'miRNA', 'near miRNAs', 'targets', 'UTRs']
+# plot legend
+ax.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
 
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
