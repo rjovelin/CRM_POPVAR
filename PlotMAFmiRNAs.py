@@ -72,24 +72,6 @@ print('MAF for miRNA sites done')
 mirna_pos = get_small_rna_sites(mirnas_coord)
 print('got miRNA positions')
 
-# get UTR coordinates from json file
-infile = open('CremUTRCoordsNo.json')
-three_prime = json.load(infile)
-infile.close()
-
-## compute threshold based on the distribution of elegans UTR length
-#UTR_length = celegans_three_prime_UTR_length('../Genome_Files/c_elegans.PRJNA13758.WS248.annotations.gff3')
-#threshold = get_percentile(UTR_length, 99)
-## get UTR coord {TS1 : [chromo, start, end, orientation]}
-#three_prime = get_three_prime_UTR_positions('../Genome_Files/356_10172014.gff3', '../Genome_Files/noamb_356_v1_4.txt', threshold)
-# get all the predicted UTR positions in the genome
-UTR_pos = get_UTR_sites(three_prime)
-print('got UTR positions')
-
-# get all the gene positions in the genome
-gene_pos = get_gene_sites('../Genome_Files/356_10172014.gff3')
-print('got gene positions')
-
 # get SNPs flanking miRNAs within 500 bp of the miRNAs
 mirna_flanking_snps = get_small_rna_flanking_SNPs(chromo_sites, mirnas_coord, 500)
 print('got allele counts in miRNA flanking regions')
@@ -134,6 +116,10 @@ print('SNPs within 500 bp of miRNAs: ', mirna_snps)
 # resample SNPs and compute MAF {replicate_number : [list of MAF values]}
 # sampled 5000 SNPs 1000 times among the number of SNPs near miRNAs
 mirna_resampled_MAF = SNP_MAF_randomization(mirna_flanking_snps, 5000, 1000)
+print('resampled SNPs near miRNAs')
+
+
+
 
 ###################### CONTNUE HERE
 
@@ -170,15 +156,6 @@ mirna_resampled_MAF = SNP_MAF_randomization(mirna_flanking_snps, 5000, 1000)
 
 #####################
 
-# get the coodinates of the intergenic sites
-# this modifies the dict of allele counts for all sites
-intergenic_sites = get_intergenic_sites(chromo_sites, gene_pos, pirna_pos, mirna_pos, UTR_pos, True)
-print('got intergenic positions')
-
-# get the MAF for intergenic sites, (sites with sample size < 10 are already excluded)
-MAF_intergenic = MAF_non_coding(intergenic_sites)
-print('MAF for intergenic sites done')
-
 # express MAF frequencies in %
 for i in range(len(MAF_REP)):
     MAF_REP[i] = MAF_REP[i] * 100
@@ -186,8 +163,6 @@ for i in range(len(MAF_SYN)):
     MAF_SYN[i] = MAF_SYN[i] * 100
 for i in range(len(MAF_mirna)):
     MAF_mirna[i] = MAF_mirna[i] * 100
-for i in range(len(MAF_intergenic)):
-    MAF_intergenic[i] = MAF_intergenic[i] * 100
 for i in mirna_resampled_MAF:
     for j in range(len(mirna_resampled_MAF[i])):
         mirna_resampled_MAF[i][j] = mirna_resampled_MAF[i][j] * 100
