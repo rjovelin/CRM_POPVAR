@@ -182,9 +182,6 @@ print('got SNP counts in each MAF bin')
 
 # get the proportions of SNPs in each MAF bins
 REP_freq = [i / sum(MAF_REP_hist[0]) for i in MAF_REP_hist[0]]
-print(sum(MAF_REP_hist[0]))
-print(MAF_REP_hist[0])
-print(REP_freq)
 SYN_freq = [i / sum(MAF_SYN_hist[0]) for i in MAF_SYN_hist[0]]
 mirna_freq = [i / sum(MAF_mirna_hist[0]) for i in MAF_mirna_hist[0]]
 targets_freq = [i / sum(MAF_targets_hist[0]) for i in MAF_targets_hist[0]]
@@ -228,27 +225,32 @@ for i in nums:
 print('got SNP proportions in each MAF bin')
 
 
+# compare MAF miRNA to other sites
+# save results in summary file
+newfile = open('TestMAFDistribution.txt', 'w')
+newfile.write('Comparison of MAF distributions\n')
+newfile.write('=' * 32 + '\n')
+newfile.write('\t'.join(['miRNA_sites', 'sites', 'Chi2', 'P']) + '\n')
+
+sites = ['REP', 'SYN', 'Targets']
+maf = [MAF_REP_hist[0], MAF_SYN_hist[0], MAF_targets_hist[0]]
+for i in range(len(maf)):
+    diff = stats.chi2_contingency(MAF_mirna_hist[0], maf[i])    
+    newfile.write('\t'.join(['miRNA', sites[i], str(diff[0]), str(diff[1])]) + '\n')
+
+sites = ['REP', 'SYN']
+maf = [MAF_REP_hist[0], MAF_SYN_hist[0]]
+for i in range(len(maf)):
+    diff = stats.chi2_contingency(MAF_targets_hist[0], maf[i])
+    newfile.write('\t'.join(['targets', sites[i], str(diff[0]), str(diff[1])]) + '\n')
 
 
+newfile.close()
 
-#average = np.mean(mirna_MAF_proportions[i])
-#stdev = np.std(mirna_MAF_proportions[i])
-#observed = empirical_mirna_MAF[i]
-#z_score = (observed - average) / stdev
-## critical values for 1-sample 2-tailed z-test: 0.05: +- 1.96, 0.01: +- 2.58, 0.001: +-3.27
-## Ho : obsvered == mean, H1: observed != mean
-#if z_score < -1.96 or z_score > 1.96:
-#     P5 = '*'
-#elif -1.96 <= z_score <= 1.96:
-#     P5 = 'NS'
-#if z_score < -2.58 or z_score > 2.58:
-#     P1 = '*'
-#elif -2.58 <= z_score <= 2.58:
-#     P1 = 'NS'
-#if z_score < -3.27 or z_score > 3.27:
-#    P01 = '*'
-#elif -3.27 <= z_score <= 3.27:
-#    P01 = 'NS'
+
+print('chi2 results of MAF differences written to file')
+
+
 
 
 
@@ -359,96 +361,7 @@ print('got SNP proportions in each MAF bin')
 
 
 
-#
-#print('histograms done')
-#
-## compare MAF distributions
-#diff_MAF_REP_SYN = stats.chi2_contingency([MAF_REP_hist[0], MAF_SYN_hist[0]])
-#diff_MAF_REP_mirna = stats.chi2_contingency([MAF_REP_hist[0], MAF_mirna_hist[0]])
-#diff_MAF_REP_pirna = stats.chi2_contingency([MAF_REP_hist[0], MAF_pirna_hist[0]])
-#diff_MAF_REP_intergenic = stats.chi2_contingency([MAF_REP_hist[0], MAF_intergenic_hist[0]])
-#diff_MAF_SYN_mirna = stats.chi2_contingency([MAF_SYN_hist[0], MAF_mirna_hist[0]])
-#diff_MAF_SYN_pirna = stats.chi2_contingency([MAF_SYN_hist[0], MAF_pirna_hist[0]])
-#diff_MAF_SYN_intergenic = stats.chi2_contingency([MAF_SYN_hist[0], MAF_intergenic_hist[0]])
-#diff_MAF_mirna_pirna = stats.chi2_contingency([MAF_mirna_hist[0], MAF_pirna_hist[0]])
-#diff_MAF_mirna_intergenic = stats.chi2_contingency([MAF_mirna_hist[0], MAF_intergenic_hist[0]])
-#diff_MAF_pirna_intergenic = stats.chi2_contingency([MAF_pirna_hist[0], MAF_intergenic_hist[0]])
-#
-#print('chi2 MAF comparisons done')
-#
-## make a list of test results
-#test_results = [diff_MAF_REP_SYN, diff_MAF_REP_mirna, diff_MAF_REP_pirna, diff_MAF_REP_intergenic,
-#                diff_MAF_SYN_mirna, diff_MAF_SYN_pirna, diff_MAF_SYN_intergenic,
-#                diff_MAF_mirna_pirna, diff_MAF_mirna_intergenic, diff_MAF_pirna_intergenic]
-#
-## make a list of strings for pairwise comparisons
-#pairwise_comp = ['REP_vs_SYN', 'REP_vs_mirna', 'REP_vs_pirna', 'REP_vs_intergenic', 'SYN_vs_mirna', 'SYN_vs_pirna', 'SYN_vs_intergenic',
-#'mirna_vs_pirna', 'mirna_vs_intergenic', 'pirna_vs_intergenic']
-#
-## open summary file
-#summary_file = open('summary_MAF_small_RNAs.txt', 'w')
-#
-## write results to summary file
-#summary_file.write('comparison of the MAF distributions\n')
-#summary_file.write('-' * 36 + '\n')
-#summary_file.write('distributions' + '\t' + 'chi2' + '\t' + 'p-val' + '\t' + 'dof' + '\n')
-#
-## loop over list of string comparisons
-## write comp to file and write results of chi2 to file
-#for i in range(len(pairwise_comp)):
-#    summary_file.write(pairwise_comp[i] + '\t')
-#    content = '\t'.join([str(test_results[i][j]) for j in range(3)])
-#    summary_file.write(content + '\n')
-#
-#print('chi2 results of MAF differences written to file')
-#
-## write tables to file from histograms
-## open file to write the MAF frequencies of the different SNPs
-#newfile = open('MAF_SNPs_small_RNAs.txt', 'w')
-#newfile.write('MAF' + '\t' + 'REP' + '\t' + 'SYN' + '\t' + 'intergenic' + '\t' + 'miRNAs' + '\t' + 'piRNAs' + '\n')
-#
-#print(len(MAF_REP_hist[0]))
-#print(len(MAF_REP_hist[1]))
-#
-#for i in range(len(MAF_REP_hist[0])):
-#    newfile.write(str(MAF_REP_hist[1][i]) + ':' + str(MAF_REP_hist[1][i] + 10) + '\t' +
-#    str(MAF_REP_hist[0][i]) + '\t' + str(MAF_SYN_hist[0][i]) + '\t' + str(MAF_intergenic_hist[0][i]) + '\t' +
-#    str(MAF_mirna_hist[0][i]) + '\t' + str(MAF_pirna_hist[0][i]) + '\n')
-#newfile.close()
-#
-#print('MAF distribution written to file')
-#
-## compute pairwise difference between average MAF
-#
-## make a list of MAF lists
-#MAF_list = [MAF_REP, MAF_SYN, MAF_intergenic, MAF_mirna, MAF_pirna]
-## make a list of MAF names
-#MAF_names = ['REP', 'SYN', 'intergenic', 'mirna', 'pirna']
-#
-#
-#summary_file.write('\n')
-#summary_file.write('comparison of mean MAF differences\n')
-#summary_file.write('-' * 35 + '\n')
-#summary_file.write('distributions' + '\t' + 'wilcoxon' + '\t' + 'p-val' + '\n')
-#
-## loop over MAF_list, comparre average differences
-#for i in range(0, len(MAF_list) - 1):
-#    for j in range(i+1, len(MAF_list)):
-#        # test mean differences    
-#        wilcoxon, p_val = stats.ranksums(MAF_list[i], MAF_list[j])
-#        summary_file.write(MAF_names[i] + '_' + MAF_names[j] + '\t' + str(wilcoxon) + '\t' + str(p_val) + '\n')
-#
-#
-#summary_file.write('\n')
-#summary_file.write('Mean MAF at sites\n')
-#summary_file.write('-' * 18 + '\n')
-#summary_file.write('sites' + '\t' + 'mean_MAF' + '\t' + 'SEM' + '\n')
-#for i in range(len(MAF_list)):
-#    summary_file.write('\t'.join([MAF_names[i], str(np.mean(MAF_list[i])), str(np.std(MAF_list[i]) / math.sqrt(len(MAF_list[i])))]) + '\n') 
-#
-## close summary file
-#summary_file.close()
-#
+
 #
 #
 #
