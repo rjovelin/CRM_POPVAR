@@ -244,154 +244,85 @@ for i in range(len(maf)):
     diff = stats.chi2_contingency(MAF_targets_hist[0], maf[i])
     newfile.write('\t'.join(['targets', sites[i], str(diff[0]), str(diff[1])]) + '\n')
 
+newfile.write('\n' * 3)
+newfile.write('Comparison of SNP proportions to random resampling\n')
+newfile.write('=' * 31)
+newfile.write('\t'.join(['sites', 'MAF', 'observed', 'mean_sample', 'stdev_sample', 'z-score', 'P']) + '\n')
 
+# write function to check significance of zscore
+def ZScoreTest(zscore):
+    # critical values for 1-sample 2-tailed z-test: 0.05: +- 1.96, 0.01: +- 2.58, 0.001: +-3.27
+    # Ho : obsvered == mean, H1: observed != mean
+    if zscore < -3.27 or zscore > 3.27:
+        P = 0.001
+    elif -3.27 <= zscore <= 3.27:
+        P = 'NS'
+    # if not significant, ask if significant at different alpha
+    if P == 'Ns':
+        if zscore < -2.58 or zscore > 2.58:
+            P = 0.01
+        elif -2.58 <= zscore <= 2.58:
+            P = 'NS'
+    if P == 'NS':
+        if zscore < -1.96 or z_score > 1.96:
+            P = 0.05
+        elif -1.96 <= zscore <= 1.96:
+            P = 'NS'
+    return P
+
+j = 0
+# perform z-test for each MAF bin between mirnas and resampled SNPs near miRNAs
+for i in nums:
+    observed = mirna_freq[i]
+    average = mirna_samplefreq[i]
+    stdev = np.std(mirna_prop[i])
+    zscore = (observed - average) / stdev
+    P = ZScoreTest(zscore)        
+    newfile.write('\t'.join(['miRNAs', ':'.join([str(j), str(j+10)]), str(observed), str(average), str(zscore), str(P)]) + '\n')    
+    j += 10        
+
+j = 0
+# perform z-test for each MAF bin between targets and resampled SNPs in UTR
+for i in nums:
+    observed = targets_freq[i]
+    average = target_samplefreq[i]
+    stdev = np.std(targets_prop[i])
+    zscore = (observed - average) / stdev
+    P = ZScoreTest(zscore)        
+    newfile.write('\t'.join(['targets', ':'.join([str(j), str(j+10)]), str(observed), str(average), str(zscore), str(P)]) + '\n')    
+    j += 10        
+
+# close file after writing
 newfile.close()
+print('results of MAF differences written to file')
 
 
-print('chi2 results of MAF differences written to file')
+# create figure
+fig = plt.figure(1, figsize = (4, 2))
+# add a plot to figure (1 row, 1 column, 1 plot)
+ax = fig.add_subplot(1, 1, 1)  
+
+# set width of bar
+width = 0.2
 
 
+# plot SNP proportions SYN
+ax.bar([0, 1.2, 2.4, 3.6, 4.8], SYN_freq, width, color = '#810f7c', edgecolor = 'black', linewidth = 1)
+# plot SNP proportions REP
+ax.bar([0.2, 1.4, 2.6, 3.8, 5], REP_freq, width, color = '#8856a7', edgecolor = 'black', linewidth = 1)
+# plot SNP proportions miRNAs
+ax.bar([0.4, 1.6, 2.8, 4, 5.2], mirna_freq, width, color = '#8c96c6', edgecolor = 'black', linewidth = 1)
+# plot SNP proportions for resampled SNPs near mirnas
+ax.bar([0.6, 1.8, 3, 4.2, 5.4], mirna_samplefreq, width, yerr = mirna_sem, color = '#9ebcda',
+       edgecolor = 'black', linewidth = 1, 
+       error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
+# plot SNP proportions for resampled SNPs near miRNAs
+ax.bar([0.8, 2, 3.2, 4.4, 5.6], targets_freq, width, color = '#bfd3e6', edgecolor = 'black', linewidth = 1)
+# plot SNP proportions for resampled SNPs in UTRs
+ax.bar([1, 2.2, 3.4, 4.6, 5.8], target_sample_freq, width, yerr = target_sem, color = '#edf8fb',
+       edgecolor = 'black', linewidth = 1,
+       error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
-
-
-
-
-#
-## loop over names
-#for j in range(len(names)):
-#    newfile.write('\n')
-#    newfile.write('MAF for ' + names[j] + '\n')
-#    newfile.write('\t'.join(['MAF', 'mean_sample', 'margin', 'stdev_sample', 'l95', 'h95', 'observed', 'z-score', 'alpha_0.05', 'alpha_0.01', 'alpha_0.001']) + '\n')
-#    # loop over sorted keys
-#    for i in maf_limit:
-#        # compute mean
-#        average = np.mean(UTR_MAF_proportions[i])
-#        # get standard deviation
-#        stdev = np.std(UTR_MAF_proportions[i])
-#        # compute 95% CI
-#        stderror = stdev / math.sqrt(len(UTR_MAF_proportions[i]))
-#        # compute the margin error (critical value = 1.96 for 95% CI)
-#        margin = 1.96 * stderror
-#        lCI = average - margin
-#        hCI = average + margin
-#        observed = empirical[j][i]
-#        z_score = (observed - average) / stdev
-#        # critical values for 1-sample 2-tailed z-test: 0.05: +- 1.96, 0.01: +- 2.58, 0.001: +-3.27
-#        # Ho : obsvered == mean, H1: observed != mean
-#        if z_score < -1.96 or z_score > 1.96:
-#            P5 = '*'
-#        elif -1.96 <= z_score <= 1.96:
-#            P5 = 'NS'
-#        if z_score < -2.58 or z_score > 2.58:
-#            P1 = '*'
-#        elif -2.58 <= z_score <= 2.58:
-#            P1 = 'NS'
-#        if z_score < -3.27 or z_score > 3.27:
-#            P01 = '*'
-#        elif -3.27 <= z_score <= 3.27:
-#            P01 = 'NS'
-#        newfile.write('\t'.join([str(i), str(average), str(margin), str(stdev), str(lCI), str(hCI), str(observed), str(z_score), str(P5), str(P1), str(P01)]) + '\n')
-#    
-## close file after writing
-#newfile.close()
-
-
-
-
-## get the proportions of SNPs in each MAF bin
-#UTR_MAF_proportions = get_MAF_distribution_from_replicates(UTR_resampled_MAF)
-#
-## get the SNP proportions for the observed SNPs
-#empirical_all_MAF = SNP_proportions_MAF_bin(MAF_all_targets)
-#empirical_crm_MAF = SNP_proportions_MAF_bin(MAF_crm_targets)
-#empirical_crmcla_MAF = SNP_proportions_MAF_bin(MAF_crmcla_targets)
-#empirical_crmclacel_MAF = SNP_proportions_MAF_bin(MAF_crmclacel_targets)
-#
-#print(len(empirical_all_MAF))
-#print(len(empirical_crm_MAF))
-#print(len(empirical_crmcla_MAF))
-#print(len(empirical_crmclacel_MAF))
-#
-## creat a list of keys, being the MAF lower bound in the dicts with MAF proportions
-#maf_limit = [i for i in empirical_all_MAF]
-## sort list
-#maf_limit.sort()
-#
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
-#
-#
-#
-#
-################################################### SAVE FIG
-#
-#
-## create figure
-#fig = plt.figure(1, figsize = (4, 2))
-## add a plot to figure (1 row, 1 column, 1 plot)
-#ax = fig.add_subplot(1, 1, 1)  
-#
-#
-##colorscheme = ['#810f7c', '#8856a7', '#8c96c6', '#b3cde3', '#edf8fb']
-#
-#
-#colorscheme = ['#810f7c', '#8856a7']
-#
-#
-#
-#repfreq = []
-#for i in MAF_REP_hist[0]:
-#    repfreq.append(i / sum(MAF_REP_hist[0]))
-#synfreq = []
-#for i in MAF_SYN_hist[0]:
-#    synfreq.append(i / sum(MAF_SYN_hist[0]))
-#
-## plot the repeat of gene density per window
-##ax.hist([MAF_REP,MAF_SYN], color = colorscheme)
 #
 #width = 0.2
 #
@@ -400,92 +331,83 @@ print('chi2 results of MAF differences written to file')
 #ax.bar([0, 0.4, 0.8, 1.2, 1.6], repfreq, width, yerr = [0.1, 0.2, 0.05, 0, 0.3], color = '#810f7c',
 #       error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 #ax.bar([0.2, 0.6, 1, 1.4, 1.8], synfreq, width, color = '#8856a7')
+
+
+
+
+ax.set_ylabel('Proportion of SNPs', size = 10, ha = 'center', fontname = 'Arial')
+
+
+
+ 
+## determine tick position on x axis
+#xpos =  [j for j in range(0, len(positions) + 50, 50)]
+## convert interval windows numbers to genomic positions
+#xtext = list(map(lambda x : (x * 50000) / 1000000, xpos))
+#xtext = list(map(lambda x : str(x), xtext))
+## set up tick positions and labels
+#plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+#plt.yticks(fontsize = 0)
+
+# set x axis label
+ax.set_xlabel('Minor Allele Frequency', size = 10, ha = 'center', fontname = 'Arial')
+
+
+# do not show lines around figure, keep bottow line  
+ax.spines["top"].set_visible(False)    
+ax.spines["bottom"].set_visible(True)    
+ax.spines["right"].set_visible(False)    
+ax.spines["left"].set_visible(False)      
+# offset the spines
+for spine in ax.spines.values():
+  spine.set_position(('outward', 5))
+  
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
+
+
+# do not show ticks on 1st graph
+ax.tick_params(
+    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='on',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='on', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on
 #
 #
-#
-#
-#ax.set_ylabel('Proportion of SNPs', size = 10, ha = 'center', fontname = 'Arial')
-#
-#
-#
-# 
-### determine tick position on x axis
-##xpos =  [j for j in range(0, len(positions) + 50, 50)]
-### convert interval windows numbers to genomic positions
-##xtext = list(map(lambda x : (x * 50000) / 1000000, xpos))
-##xtext = list(map(lambda x : str(x), xtext))
-### set up tick positions and labels
-##plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
-##plt.yticks(fontsize = 0)
-#
-## set x axis label
-#ax.set_xlabel('Minor Allele Frequency', size = 10, ha = 'center', fontname = 'Arial')
-#
-#
-## do not show lines around figure, keep bottow line  
-#ax.spines["top"].set_visible(False)    
-#ax.spines["bottom"].set_visible(True)    
-#ax.spines["right"].set_visible(False)    
-#ax.spines["left"].set_visible(False)      
-## offset the spines
-#for spine in ax.spines.values():
-#  spine.set_position(('outward', 5))
-#  
-## add a light grey horizontal grid to the plot, semi-transparent, 
-#ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
-## hide these grids behind plot objects
-#ax.set_axisbelow(True)
-#
-#
-## do not show ticks on 1st graph
-#ax.tick_params(
-#    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
-#    which='both',      # both major and minor ticks are affected
-#    bottom='on',      # ticks along the bottom edge are off
-#    top='off',         # ticks along the top edge are off
-#    right = 'off',
-#    left = 'off',          
-#    labelbottom='on', # labels along the bottom edge are off 
-#    colors = 'black',
-#    labelsize = 10,
-#    direction = 'out') # ticks are outside the frame when bottom = 'on
-##
-##
-## do not show ticks
-#ax.tick_params(
-#    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
-#    which='both',      # both major and minor ticks are affected
-#    bottom='off',      # ticks along the bottom edge are off
-#    top='off',         # ticks along the top edge are off
-#    right = 'off',
-#    left = 'off',          
-#    labelbottom='off', # labels along the bottom edge are off 
-#    colors = 'black',
-#    labelsize = 10,
-#    direction = 'out') # ticks are outside the frame when bottom = 'on
-#
-#
-#for label in ax.get_yticklabels():
-#    label.set_fontname('Arial')
-#
-### add lines
-##lns = graph1+graph2
-### get labels
-##if density == 'genes':
-##    labs = ['Genes', 'Diversity']
-##elif density == 'repeats':
-##    labs = ['Repeats', 'Diversity']
-### plot legend
-##ax2.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#fig.savefig('testfile.pdf', bbox_inches = 'tight')
+# do not show ticks
+ax.tick_params(
+    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='off',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='off', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on
+
+
+for label in ax.get_yticklabels():
+    label.set_fontname('Arial')
+
+## add lines
+#lns = graph1+graph2
+## get labels
+#if density == 'genes':
+#    labs = ['Genes', 'Diversity']
+#elif density == 'repeats':
+#    labs = ['Repeats', 'Diversity']
+## plot legend
+#ax2.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
+
+
+fig.savefig('testfile.pdf', bbox_inches = 'tight')
