@@ -246,7 +246,7 @@ for i in range(len(maf)):
 
 newfile.write('\n' * 3)
 newfile.write('Comparison of SNP proportions to random resampling\n')
-newfile.write('=' * 31)
+newfile.write('=' * 31 + '\n')
 newfile.write('\t'.join(['sites', 'MAF', 'observed', 'mean_sample', 'stdev_sample', 'z-score', 'P']) + '\n')
 
 # write function to check significance of zscore
@@ -319,7 +319,7 @@ ax.bar([0.6, 1.8, 3, 4.2, 5.4], mirna_samplefreq, width, yerr = mirna_sem, color
 # plot SNP proportions for resampled SNPs near miRNAs
 ax.bar([0.8, 2, 3.2, 4.4, 5.6], targets_freq, width, color = '#bfd3e6', edgecolor = 'black', linewidth = 1)
 # plot SNP proportions for resampled SNPs in UTRs
-ax.bar([1, 2.2, 3.4, 4.6, 5.8], target_sample_freq, width, yerr = target_sem, color = '#edf8fb',
+ax.bar([1, 2.2, 3.4, 4.6, 5.8], target_samplefreq, width, yerr = target_sem, color = '#edf8fb',
        edgecolor = 'black', linewidth = 1,
        error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
@@ -332,26 +332,18 @@ ax.bar([1, 2.2, 3.4, 4.6, 5.8], target_sample_freq, width, yerr = target_sem, co
 #       error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 #ax.bar([0.2, 0.6, 1, 1.4, 1.8], synfreq, width, color = '#8856a7')
 
-
-
-
 ax.set_ylabel('Proportion of SNPs', size = 10, ha = 'center', fontname = 'Arial')
 
-
-
- 
-## determine tick position on x axis
-#xpos =  [j for j in range(0, len(positions) + 50, 50)]
-## convert interval windows numbers to genomic positions
-#xtext = list(map(lambda x : (x * 50000) / 1000000, xpos))
-#xtext = list(map(lambda x : str(x), xtext))
-## set up tick positions and labels
-#plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
-#plt.yticks(fontsize = 0)
+# determine tick position on x axis
+xpos =  [0, 1.2, 2.4, 3.6, 4.8, 6]
+xtext = [0, 10, 20, 30, 40, 50]
+xtext = list(map(lambda x : str(x), xtext))
+# set up tick positions and labels
+plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+plt.yticks(fontsize = 0)
 
 # set x axis label
-ax.set_xlabel('Minor Allele Frequency', size = 10, ha = 'center', fontname = 'Arial')
-
+ax.set_xlabel('Minor Allele Frequency (%)', size = 10, ha = 'center', fontname = 'Arial')
 
 # do not show lines around figure, keep bottow line  
 ax.spines["top"].set_visible(False)    
@@ -367,7 +359,6 @@ ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5,
 # hide these grids behind plot objects
 ax.set_axisbelow(True)
 
-
 # do not show ticks on 1st graph
 ax.tick_params(
     axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
@@ -380,8 +371,7 @@ ax.tick_params(
     colors = 'black',
     labelsize = 10,
     direction = 'out') # ticks are outside the frame when bottom = 'on
-#
-#
+
 # do not show ticks
 ax.tick_params(
     axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
@@ -395,7 +385,6 @@ ax.tick_params(
     labelsize = 10,
     direction = 'out') # ticks are outside the frame when bottom = 'on
 
-
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
 
@@ -408,6 +397,5 @@ for label in ax.get_yticklabels():
 #    labs = ['Repeats', 'Diversity']
 ## plot legend
 #ax2.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
-
 
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
