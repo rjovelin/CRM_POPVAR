@@ -11,6 +11,7 @@ Created on Tue May 24 14:19:12 2016
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from matplotlib import rc
 rc('mathtext', default='regular')
 # import modules
@@ -390,11 +391,24 @@ ax.tick_params(
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
 
-# add lines
-lns = graph1+graph2+graph3+graph4+graph5+graph6
-# get labels
-labs = ['Syn', 'Rep', 'miRNA', 'near miRNAs', 'targets', 'UTRs']
-# plot legend
-ax.legend(lns, labs, loc=3, fontsize = 8, frameon = False)
+## add lines
+#lns = graph1+graph2+graph3+graph4+graph5+graph6
+## get labels
+#labs = ['Syn', 'Rep', 'miRNA', 'near miRNAs', 'targets', 'UTRs']
+## plot legend
+#ax.legend(lns, labs, loc=3, fontsize = 8, frameon = False)
+
+
+# create legend
+syn = mpatches.Patch(color = '#810f7c' , label= 'Syn')
+rep = mpatches.Patch(color = '#8856a7', label = 'Rep')
+mirna = mpatches.Patch(color = '#8c96c6', label = 'miRNA')
+nearmirna = mpatches.Patch(color = '#9ebcda', label = 'near miRNA')
+targets = mpatches.Patch(color = '#bfd3e6', label = 'target')
+utr = mpatches.Patch(color = '#edf8fb', label = 'UTR')
+
+plt.legend(handles=[syn, rep, mirna, nearmirna, targets, utr], loc = 1, fontsize = 8, frameon = False)
+
+plt.margins(0.05)
 
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
