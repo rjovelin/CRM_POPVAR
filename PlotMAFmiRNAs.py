@@ -108,40 +108,68 @@ print('SNPs within 500 bp of miRNAs: ', mirna_snps)
 mirna_resampled_MAF = SNP_MAF_randomization(mirna_flanking_snps, 5000, 1000)
 print('resampled SNPs near miRNAs')
 
-
-
-
-
-
-###################### maf targets
-
-# get the coordinates of all target sites
-target_coord = get_miRNA_target_loci('Cremanei_miRNA_sites.txt', '../Genome_Files/unique_transcripts.txt', 'all')
+# get target coordinates from json file
+infile = open('AllmiRNATargetsCoords.json')
+target_coord = json.load(infile)
+infile.close()
+print('target coords', len(target_coord))
 print('got miRNA target site coordinates')
 # get the allele counts for all targets
 target_sites = get_feature_sites(chromo_sites, target_coord)
 print('got allele counts for target sites')
-
 # compute MAF for all targets
 MAF_targets = MAF_non_coding(target_sites)
 print('MAF for miRNA targets done')
 
+# load UTR coordinates from json file
+infile = open('CremUTRCoordsNo.json')
+UTR_coord = json.load(infile)
+infile.close()
+print('UTR coords', len(UTR_coord))
+print('got UTR coordinates from json file')
+# get set of valid transcripts
+valid_transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
+# remove UTR of non-valid transcripts from UTR coords
+to_remove = [gene for gene in UTR_coord if gene not in valid_transcripts]
+if len(to_remove) != 0:
+    for gene in to_remove:
+        del UTR_coord[gene]
+print('removed {0} genes from UTR coords'.format(len(to_remove)))
+print('UTR coords', len(UTR_coord))
+# get SNPs in non-miRNA target UTRs
+UTR_snps = get_UTR_SNPs(chromo_sites, UTR_coord, target_coord)
+print('got allele counts for non-target UTR sites')
 
+# get the total number of snps in non-target UTRs
+non_target_snps = 0
+for chromo in UTR_snps:
+    non_target_snps += len(UTR_snps[chromo])
+print('SNPs at non-target UTR sites: ', non_target_snps)
 
+# resample SNPs and compute MAF {replicate_number : [list of MAF values]}
+# sampled 10000 SNPs 1000 times among the number of SNPs in UTRs excluding target sites
+UTR_resampled_MAF = SNP_MAF_randomization(UTR_snps, 10000, 1000)
+print('reseampled SNPs in UTRs')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+## get the proportions of SNPs in each MAF bin
+#UTR_MAF_proportions = get_MAF_distribution_from_replicates(UTR_resampled_MAF)
+#
+## get the SNP proportions for the observed SNPs
+#empirical_all_MAF = SNP_proportions_MAF_bin(MAF_all_targets)
+#empirical_crm_MAF = SNP_proportions_MAF_bin(MAF_crm_targets)
+#empirical_crmcla_MAF = SNP_proportions_MAF_bin(MAF_crmcla_targets)
+#empirical_crmclacel_MAF = SNP_proportions_MAF_bin(MAF_crmclacel_targets)
+#
+#print(len(empirical_all_MAF))
+#print(len(empirical_crm_MAF))
+#print(len(empirical_crmcla_MAF))
+#print(len(empirical_crmclacel_MAF))
+#
+## creat a list of keys, being the MAF lower bound in the dicts with MAF proportions
+#maf_limit = [i for i in empirical_all_MAF]
+## sort list
+#maf_limit.sort()
+#
 
 ###############
 
@@ -191,17 +219,24 @@ for i in range(len(MAF_SYN)):
     MAF_SYN[i] = MAF_SYN[i] * 100
 for i in range(len(MAF_mirna)):
     MAF_mirna[i] = MAF_mirna[i] * 100
+for i in range(len(MAF_targets)):
+    MAF_targets[i] = MAF_targets[i] * 100    
 for i in mirna_resampled_MAF:
     for j in range(len(mirna_resampled_MAF[i])):
         mirna_resampled_MAF[i][j] = mirna_resampled_MAF[i][j] * 100
+for i in UTR_resampled_MAF:
+    for j in range(len(UTR_resampled_MAF[i])):
+        UTR_resampled_MAF[i][j] = UTR_resampled_MAF[i][j] * 100
 print('conversion to % frequencies done')
 
 
 # make a list of maximum frequencies
 maxfreq = []
 for i in mirna_resampled_MAF:
-    maxfreq.append(max(mirna_resampled_MAF))
-for i in [MAF_REP, MAF_SYN, MAF_mirna]:
+    maxfreq.append(max(mirna_resampled_MAF[i]))
+for i in UTR_resampled_MAF:
+    maxfreq.append(max(UTR_resampled_MAF[i]))
+for i in [MAF_REP, MAF_SYN, MAF_mirna, MAF_targets]:
     maxfreq.append(max(i))
 print(max(maxfreq))
 assert max(maxfreq) <= 50, 'MAF should be lower than 50%'
