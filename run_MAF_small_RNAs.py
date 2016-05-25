@@ -68,10 +68,16 @@ pirna_pos = get_small_rna_sites(pirnas_coord)
 
 print('got piRNA positions')
 
-# get all the predicted UTR positions in the genome
-UTR_pos = get_UTR_sites('../CREM_CLA_protein_divergence/356_10172014.gff3', '../miRNA_Target_sites/c_elegans.PRJNA13758.WS248.annotations.gff3', '../CREM_CLA_protein_divergence/noamb_356_v1_4.txt', 99)
 
+# compute threshold based on the distribution of elegans UTR length
+UTR_length = celegans_three_prime_UTR_length('../Genome_Files/c_elegans.PRJNA13758.WS248.annotations.gff3')
+threshold = get_percentile(UTR_length, 99)
+# get UTR coord {TS1 : [chromo, start, end, orientation]}
+three_prime = get_three_prime_UTR_positions('../Genome_Files/356_10172014.gff3', '../Genome_Files/noamb_356_v1_4.txt', threshold)
+# get all the predicted UTR positions in the genome
+UTR_pos = get_UTR_sites(three_prime)
 print('got UTR positions')
+
 
 # get all the gene positions in the genome
 gene_pos = get_gene_sites('../CREM_CLA_protein_divergence/356_10172014.gff3')

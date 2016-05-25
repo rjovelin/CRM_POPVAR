@@ -105,31 +105,23 @@ def get_small_rna_sites(rna_coord):
     
     
 # use this function to get all the indices in genome corresponding to predicted UTRs
-def get_UTR_sites(caeno_gff, elegans_gff, genome_fasta, quantile):
+def get_UTR_sites(UTR_coord):
     '''
     (file, file, file, int) -> dict
-    Take the remanei gff file, the elegans gff file, the remanei genome fasta file,
-    and the quantile to dtermine the treshold of predicted remanei UTRs based
-    on the distribution of elegans annotated UTRs, and return a dictionary with chromo
+    Take the dictionary of UTR coordinates and return a dictionary with chromo
     as key and a set of indices correspionding to the positions of remanei UTR sites.
     Precondition: All position are 0-based indices
     '''
         
-    # compute threshold based on the distribution of elegans UTR length
-    UTR_length = celegans_three_prime_UTR_length(elegans_gff)
-    threshold = get_percentile(UTR_length, quantile)
-    
-    # get UTR coord {TS1 : [chromo, start, end, orientation]}
-    three_prime = get_three_prime_UTR_positions(caeno_gff, genome_fasta, threshold)
     # create a dict UTR_pos
     UTR_pos = {}
     # loop over genes in three_prime
-    for gene in three_prime:
+    for gene in UTR_coord:
         # get chromo
-        chromo = three_prime[gene][0]
+        chromo = UTR_coord[gene][0]
         # convert to 0-based
-        start = three_prime[gene][1] -1
-        end = three_prime[gene][2]
+        start = UTR_coord[gene][1] -1
+        end = UTR_coord[gene][2]
         # check if chromo in UTR_pos
         if chromo in UTR_pos:
             for j in range(start, end):
@@ -138,7 +130,6 @@ def get_UTR_sites(caeno_gff, elegans_gff, genome_fasta, quantile):
             UTR_pos[chromo] = set()
             for j in range(start, end):
                 UTR_pos[chromo].add(j)
-            
     return UTR_pos
 
 
