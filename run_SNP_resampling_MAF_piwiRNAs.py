@@ -59,7 +59,7 @@ MAF_pirna = MAF_non_coding(pirna_sites)
 print('MAF for piRNA sites done')
 
 # get all the piRNAs positions in the genome
-pirna_pos = get_small_rna_sites('PX356_piRNA_coord.txt', 'piRNA')
+pirna_pos = get_small_rna_sites(pirnas_coord)
 
 print('got piRNA positions')
 

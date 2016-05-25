@@ -68,27 +68,17 @@ def get_non_coding_snps(directory, threshold):
 
 
 # use this function to get all the indices in genome corresponding to pirnas or mirnas
-def get_small_rna_sites(small_rna_coord_file, small_rna):
+def get_small_rna_sites(rna_coord):
     '''
-    (file, str) -> dict
-    Take the small rna coordinate file and string specifying the type of RNA
-    (piRNA or miRNA) and return a dictionary with chromo as key and a set of
-    indices corresponding to all the positions of piRNAs or miRNAs on each chromo
+    (dict) -> dict
+    Take a dict with coordinates of small RNAs (mirnas or pirnas) and return
+    a dictionary with chromo as key and a set of indices corresponding to all
+    the positions of piRNAs or miRNAs on each chromo
     Precondition: All position are 0-based indices
     '''
     
-    # check which small RNA to consider
-    if small_rna == 'piRNA':
-        # create a dict with the pirna coordinates
-        # {chromo: [[start, end, orienation]]}
-        # start, end are 0-based
-        rna_coord = get_pirna_loci(small_rna_coord_file)
-        
-    elif small_rna == 'miRNA':
-        # create a dict with mirna coordinates
-        # {chromo: [[start, end, orientation]]}
-        # start, end are 0-based
-        rna_coord = get_mirna_loci(small_rna_coord_file)
+    # rna_coord is a dict in the form {chromo: [[start, end, orienation]]}
+    # start, end are 0-based
         
     # create a dict to store the pirna indices
     rna_pos = {}
@@ -111,7 +101,6 @@ def get_small_rna_sites(small_rna_coord_file, small_rna):
                 # add all the indices corressponding to each pirna
                 for j in range(start, end):
                     rna_pos[chromo].add(j)
-        
     return rna_pos
     
     

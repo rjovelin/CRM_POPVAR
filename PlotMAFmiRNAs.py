@@ -67,7 +67,7 @@ print('miRNAs', len(MAF_mirna))
 print('MAF for miRNA sites done')
 
 # get all the miRNA positions in genome
-mirna_pos = get_small_rna_sites('CRM_miRNAsCoordinatesFinal.txt', 'miRNA')
+mirna_pos = get_small_rna_sites(mirna_coord)
 print('got miRNA positions')
 
 # get all the predicted UTR positions in the genome

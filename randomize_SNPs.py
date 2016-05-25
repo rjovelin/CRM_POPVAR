@@ -83,33 +83,19 @@ def SNP_MAF_randomization(SNP_positions, N_SNPs, N_replicates):
             
 
 # use this function to get indices of SNPs flanking pirnas or mirnas
-def get_small_rna_flanking_SNPs(chromo_sites, small_rna_coord_file, small_rna, flanking_size):
+def get_small_rna_flanking_SNPs(chromo_sites, rna_coord, flanking_size):
     '''
-    (dict, file, str, int) -> dict
+    (dict, dict, int) -> dict
     Take the dictionary with allele counts at each position with coverage (SNPs
-    and non-SNPs), the small rna coordinate file and string specifying the type of RNA
-    (piRNA or miRNA), the number of flanking sites to consider and return     
-    a dictionary with chromo as key of inner dictionaries of indices of SNPs only 
+    and non-SNPs), a dict with RNAs (miRNAs or piRNAs) coordinates on each chromo,
+    the number of flanking sites to consider and return a dictionary with chromo as key of inner dictionaries of indices of SNPs only 
     for sites flanking small RNAs and exluding SNPs in small RNAs
     Precondition: All position are 0-based indices
     '''
     
     # get the position of small rnas on each chromo
     # {chromo: {set of position}}
-    rna_pos = get_small_rna_sites(small_rna_coord_file, small_rna)
-    
-    # check which small RNA to consider
-    if small_rna == 'piRNA':
-        # create a dict with the pirna coordinates
-        # {chromo: [[start, end, orienation]]}
-        # start, end are 0-based
-        rna_coord = get_pirna_loci(small_rna_coord_file)
-        
-    elif small_rna == 'miRNA':
-        # create a dict with mirna coordinates
-        # {chromo: [[start, end, orientation]]}
-        # start, end are 0-based
-        rna_coord = get_mirna_loci(small_rna_coord_file)
+    rna_pos = get_small_rna_sites(rna_coord)
     
     # create a dict to store the indices of flanking sites
     rna_flanking = {}
