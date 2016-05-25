@@ -21,8 +21,9 @@ import sys
 # import custom modules
 from manipulate_sequences import *
 from miRNA_target import *
-from repeats_TEs import *
-from sliding_windows import *
+from genomic_coordinates import *
+#from repeats_TEs import *
+#from sliding_windows import *
 from sites_with_coverage import *
 from divergence import *
 from premature_stops import *
