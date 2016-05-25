@@ -64,7 +64,7 @@ pirna_pos = get_small_rna_sites(pirnas_coord)
 print('got piRNA positions')
 
 # get SNPs flanking piRNAs within 500 bp of the piRNAs
-pirna_flanking_snps = get_small_rna_flanking_SNPs(chromo_sites, 'PX356_piRNA_coord.txt', 'piRNA', 500)
+pirna_flanking_snps = get_small_rna_flanking_SNPs(chromo_sites, pirnas_coord, 500)
 
 # remove positions falling in coding sequences
 for chromo in CDS_pos:

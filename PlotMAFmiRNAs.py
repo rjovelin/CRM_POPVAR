@@ -81,7 +81,7 @@ gene_pos = get_gene_sites('../Genome_Files/356_10172014.gff3')
 print('got gene positions')
 
 # get SNPs flanking miRNAs within 500 bp of the miRNAs
-mirna_flanking_snps = get_small_rna_flanking_SNPs(chromo_sites, 'CRM_miRNAsCoordinatesFinal.txt', 'miRNA', 500)
+mirna_flanking_snps = get_small_rna_flanking_SNPs(chromo_sites, mirnas_coord, 500)
 print('got allele counts in miRNA flanking regions')
 # remove positions falling in coding sequences
 # get CDS_coord {TS1: [chromo, sense, [(s1, end1), (s2, end2)]]}

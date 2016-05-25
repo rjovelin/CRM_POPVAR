@@ -63,8 +63,7 @@ MAF_mirna = MAF_non_coding(mirna_sites)
 print('MAF for miRNA sites done')
 
 # get SNPs flanking miRNAs within 500 bp of the miRNAs
-mirna_flanking_snps = get_small_rna_flanking_SNPs(chromo_sites, 'crm_miRBase21_premina_coordinates.txt',
-                                                  'miRNA', 500)
+mirna_flanking_snps = get_small_rna_flanking_SNPs(chromo_sites, mirnas_coord, 500)
 
 # remove positions falling in coding sequences
 for chromo in CDS_pos:
