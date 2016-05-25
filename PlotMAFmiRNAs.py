@@ -323,6 +323,9 @@ graph6 = ax.bar([1, 2.2, 3.4, 4.6, 5.8], target_samplefreq, width, yerr = target
                 edgecolor = 'black', linewidth = 1,
                 error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
+
+print(mirna_samplefreq)
+print(mirna_sem)
 #
 #width = 0.2
 #
@@ -393,6 +396,6 @@ lns = graph1+graph2+graph3+graph4+graph5+graph6
 # get labels
 labs = ['Syn', 'Rep', 'miRNA', 'near miRNAs', 'targets', 'UTRs']
 # plot legend
-ax.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
+ax.legend(lns, labs, loc=3, fontsize = 8, frameon = False)
 
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
