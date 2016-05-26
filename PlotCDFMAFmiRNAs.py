@@ -81,7 +81,7 @@ MAF_targets.sort()
 print('values are sorted')
 
 # create figure
-fig = plt.figure(1, figsize = (4, 2))
+fig = plt.figure(1, figsize = (2.5, 1.5))
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)  
 
