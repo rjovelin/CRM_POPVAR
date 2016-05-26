@@ -581,14 +581,15 @@ def find_pirna_CDS_targets(pirna_coord_file, CDS_fasta, genome_fasta, mismatch, 
     
 
 # use this function to count piRNAs in different locations
-def find_pirna_locations(genome, pirna_coord, CDS_pos, UTR_pos, intron_pos):
+def find_pirna_locations(genome, pirna_coord, CDS_pos, UTR_pos, intron_pos, intergenic_pos):
     '''
-    (dict, dict, dict, dict, dict, dict) -> dict
+    (dict, dict, dict, dict, dict, dict, dict) -> dict
     Take the dictionary of genome sequences, the  dictionary of piRNA coordinates,
     a dictionary with the CDS positions, a dictionary with the predicted UTR positions
-    and a dictionary with the intron positions, and return a dict of counts
-    of piRNAs located in CDS, predicted UTR, introns, intergenic and piRNAs
-    that are not fully included in any of these categories (ie. overlapping different categories)
+    a dictionary with the intron positions, a dictionary with intergenic positions 
+    and return a dict of counts of piRNAs located in CDS, predicted UTR, introns,
+    intergenic and piRNAs that are not fully included in any of these categories
+    (ie. overlapping different categories)
     Precondition: pirna_coord is in the form {chromo: [list of pirna coordinates]},
     the other dicts are in the form {chromo: set(positions on chromo)}
     '''
@@ -602,11 +603,6 @@ def find_pirna_locations(genome, pirna_coord, CDS_pos, UTR_pos, intron_pos):
     for chromo in pirna_coord:
         already_recorded[chromo] = []
     
-    # make a dict with positions in intergenic regions
-    # {chromo: {set of positions}}
-    
-    intergenic_pos = keep_intergenic_positions(genome, CDS_pos, UTR_pos, intron_pos)
-        
     # search pirnas in intergenic   
     # loop over chromo in pirna coord
     for chromo in pirna_coord:
