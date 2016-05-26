@@ -606,7 +606,6 @@ def find_pirna_locations(genome, pirna_coord, CDS_pos, UTR_pos, intron_pos, inte
     # search pirnas in intergenic   
     # loop over chromo in pirna coord
     for chromo in pirna_coord:
-        print('intergenic', chromo)
         # check that chromo in intergenic_coord
         if chromo in intergenic_pos:
             # loop over pirna on that chromo
@@ -630,7 +629,6 @@ def find_pirna_locations(genome, pirna_coord, CDS_pos, UTR_pos, intron_pos, inte
     # search pirnas in intron    
     # loop over chromo in pirna coord
     for chromo in pirna_coord:
-        print('intron', chromo)
         # check that chromo in intron_coord
         if chromo in intron_pos:
             # loop over pirna on that chromo
@@ -654,7 +652,6 @@ def find_pirna_locations(genome, pirna_coord, CDS_pos, UTR_pos, intron_pos, inte
     # search pirnas in UTR    
     # loop over chromo in pirna coord
     for chromo in pirna_coord:
-        print('UTR', chromo)
         # check that chromo in UTR_coord
         if chromo in UTR_pos:
             # loop over pirna on that chromo
@@ -678,7 +675,6 @@ def find_pirna_locations(genome, pirna_coord, CDS_pos, UTR_pos, intron_pos, inte
     # search pirnas on CDS    
     # loop over chromo in pirna coord
     for chromo in pirna_coord:
-        print('CDS', chromo)
         # check that chromo in CDS_coord
         if chromo in CDS_pos:
             # loop over pirna on that chromo
