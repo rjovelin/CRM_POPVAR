@@ -78,7 +78,7 @@ MAF_REP.sort()
 MAF_SYN.sort()
 MAF_mirna.sort()
 MAF_targets.sort()
-
+print('values are sorted')
 
 # create figure
 fig = plt.figure(1, figsize = (4, 2))
@@ -93,6 +93,7 @@ graph2 = ax.plot(MAF_REP, np.linspace(0, 1, len(MAF_REP), endpoint=False), linew
 graph3 = ax.plot(MAF_mirna, np.linspace(0, 1, len(MAF_mirna), endpoint=False), linewidth = 1.5, color = '#b3cde3')
 # plot MAF targets
 graph4 = ax.plot(MAF_targets, np.linspace(0, 1, len(MAF_targets), endpoint=False), linewidth = 1.5, color = '#edf8fb')
+print('plotted CDF')
 
 
 #
@@ -105,7 +106,7 @@ graph4 = ax.plot(MAF_targets, np.linspace(0, 1, len(MAF_targets), endpoint=False
 #
 #plt.step(np.concatenate([sorted_data, sorted_data[[-1]]]), np.arange(sorted_data.size+1))
 
-
+# add label for the Y axis
 ax.set_ylabel('Proportion of SNPs', size = 10, ha = 'center', fontname = 'Arial')
 
 ## determine tick position on x axis
