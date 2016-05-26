@@ -704,10 +704,10 @@ def find_pirna_locations(genome, pirna_coord, CDS_pos, UTR_pos, intron_pos, inte
             if pirna_coord[chromo][i] not in already_recorded[chromo]:
                 # pirna is not fully contained in a site category, may be overlapping different sites
                 # check if overlapping is key in dict
-                if 'overlapping' in locations:
-                    locations['overlapping'] += 1
+                if 'overlap' in locations:
+                    locations['overlap'] += 1
                 else:
-                    locations['overlapping'] = 1
+                    locations['overlap'] = 1
                     
     return locations
         
