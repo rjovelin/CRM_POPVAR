@@ -5,8 +5,13 @@ Created on Mon Aug  3 02:03:56 2015
 @author: Richard
 """
 
+# use this script to make tables of potential piRNA targets in CDS and TEs
+# potential targets are defined as complementary sequences with 0 mismatch to a piRNA
+
+
+
 from piRNAs import *
-from accessories import *
+from manipulate_sequences import *
 
 
 # define a small function to convert a num to string
@@ -15,8 +20,8 @@ Gstr = lambda x : str(x)
 # tolerate 0 mismatches between pirna and targets
 
 # find targets in coding sequences
-CDS_targets = find_pirna_CDS_targets('PX356_piRNA_coord.txt', '../CREM_CLA_protein_divergence/noamb_PX356_all_CDS.fasta',
-                                     '../CREM_CLA_protein_divergence/noamb_356_v1_4.txt', 0, '../CREM_CLA_protein_divergence/unique_transcripts.txt')
+CDS_targets = find_pirna_CDS_targets('PX356_piRNA_coord.txt', '../Genome_Files/noamb_PX356_all_CDS.fasta',
+                                     '../Genome_Files/noamb_356_v1_4.txt', 0, '../Genome_Files/unique_transcripts.txt')
 print('found ', len(CDS_targets), ' targets in CDS with ', 0, ' mismatches')
 # check if targets are present in CDS
 if len(CDS_targets) != 0:
@@ -39,12 +44,9 @@ if len(CDS_targets) != 0:
     # close after writing
     newfile.close()
     
-    
-    
 # find targets in repeat sequences
-
-TE_targets = find_pirna_TE_targets('PX356_piRNA_coord.txt', '356_v1_4.fasta.out',
-                                   '../CREM_CLA_protein_divergence/noamb_356_v1_4.txt', 0)
+TE_targets = find_pirna_TE_targets('PX356_piRNA_coord.txt', '../Genome_Files/356_v1_4.fasta.out',
+                                   '../Genome_Files/noamb_356_v1_4.txt', 0)
 print(len(TE_targets), ' repeat type are targeted by piRNAs')
 total = 0
 if len(TE_targets) != 0:
