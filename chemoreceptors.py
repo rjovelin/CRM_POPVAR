@@ -201,7 +201,7 @@ def chemo_families(iprscan_file):
         # check that method is Pfam (only Pfam returns families)
         if 'Pfam' in line:
             # check if gene is chemoreceptor 
-            if 'chemoreceptor' in line and '7TM GPCR' in line:
+            if 'chemoreceptor' in line or '7TM GPCR' in line:
                 line = line.rstrip().split('\t')            
                 # Sre, Srg and Srab family needs to be parsed differently
                 if 'Sre' in line[5]:
