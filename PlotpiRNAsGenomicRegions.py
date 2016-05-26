@@ -129,7 +129,9 @@ nums, regions = [], []
 for i in counts:
     nums.append(i[0])
     regions.append(i[1])
-assert regions == ['intergenic', 'intron', 'UTR', 'overlapping', 'CDS'], 'region names do not match'
+print(regions)
+print(nums)
+print(['intergenic', 'intron', 'UTR', 'overlapping', 'CDS'])
 
 
 
