@@ -6,24 +6,38 @@ Created on Mon Aug 10 09:59:13 2015
 """
 
 
-from piRNAs import *
-from accessories import *
-from get_coding_sequences import *
-from Cel_UTR import *
+# use this script to plot the number of piRNAs located in different regions
+
+
+# use Agg backend on server without X server
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib import rc
+rc('mathtext', default='regular')
+# import modules
+import numpy as np
+from scipy import stats
+import math
+import sys
+import json
+# import custom modules
+from manipulate_sequences import *
 from miRNA_target import *
-from cel_UTR_length import *
+from genomic_coordinates import *
+from piRNAs import *
+from get_coding_sequences import *
+
 
 # convert genome fasta to dict
-genome = convert_fasta('../CREM_CLA_protein_divergence/noamb_356_v1_4.txt')
-
+genome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
 # get piRNA coordinates
 pirna_coord = get_pirna_loci('PX356_piRNA_coord.txt') 
-
-
 print('got piRNA coord')
 
 # get CDS_coord {TS1: [chromo, sense, [(s1, end1), (s2, end2)]]}
-CDS_coord = get_CDS_positions('../CREM_CLA_protein_divergence/356_10172014.gff3')
+CDS_coord = get_CDS_positions('../Genome_Files/356_10172014.gff3')
 # create new dict in the form {chromo: {set of positions}}
 CDS_pos = {}
 for gene in CDS_coord:
@@ -43,7 +57,6 @@ for gene in CDS_coord:
             CDS_pos[chromo] = set()
             for j in range(start, end):
                 CDS_pos[chromo].add(j)
-
 print('got CDS coord')
 
 # get intron coordinates
@@ -66,20 +79,16 @@ for gene in CDS_coord:
             intron_pos[chromo] = set()
             for j in range(start, end):
                 intron_pos[chromo].add(j)
-                
-   
 print('got intron coord')
 
-# get UTR coordinates
-
-# compute threshold based on the distribution of elegans UTR length
-UTR_length = celegans_three_prime_UTR_length('../miRNA_Target_sites/c_elegans.PRJNA13758.WS248.annotations.gff3')
-threshold = get_percentile(UTR_length, 99)
-
-print('determined threshold based on Celegans UTRs: ', threshold)
-
 # get UTR coord {TS1 : [chromo, start, end, orientation]}
-three_prime = get_three_prime_UTR_positions('../CREM_CLA_protein_divergence/356_10172014.gff3', '../CREM_CLA_protein_divergence/noamb_356_v1_4.txt', threshold)
+# load UTR coordinates from json file
+infile = open('CremUTRCoordsNo.json')
+UTR_coord = json.load(infile)
+infile.close()
+print('UTR coords', len(UTR_coord))
+print('got UTR coordinates from json file')
+
 # create a dict UTR_pos
 UTR_pos = {}
 # loop over genes in three_prime
@@ -97,44 +106,103 @@ for gene in three_prime:
         UTR_pos[chromo] = set()
         for j in range(start, end):
             UTR_pos[chromo].add(j)
-            
 print('got UTR coord')
 
 # find pirna locations
 locations = find_pirna_locations(genome, pirna_coord, CDS_pos, UTR_pos, intron_pos)
-
 print('got the piRNA locations')
 
-# open file for writing
-newfile = open('piRNA_site_locations.txt', 'w')
-
-# get the number of pirna loci
-N_pirnas = 0
-for chromo in pirna_coord:
-    for i in range(len(pirna_coord[chromo])):
-        N_pirnas += 1
-print('number of pirnas loci: {0}'.format(N_pirnas))
-
-newfile.write('Number of piRNA loci in C. remanei:' + '\t' + str(N_pirnas) + '\n')
-newfile.write('\n')
-newfile.write('Number of piRNAs in different site categories:\n')
-newfile.write('-' * 47 + '\n')
-# loop over keys in locations dict
-for key in locations:
-    newfile.write(key+ ':' + '\t' + str(locations[key]) + '\n')
-newfile.write('\n')
-
-# verify the pirna counts
-total = 0
-for key in locations:
-    total += locations[key]
-    
-print('number of pirnas in sites: {0}'.format(total))
-    
-newfile.write('total piRNAs in site categories:' + '\t' + str(total) + '\n')
-missing = N_pirnas - total
-newfile.write('number of pirnas not allocated to sites:' + '\t' + str(missing) + '\n')
+# get the counts for each region
+counts = [[val, key] for key, val in locations.items()]
+# sort list according to count
+counts.sort()
+# get the pirnas numbers
+nums, regions = [], []
+for i in counts:
+    nums.append(i[0])
+    regions.append(i[1])
+assert regions == ['intergenic', 'intron', 'UTR', 'overlapping', 'CDS'], 'region names do not match'
 
 
+
+# create figure
+fig = plt.figure(1, figsize = (2.5, 1.5))
+# add a plot to figure (1 row, 1 column, 1 plot)
+ax = fig.add_subplot(1, 1, 1)  
+
+# set width of bar
+width = 0.4
+# set colors
+colorscheme = ['#b30000', '#e34a33', '#fc8d59', '#fdcc8a', '#fef0d9']
+
+# plot number of piRNAs in each region
+ax.bar([0, 0.8, 1.2, 1.6, 2], nums, width, color = colorscheme, edgecolor = 'black', linewidth = 1)
+
+# write label
+ax.set_ylabel('Number of piRNAs', size = 10, ha = 'center', fontname = 'Arial')
+# set x axis label
+ax.set_xlabel('Genomic regions', size = 10, ha = 'center', fontname = 'Arial')
+
+# determine tick position on x axis
+xpos =  [0, 0.8, 1.2, 1.6, 2]
+# set up tick positions and labels
+plt.xticks(xpos, regions, rotation = 20, fontsize = 10, fontname = 'Arial')
+
+# do not show lines around figure, keep bottow line  
+ax.spines["top"].set_visible(False)    
+ax.spines["bottom"].set_visible(True)    
+ax.spines["right"].set_visible(False)    
+ax.spines["left"].set_visible(False)      
+# offset the spines
+for spine in ax.spines.values():
+  spine.set_position(('outward', 5))
+  
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
+
+# do not show ticks on 1st graph
+ax.tick_params(
+    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='on',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='on', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on
+
+# do not show ticks
+ax.tick_params(
+    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='off',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='off', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on
+
+for label in ax.get_yticklabels():
+    label.set_fontname('Arial')
+
+# create legend
+intergenic = mpatches.Patch(facecolor = '#b30000', edgecolor = 'black', linewidth = 1, label= 'intergenic')
+intron = mpatches.Patch(facecolor = '#e34a33', edgecolor = 'black', linewidth = 1, label = 'intron')
+UTR = mpatches.Patch(facecolor = '#fc8d59', edgecolor = 'black', linewidth = 1, label = 'UTR')
+overlapping = mpatches.Patch(facecolor = '#fdcc8a', edgecolor = 'black', linewidth = 1, label = 'overlapping')
+CDS = mpatches.Patch(facecolor = '#fef0d9', edgecolor = 'black', linewidth = 1, label = 'CDS')
+
+plt.legend(handles=[intergenic, intron, UTR, overlapping, CDS], loc = 1, fontsize = 8, frameon = False)
+
+# add margin on the x-axis
+plt.margins(0.05)
+
+fig.savefig('testfile.pdf', bbox_inches = 'tight')
 
 
