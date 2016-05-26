@@ -86,25 +86,17 @@ fig = plt.figure(1, figsize = (4, 2))
 ax = fig.add_subplot(1, 1, 1)  
 
 # plot MAF synonymous sites
-graph1 = ax.step(MAF_SYN, np.linspace(0, 1, len(MAF_SYN), endpoint=False), linewidth = 1.2, color = '#33a02c')
+graph1 = ax.step(MAF_SYN, np.linspace(0, 1, len(MAF_SYN), endpoint=False), linewidth = 1.2, color = '#33a02c', alpha = 0.5)
 # plot MAF replacement sites
-graph2 = ax.step(MAF_REP, np.linspace(0, 1, len(MAF_REP), endpoint=False), linewidth = 1.2, color = '#b2df8a')
+graph2 = ax.step(MAF_REP, np.linspace(0, 1, len(MAF_REP), endpoint=False), linewidth = 1.2, color = '#b2df8a', aplha = 0.5)
 # plot MAF miRNAs
-graph3 = ax.step(MAF_mirna, np.linspace(0, 1, len(MAF_mirna), endpoint=False), linewidth = 1.2, color = '#1f78b4')
+graph3 = ax.step(MAF_mirna, np.linspace(0, 1, len(MAF_mirna), endpoint=False), linewidth = 1.2, color = '#1f78b4', alpha = 0.5)
 # plot MAF targets
-graph4 = ax.step(MAF_targets, np.linspace(0, 1, len(MAF_targets), endpoint=False), linewidth = 1.2, color = '#a6cee3')
+graph4 = ax.step(MAF_targets, np.linspace(0, 1, len(MAF_targets), endpoint=False), linewidth = 1.2, color = '#a6cee3', alpha = 0.5)
 print('plotted CDF')
 
 # add label for the Y axis
 ax.set_ylabel('Proportion of SNPs', size = 10, ha = 'center', fontname = 'Arial')
-
-## determine tick position on x axis
-#xpos =  [0, 1.2, 2.4, 3.6, 4.8, 6]
-#xtext = [0, 10, 20, 30, 40, 50]
-#xtext = list(map(lambda x : str(x), xtext))
-## set up tick positions and labels
-#plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
-
 # set x axis label
 ax.set_xlabel('Minor Allele Frequency', size = 10, ha = 'center', fontname = 'Arial')
 
@@ -154,11 +146,11 @@ for label in ax.get_yticklabels():
 # add lines
 lns = graph1+graph2+graph3+graph4
 # get labels
-labs = ['Syn', 'Rep', 'miRNAs', 'targets']
+labs = ['Synonymous', 'Replacement', 'miRNAs', 'targets']
 # plot legend
 ax.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
 
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('CDFMAFmiRNAs.pdf', bbox_inches = 'tight')
 
 
 
