@@ -210,6 +210,9 @@ def chemo_families(iprscan_file):
                     family = line[5].split()[0]
                 elif '7TM GPCR' in line[5] and 'ab' in line[5]:
                     family = 'Srab'
+                elif 'serpentine' in line[5] and 'xa' in line[5]:
+                    family = 'Srxa'
+                    assert 'Srxa' in line[12], 'family name should be specified'
                 else:
                     family = line[5].split()[-1]
                 # check that family is valid chemoreceptor family (some genes are not assigned to families)
