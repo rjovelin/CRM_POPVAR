@@ -86,13 +86,13 @@ fig = plt.figure(1, figsize = (4, 2))
 ax = fig.add_subplot(1, 1, 1)  
 
 # plot MAF synonymous sites
-graph1 = ax.step(MAF_SYN, np.linspace(0, 1, len(MAF_SYN), endpoint=False), linewidth = 1.5, color = '#33a02c')
+graph1 = ax.step(MAF_SYN, np.linspace(0, 1, len(MAF_SYN), endpoint=False), linewidth = 1.2, color = '#33a02c')
 # plot MAF replacement sites
-graph2 = ax.step(MAF_REP, np.linspace(0, 1, len(MAF_REP), endpoint=False), linewidth = 1.5, color = '#b2df8a')
+graph2 = ax.step(MAF_REP, np.linspace(0, 1, len(MAF_REP), endpoint=False), linewidth = 1.2, color = '#b2df8a')
 # plot MAF miRNAs
-graph3 = ax.step(MAF_mirna, np.linspace(0, 1, len(MAF_mirna), endpoint=False), linewidth = 1.5, color = '#1f78b4')
+graph3 = ax.step(MAF_mirna, np.linspace(0, 1, len(MAF_mirna), endpoint=False), linewidth = 1.2, color = '#1f78b4')
 # plot MAF targets
-graph4 = ax.step(MAF_targets, np.linspace(0, 1, len(MAF_targets), endpoint=False), linewidth = 1.5, color = '#a6cee3)
+graph4 = ax.step(MAF_targets, np.linspace(0, 1, len(MAF_targets), endpoint=False), linewidth = 1.2, color = '#a6cee3)
 print('plotted CDF')
 
 # add label for the Y axis
