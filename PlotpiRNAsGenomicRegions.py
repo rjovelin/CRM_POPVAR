@@ -191,9 +191,9 @@ ax.tick_params(
     direction = 'out') # ticks are outside the frame when bottom = 'on
 
 # determine tick position on x axis
-xpos =  [0, 0.4, 0.8, 1.2, 1.6]
+xpos =  [0, 0.4, 0.8, 1.2, 1.6, 2]
 # set up tick positions and labels
-plt.xticks(xpos, regions, rotation = 20, fontsize = 10, ha = 'right', fontname = 'Arial')
+plt.xticks(xpos, regions + [''], rotation = 20, fontsize = 10, ha = 'center', fontname = 'Arial')
 
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
