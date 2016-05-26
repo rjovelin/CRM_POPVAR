@@ -324,17 +324,6 @@ graph6 = ax.bar([1, 2.2, 3.4, 4.6, 5.8], target_samplefreq, width, yerr = target
                 edgecolor = 'black', linewidth = 1,
                 error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
-
-
-#
-#width = 0.2
-#
-#print('REP', MAF_REP_hist[0], MAF_REP_hist[1])
-#
-#ax.bar([0, 0.4, 0.8, 1.2, 1.6], repfreq, width, yerr = [0.1, 0.2, 0.05, 0, 0.3], color = '#810f7c',
-#       error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
-#ax.bar([0.2, 0.6, 1, 1.4, 1.8], synfreq, width, color = '#8856a7')
-
 ax.set_ylabel('Proportion of SNPs', size = 10, ha = 'center', fontname = 'Arial')
 
 # determine tick position on x axis
