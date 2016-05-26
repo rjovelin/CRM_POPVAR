@@ -107,10 +107,17 @@ for gene in UTR_coord:
         UTR_pos[chromo] = set()
         for j in range(start, end):
             UTR_pos[chromo].add(j)
-print('got UTR coord')
+print('got UTR positons')
+
+# get the intergenic positons
+
+# make a dict with positions in intergenic regions
+# {chromo: {set of positions}}
+intergenic_pos = keep_intergenic_positions(genome, CDS_pos, UTR_pos, intron_pos)
+print('got intergenic positions')    
 
 # find pirna locations
-locations = find_pirna_locations(genome, pirna_coord, CDS_pos, UTR_pos, intron_pos)
+locations = find_pirna_locations(genome, pirna_coord, CDS_pos, UTR_pos, intron_pos, intergenic_pos)
 print('got the piRNA locations')
 
 # get the counts for each region
