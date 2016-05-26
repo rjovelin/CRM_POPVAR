@@ -131,9 +131,6 @@ for i in counts:
     regions.append(i[1])
 print(regions)
 print(nums)
-print(['intergenic', 'intron', 'UTR', 'overlapping', 'CDS'])
-
-
 
 # create figure
 fig = plt.figure(1, figsize = (2.5, 1.5))
@@ -146,17 +143,12 @@ width = 0.4
 colorscheme = ['#fef0d9', '#fdcc8a', '#fc8d59', '#e34a33', '#b30000']
 
 # plot number of piRNAs in each region
-ax.bar([0, 0.4, 0.8, 1.2, 1.8], nums, width, color = colorscheme, edgecolor = 'black', linewidth = 1)
+ax.bar([0, 0.4, 0.8, 1.2, 1.6], nums, width, color = colorscheme, edgecolor = 'black', linewidth = 1)
 
 # write label
 ax.set_ylabel('Number of piRNAs', size = 10, ha = 'center', fontname = 'Arial')
 # set x axis label
 ax.set_xlabel('Genomic regions', size = 10, ha = 'center', fontname = 'Arial')
-
-# determine tick position on x axis
-xpos =  [0, 0.4, 0.8, 1.2, 1.8]
-# set up tick positions and labels
-plt.xticks(xpos, regions, rotation = 20, fontsize = 10, fontname = 'Arial')
 
 # do not show lines around figure, keep bottow line  
 ax.spines["top"].set_visible(False)    
@@ -197,6 +189,11 @@ ax.tick_params(
     colors = 'black',
     labelsize = 10,
     direction = 'out') # ticks are outside the frame when bottom = 'on
+
+# determine tick position on x axis
+xpos =  [0, 0.4, 0.8, 1.2, 1.6]
+# set up tick positions and labels
+plt.xticks(xpos, regions, rotation = 20, fontsize = 10, fontname = 'Arial')
 
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
