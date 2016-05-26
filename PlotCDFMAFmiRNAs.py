@@ -88,7 +88,7 @@ ax = fig.add_subplot(1, 1, 1)
 # plot MAF synonymous sites
 graph1 = ax.step(MAF_SYN, np.linspace(0, 1, len(MAF_SYN), endpoint=False), linewidth = 1.2, color = '#33a02c', alpha = 0.5)
 # plot MAF replacement sites
-graph2 = ax.step(MAF_REP, np.linspace(0, 1, len(MAF_REP), endpoint=False), linewidth = 1.2, color = '#b2df8a', aplha = 0.5)
+graph2 = ax.step(MAF_REP, np.linspace(0, 1, len(MAF_REP), endpoint=False), linewidth = 1.2, color = '#b2df8a', alpha = 0.5)
 # plot MAF miRNAs
 graph3 = ax.step(MAF_mirna, np.linspace(0, 1, len(MAF_mirna), endpoint=False), linewidth = 1.2, color = '#1f78b4', alpha = 0.5)
 # plot MAF targets
