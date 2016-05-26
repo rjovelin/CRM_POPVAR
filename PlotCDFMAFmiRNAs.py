@@ -86,25 +86,14 @@ fig = plt.figure(1, figsize = (4, 2))
 ax = fig.add_subplot(1, 1, 1)  
 
 # plot MAF synonymous sites
-graph1 = ax.plot(MAF_SYN, np.linspace(0, 1, len(MAF_SYN), endpoint=False), linewidth = 1.5, color = '#88419d')
+graph1 = ax.step(MAF_SYN, np.linspace(0, 1, len(MAF_SYN), endpoint=False), linewidth = 1.5, color = '#33a02c')
 # plot MAF replacement sites
-graph2 = ax.plot(MAF_REP, np.linspace(0, 1, len(MAF_REP), endpoint=False), linewidth = 1.5, color = '#8c96c6')
+graph2 = ax.step(MAF_REP, np.linspace(0, 1, len(MAF_REP), endpoint=False), linewidth = 1.5, color = '#b2df8a')
 # plot MAF miRNAs
-graph3 = ax.plot(MAF_mirna, np.linspace(0, 1, len(MAF_mirna), endpoint=False), linewidth = 1.5, color = '#b3cde3')
+graph3 = ax.step(MAF_mirna, np.linspace(0, 1, len(MAF_mirna), endpoint=False), linewidth = 1.5, color = '#1f78b4')
 # plot MAF targets
-graph4 = ax.plot(MAF_targets, np.linspace(0, 1, len(MAF_targets), endpoint=False), linewidth = 1.5, color = '#edf8fb')
+graph4 = ax.step(MAF_targets, np.linspace(0, 1, len(MAF_targets), endpoint=False), linewidth = 1.5, color = '#a6cee3)
 print('plotted CDF')
-
-
-#
-#
-#sorted=np.sort( a )
-#yvals=np.arange(len(sorted))/float(len(sorted))
-#plt.plot( sorted, yvals )
-#
-#
-#
-#plt.step(np.concatenate([sorted_data, sorted_data[[-1]]]), np.arange(sorted_data.size+1))
 
 # add label for the Y axis
 ax.set_ylabel('Proportion of SNPs', size = 10, ha = 'center', fontname = 'Arial')
@@ -168,9 +157,6 @@ lns = graph1+graph2+graph3+graph4
 labs = ['Syn', 'Rep', 'miRNAs', 'targets']
 # plot legend
 ax.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
-
-# add margin on the x-axis
-plt.margins(0.05)
 
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
 
