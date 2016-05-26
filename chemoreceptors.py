@@ -194,40 +194,37 @@ def chemo_families(iprscan_file):
     
     # create dictionnary
     chemo = {}
-
     # open file for reading
     infile = open(iprscan_file, 'r')
-    
     # loop over file
     for line in infile:
-        # check if gene is chemoreceptor and that method is Pfam (only Pfam returns families)
-        if 'chemoreceptor' in line and 'Pfam' in line:
-            line = line.rstrip().split('\t')            
-            # Sre, Srg and Srab family needs to be parsed differently
-            if 'Sre' in line[5]:
-                family = line[5].split()[2]
-            elif 'Srg' in line[5]:
-                family = line[5].split()[0]
-            elif '7TM GPCR' in line[5] and 'ab' in line[5]:
-                family = 'Srab'
-            else:
-                family = line[5].split()[-1]
-                
-            # check that family is valid chemoreceptor family (some genes are not assigned to families)
-            if family in {'Srbc', 'Sra', 'Srab', 'Sru', 'Sri', 'Srx', 'Srsx', 'Str', 'Srg',
-                          'Srz', 'Srh', 'Srd', 'Srt', 'Srb', 'Srj', 'Srv', 'Sre', 'Srw'}:
-                # check if family is key in dict
-                if family in chemo:
-                    # add gene to set
-                    chemo[family].add(line[0])
+        # check that method is Pfam (only Pfam returns families)
+        if 'Pfam' in line:
+            # check if gene is chemoreceptor 
+            if 'chemoreceptor' in line and '7TM GPCR' in line:
+                line = line.rstrip().split('\t')            
+                # Sre, Srg and Srab family needs to be parsed differently
+                if 'Sre' in line[5]:
+                    family = line[5].split()[2]
+                elif 'Srg' in line[5]:
+                    family = line[5].split()[0]
+                elif '7TM GPCR' in line[5] and 'ab' in line[5]:
+                    family = 'Srab'
                 else:
-                    # initiate key: gene set pair
-                    chemo[family] = set()
-                    chemo[family].add(line[0])
-    
+                    family = line[5].split()[-1]
+                # check that family is valid chemoreceptor family (some genes are not assigned to families)
+                if family in {'Srbc', 'Sra', 'Srab', 'Sru', 'Sri', 'Srx', 'Srsx', 'Str', 'Srg',
+                              'Srz', 'Srh', 'Srd', 'Srt', 'Srb', 'Srj', 'Srv', 'Sre', 'Srw', 'Srxa'}:
+                    # check if family is key in dict
+                    if family in chemo:
+                        # add gene to set
+                        chemo[family].add(line[0])
+                    else:
+                        # initiate key: gene set pair
+                        chemo[family] = set()
+                        chemo[family].add(line[0])
     # close file
     infile.close()
-    
     return chemo
     
  
