@@ -143,10 +143,10 @@ ax = fig.add_subplot(1, 1, 1)
 # set width of bar
 width = 0.4
 # set colors
-colorscheme = ['#b30000', '#e34a33', '#fc8d59', '#fdcc8a', '#fef0d9']
+colorscheme = ['#fef0d9', '#fdcc8a', '#fc8d59', '#e34a33', '#b30000']
 
 # plot number of piRNAs in each region
-ax.bar([0, 0.8, 1.2, 1.6, 2], nums, width, color = colorscheme, edgecolor = 'black', linewidth = 1)
+ax.bar([0, 0.4, 0.8, 1.2, 1.8], nums, width, color = colorscheme, edgecolor = 'black', linewidth = 1)
 
 # write label
 ax.set_ylabel('Number of piRNAs', size = 10, ha = 'center', fontname = 'Arial')
@@ -154,7 +154,7 @@ ax.set_ylabel('Number of piRNAs', size = 10, ha = 'center', fontname = 'Arial')
 ax.set_xlabel('Genomic regions', size = 10, ha = 'center', fontname = 'Arial')
 
 # determine tick position on x axis
-xpos =  [0, 0.8, 1.2, 1.6, 2]
+xpos =  [0, 0.4, 0.8, 1.2, 1.8]
 # set up tick positions and labels
 plt.xticks(xpos, regions, rotation = 20, fontsize = 10, fontname = 'Arial')
 
@@ -208,11 +208,11 @@ UTR = mpatches.Patch(facecolor = '#fc8d59', edgecolor = 'black', linewidth = 1, 
 overlapping = mpatches.Patch(facecolor = '#fdcc8a', edgecolor = 'black', linewidth = 1, label = 'overlapping')
 CDS = mpatches.Patch(facecolor = '#fef0d9', edgecolor = 'black', linewidth = 1, label = 'CDS')
 
-plt.legend(handles=[intergenic, intron, UTR, overlapping, CDS], loc = 1, fontsize = 8, frameon = False)
+plt.legend(handles=[intergenic, intron, UTR, overlapping, CDS], loc = 2, fontsize = 8, frameon = False)
 
 # add margin on the x-axis
 plt.margins(0.05)
 
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('DistributionpiRNAGenomicRegions.pdf', bbox_inches = 'tight')
 
 
