@@ -93,12 +93,12 @@ print('got UTR coordinates from json file')
 # create a dict UTR_pos
 UTR_pos = {}
 # loop over genes in three_prime
-for gene in three_prime:
+for gene in UTR_coord:
     # get chromo
-    chromo = three_prime[gene][0]
+    chromo = UTR_coord[gene][0]
     # convert to 0-based
-    start = three_prime[gene][1] -1
-    end = three_prime[gene][2]
+    start = UTR_coord[gene][1] -1
+    end = UTR_coord[gene][2]
     # check if chromo in UTR_pos
     if chromo in UTR_pos:
         for j in range(start, end):
