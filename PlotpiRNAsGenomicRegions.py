@@ -81,9 +81,10 @@ for gene in CDS_coord:
                 intron_pos[chromo].add(j)
 print('got intron coord')
 
+
 # get UTR coord {TS1 : [chromo, start, end, orientation]}
 # load UTR coordinates from json file
-infile = open('CremUTRCoordsNo.json')
+infile = open('../miRNA_Target_sites/CremUTRCoordsNo.json')
 UTR_coord = json.load(infile)
 infile.close()
 print('UTR coords', len(UTR_coord))
