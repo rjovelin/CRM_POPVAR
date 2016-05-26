@@ -193,7 +193,7 @@ ax.tick_params(
 # determine tick position on x axis
 xpos =  [0, 0.4, 0.8, 1.2, 1.6]
 # set up tick positions and labels
-plt.xticks(xpos, regions, rotation = 20, fontsize = 10, fontname = 'Arial')
+plt.xticks(xpos, regions, rotation = 20, fontsize = 10, ha = 'right', fontname = 'Arial')
 
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
