@@ -44,13 +44,21 @@ for line in infile:
         line = line.split('\t')
         # get gene and seed, convert seed to DNA
         gene, seed = line[0], line[1].replace('U', 'T')
+        # parse seeds if more than 1 seed for the same target site
+        if ':' in seed:
+            seed = seed.split(':')
         # add only valid transcripts
         if gene in valid_transcripts:
-            if seed in TargetGenes:
+            # check if more than 1 site recognizes the saite
+            if type(seed) == str:
+                if seed not in TargetGenes:
+                    TargetGenes[seed] = set()
                 TargetGenes[seed].add(gene)
-            else:
-                TargetGenes[seed] = set()
-                TargetGenes[seed].add(gene)
+            elif type(seed) == list:
+                for i in seed:
+                    if i not in TargetGenes:
+                        TargetGenes[i] = set()
+                    TargetGenes[i].add(gene)
 infile.close()
 print('got target genes')
 
@@ -74,27 +82,43 @@ print('got conservation')
 GeneExpression = expression_developmental_stages('../Genome_Files/WBPaper00041190.cre.mr.csv', '../Genome_Files/c_remanei.PRJNA53967.WS248.geneIDs.txt')
 print('computed expression level of target genes')
 
+# pool target genes for each miR conservation level
+ConservedTargets, RestrictedTargets, SpecificTargets = set(), set(), set()
 
-# create lists of expression of mature miRNAs with different level of conservation
-conserved, restricted, specific = [], [], []
 # loop over seed in target genes dict
 for seed in TargetGenes:
     # check conservation
     if PhyloCons[seed] == 'Caeno':
-        # add expression of target genes to list conserved
+        # pool genes into a set for that miR conservation level
         for gene in TargetGenes[seed]:
-            if gene in GeneExpression:
-                conserved.append(GeneExpression[gene])
+            ConservedTargets.add(gene)
     elif PhyloCons[seed] == 'CrmCla':
-        # add expression of target genes to list restricted
+        # pool genes into a set for that miR conservation level
         for gene in TargetGenes[seed]:
-            if gene in GeneExpression:
-                restricted.append(GeneExpression[gene])
+            RestrictedTargets.add(gene)
     elif PhyloCons[seed] == 'Crm':
-        # add expression of target genes to list specific
+        # pool genes into a set for that miR conservation level
         for gene in TargetGenes[seed]:
-            if gene in GeneExpression:
-                specific.append(GeneExpression[gene])
+            SpecificTargets.add(gene)
+print('pooled genes according to conservation of mature miRs')
+print('conserved', len(ConservedTargets))
+print('restricted', len(RestrictedTargets))
+print('specific', len(SpecificTargets))
+
+
+# create lists of expression of mature miRNAs with different level of conservation
+conserved, restricted, specific = [], [], []
+
+# loop over target genes for each conservation level
+for gene in ConservedTargets:
+    if gene in GeneExpression:
+        conserved.append(GeneExpression[gene])
+for gene in RestrictedTargets:
+    if gene in GeneExpression:
+        restricted.append(GeneExpression[gene])
+for gene in SpecificTargets:
+    if gene in GeneExpression:
+        specific.append(GeneExpression[gene])
 print('sorted expression according to marure miR phylogenetic conservation')
 print('conserved', len(conserved))
 print('restricted', len(restricted))
@@ -115,11 +139,11 @@ ax = fig.add_subplot(1, 1, 1)
 
 
 # plot expression of conserved miR target genes
-graph1 = ax.step(conserved, np.linspace(0, 1, len(conserved), endpoint=False), linewidth = 1.2, color = '#7fc97f', alpha = 0.7)
+graph1 = ax.plot(conserved, np.linspace(0, 1, len(conserved), endpoint=False), linewidth = 1.2, color = '#7fc97f', alpha = 0.7)
 # plot expression of restricted miR target genes
-graph2 = ax.step(restricted, np.linspace(0, 1, len(restricted), endpoint=False), linewidth = 1.2, color = '#beaed4', alpha = 0.7)
+graph2 = ax.plot(restricted, np.linspace(0, 1, len(restricted), endpoint=False), linewidth = 1.2, color = '#beaed4', alpha = 0.7)
 # plot expression of specific miR target genes
-graph3 = ax.step(specific, np.linspace(0, 1, len(specific), endpoint=False), linewidth = 1.2, color = '#fdc086', alpha = 0.7)
+graph3 = ax.plot(specific, np.linspace(0, 1, len(specific), endpoint=False), linewidth = 1.2, color = '#fdc086', alpha = 0.7)
 print('plotted CDF')
 
 # add label for the Y axis
