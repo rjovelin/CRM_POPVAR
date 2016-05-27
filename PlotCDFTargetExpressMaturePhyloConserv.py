@@ -104,6 +104,40 @@ print('pooled genes according to conservation of mature miRs')
 print('conserved', len(ConservedTargets))
 print('restricted', len(RestrictedTargets))
 print('specific', len(SpecificTargets))
+print('common to conserved and restricted', len(ConservedTargets.intersection(RestrictedTargets)))
+print('common to conserved and specific', len(ConservedTargets.intersection(SpecificTargets)))
+print('common to restricted and specific', len(RestrictedTargets.intersection(SpecificTargets)))
+
+# remove common target genes
+removeconserved, removerestricted, removespecific = set(), set(), set()
+for gene in ConservedTargets.intersection(RestrictedTargets):
+    removeconserved.add(gene)
+    removerestricted.add(gene)
+for gene in ConservedTargets.intersection(SpecificTargets):
+    removeconserved.add(gene)
+    removespecific.add(gene)
+for gene in RestrictedTargets.intersection(SpecificTargets):
+    removerestricted.add(gene)
+    removespecific.add(gene)
+    
+for gene in removeconserved:
+    ConservedTargets.remove(gene)
+for gene in removerestricted:
+    RestrictedTargets.remove(gene)    
+for gene in removespecific:
+    SpecificTargets.remove(gene)
+print('keep only targets unique to each mirna conservation level')
+print('conserved', len(ConservedTargets))
+print('restricted', len(RestrictedTargets))
+print('specific', len(SpecificTargets))
+print('common to conserved and restricted', len(ConservedTargets.intersection(RestrictedTargets)))
+print('common to conserved and specific', len(ConservedTargets.intersection(SpecificTargets)))
+print('common to restricted and specific', len(RestrictedTargets.intersection(SpecificTargets)))
+
+    
+    
+
+
 
 
 # create lists of expression of mature miRNAs with different level of conservation
@@ -201,7 +235,7 @@ labs = ['Conserved', 'Restricted', 'Specific']
 # plot legend
 ax.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
 
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('CDFTargetGeneExpressionmiRCons.pdf', bbox_inches = 'tight')
 
 
 
