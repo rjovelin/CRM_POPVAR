@@ -151,7 +151,7 @@ SEM = [np.std(theta_rep_TM) / math.sqrt(len(theta_rep_TM)),
        np.std(theta_omega_EX) / math.sqrt(len(theta_omega_EX))]
 
 # create figure
-fig = plt.figure(1, figsize = (4, 2))
+fig = plt.figure(1, figsize = (3, 2))
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)  
 
@@ -161,7 +161,7 @@ width = 0.2
 colorscheme = ['#f03b20', '#ffeda0','#f03b20', '#ffeda0', '#f03b20', '#ffeda0']
 
 # plot nucleotide divergence
-ax.bar([0, 0.2, 0.6, 0.8, 1.4, 1.6], Means, width, yerr = SEM, color = colorscheme, 
+ax.bar([0, 0.2, 0.5, 0.7, 1, 1.2], Means, width, yerr = SEM, color = colorscheme, 
                 edgecolor = 'black', linewidth = 1,
                 error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
@@ -171,7 +171,7 @@ ax.set_ylabel('Nucleotide diversity', size = 10, ha = 'center', fontname = 'Aria
 plt.ylim([0, 0.20])
 
 # determine tick position on x axis
-xpos =  [0.2, 0.8, 1.4]
+xpos =  [0.2, 0.6, 1.2]
 xtext = ['Rep.', 'Syn', 'Rep. / Syn.']
 # set up tick positions and labels
 plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
@@ -230,6 +230,33 @@ TransMb = mpatches.Patch(facecolor = '#f03b20' , edgecolor = 'black', linewidth 
 ExtraMb = mpatches.Patch(facecolor = '#ffeda0', edgecolor = 'black', linewidth = 1, label = 'Extra-membrane')
 plt.legend(handles=[TransMb, ExtraMb], loc = 2, fontsize = 8, frameon = False)
 
+# I already determined that all site categories are significantly different
+# using Wilcoxon rank sum tests, so we need now to add letters to show significance
+# P_rep, P_syn and P_omega < 0.001 ---> P = ***
+P = '***'
+
+# annotate figure to add significance
+# add bracket
+ax.annotate("", xy=(0.1, 0.0025), xycoords='data',
+            xytext=(0.3, 0.0025), textcoords='data',
+            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
+# add stars for significance
+ax.text(0.2, 0.003, P, horizontalalignment='center',
+        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
+
+ax.annotate("", xy=(0.5, 0.075), xycoords='data',
+            xytext=(0.7, 0.075), textcoords='data',
+            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
+# add stars for significance
+ax.text(0.5, 0.080, P, horizontalalignment='center',
+        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
+
+ax.annotate("", xy=(1.1, 0.18), xycoords='data',
+            xytext=(1.3, 0.18), textcoords='data',
+            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
+# add stars for significance
+ax.text(1.1, 0.21, P, horizontalalignment='center',
+        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
 fig.savefig('DiversityChemoPartitions.pdf', bbox_inches = 'tight')
 
