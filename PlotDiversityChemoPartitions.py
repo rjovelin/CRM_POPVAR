@@ -92,12 +92,6 @@ for gene in TM_theta_syn:
     theta_syn_TM.append(TM_theta_syn[gene])
     theta_syn_EX.append(EX_theta_syn[gene])
     
-theta_cod_TM = []
-theta_cod_EX = []
-for gene in TM_theta_cod:
-    theta_cod_TM.append(TM_theta_cod[gene])
-    theta_cod_EX.append(EX_theta_cod[gene])
-    
 # create dicts {gene: theta_rep / theta_syn} for each partition
 TM_omega , EX_omega = {}, {}
 # loop over genes in TM_theta_rep
@@ -237,5 +231,5 @@ ExtraMb = mpatches.Patch(facecolor = '#ffeda0', edgecolor = 'black', linewidth =
 plt.legend(handles=[TransMb, ExtraMb], loc = 2, fontsize = 8, frameon = False)
 
 
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('DiversityChemoPartitions.pdf', bbox_inches = 'tight')
 
