@@ -20,20 +20,18 @@ def get_chemoreceptors(iprscan_file):
     
     # create a set of genes
     chemo = set()
-    
     # open file for reading
     infile = open(iprscan_file, 'r')
-    
     # loop over file
     for line in infile:
         if 'GPCR' in line:
             chemo.add(line.rstrip().split()[0])
         if 'chemoreceptor' in line:
             chemo.add(line.rstrip().split()[0])
-    
+        if '7TM' in line:
+            chemo.add(line.rstrip().split()[0])
     # close file
     infile.close()
-    
     return chemo
 
 
