@@ -6,24 +6,44 @@ Created on Mon Jun 29 19:27:18 2015
 """
 
 
+# use this script to plot a bar graph comparing theta for TransMembrane and Extramemebrane domains
+# for different site categories
 
-from chemoreceptors import *
-from accessories import *
-from diversity_chemo_partitions import *
-import os
+
+# use Agg backend on server without X server
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib import rc
+rc('mathtext', default='regular')
+# import modules
 import numpy as np
 from scipy import stats
 import math
+import os
+# import custom modules
+from chemoreceptors import *
+from manipulate_sequences import *
+from diversity_chemo_partitions import *
 
+from genomic_coordinates import *
+
+
+# set up minimum number of sites in partition
+MinimumSites = 15
 
 # get the set of chemoreceptors from the iprscan outputfile
-chemo = get_chemoreceptors('./PX356_protein_seq.tsv') 
+chemo = get_chemoreceptors('../Genome_Files//PX356_protein_seq.tsv') 
+print('parsed chemo genes')
 
 # create a set of valid transcripts
-transcripts = get_valid_transcripts('../CREM_CLA_protein_divergence/unique_transcripts.txt')
+transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
+print('got list of valid transcripts')
 
 # create a set of valid chemoreceptors
 GPCRs = set(gene for gene in chemo if gene in transcripts)
+print('made list of valid chemo genes')
 
 # create a dict proba_domain {gene: {codon_index: [list of probabilities]}}
 proba_domain = {}
@@ -43,25 +63,27 @@ for gene in GPCRs:
             # populate dict
             for key, val in probabilities.items():
                 proba_domain[gene][key] = val
+print('extracted proba for chemo domains')
 
 # count SNPs, degenerate sites for partitions for nonsynonymous sites
-TM_rep, EX_rep = count_SNPs_degenerate_sites_chemo_paritions('../CREM_CLA_protein_divergence/CDS_SNP_DIVERG.txt', proba_domain, 'REP', 0.95)
+TM_rep, EX_rep = count_SNPs_degenerate_sites_chemo_paritions('../Genome_Files/CDS_SNP_DIVERG.txt', proba_domain, 'REP', 0.95)
 # compute theta at replacement sites for partitions
 # accept a minimum of 15 sites
-TM_theta_rep, EX_theta_rep = compute_theta_chemo_partitions(TM_rep, EX_rep, 'REP', 15)
+TM_theta_rep, EX_theta_rep = compute_theta_chemo_partitions(TM_rep, EX_rep, 'REP', MinimumSites)
+print('computed theta for replacement sites')
 
 # count SNPs, degenerate sites for partitions for synonymous sites
-TM_syn, EX_syn = count_SNPs_degenerate_sites_chemo_paritions('../CREM_CLA_protein_divergence/CDS_SNP_DIVERG.txt', proba_domain, 'SYN', 0.95)
+TM_syn, EX_syn = count_SNPs_degenerate_sites_chemo_paritions('../Genome_Files/CDS_SNP_DIVERG.txt', proba_domain, 'SYN', 0.95)
 # compute theta at synonymous sites for partitions
 # accept a minum of 15 sites
-TM_theta_syn, EX_theta_syn = compute_theta_chemo_partitions(TM_syn, EX_syn, 'SYN', 15)
+TM_theta_syn, EX_theta_syn = compute_theta_chemo_partitions(TM_syn, EX_syn, 'SYN', MinimumSites)
+print('computed theta for synonymous sites')
 
 # count SNPs for the CDS in each partition
-TM_cod, EX_cod = count_SNPs_degenerate_sites_chemo_paritions('../CREM_CLA_protein_divergence/CDS_SNP_DIVERG.txt', proba_domain, 'coding', 0.95)
+TM_cod, EX_cod = count_SNPs_degenerate_sites_chemo_paritions('../Genome_Files/CDS_SNP_DIVERG.txt', proba_domain, 'coding', 0.95)
 # compute theta for CDS, accept a minimum of 15 sites
-TM_theta_cod, EX_theta_cod = compute_theta_chemo_partitions(TM_cod, EX_cod, 'coding', 15)
-
-
+TM_theta_cod, EX_theta_cod = compute_theta_chemo_partitions(TM_cod, EX_cod, 'coding', MinimumSites)
+print('computed theta for coding sites')
 
 # create lists for theta in different partitions keeping the same gene between lists
 theta_rep_TM = []
@@ -82,32 +104,6 @@ for gene in TM_theta_cod:
     theta_cod_TM.append(TM_theta_cod[gene])
     theta_cod_EX.append(EX_theta_cod[gene])
     
-
-# open file, dump theta for replacement sites
-newfile = open('chemo_theta_rep_partitions.txt', 'w')
-for theta in theta_rep_TM:
-    newfile.write(str(theta) + '\t' + 'TM' + '\n')
-for theta in theta_rep_EX:
-    newfile.write(str(theta) + '\t' + 'EX' + '\n')
-newfile.close()
-
-# open file, dump theta for synonymous sites
-newfile = open('chemo_theta_syn_partitions.txt', 'w')
-for theta in theta_syn_TM:
-    newfile.write(str(theta) + '\t' + 'TM' + '\n')
-for theta in theta_syn_EX:
-    newfile.write(str(theta) + '\t' + 'EX' + '\n')
-newfile.close()
-
-# open file, dump theta for CDS
-newfile = open('chemo_theta_coding_partitions.txt', 'w')
-for theta in theta_cod_TM:
-    newfile.write(str(theta) + '\t' + 'TM' + '\n')
-for theta in theta_cod_EX:
-    newfile.write(str(theta) + '\t' + 'EX' + '\n')
-newfile.close()
-
-
 # create dicts {gene: theta_rep / theta_syn} for each partition
 TM_omega , EX_omega = {}, {}
 # loop over genes in TM_theta_rep
@@ -132,60 +128,122 @@ for gene in TM_omega:
     if gene in EX_omega:
         theta_omega_TM.append(TM_omega[gene])
         theta_omega_EX.append(EX_omega[gene])
+print('computed theta for ratio')
 
-# open file, dump theta ratios
-newfile = open('chemo_theta_omega_partitions.txt', 'w')
-for theta in theta_omega_TM:
-    newfile.write(str(theta) + '\t' + 'TM' + '\n')
-for theta in theta_omega_EX:
-    newfile.write(str(theta) + '\t' + 'EX' + '\n')
-newfile.close()
+a = [theta_rep_TM, theta_rep_EX, theta_syn_TM, theta_syn_EX, theta_omega_TM, theta_omega_EX]
+b = ['theta_rep_tm', 'theta_rp_ex', 'theta_syn_tm', 'theta_syn_ex', 'theta_omega_tm', 'theta_omega_ex']
+for i in range(len(a)):
+    print('N', b[i], len(a[i]))
+print('\n\n')
+for i in range(len(a)):
+    print('max', b[i], max(a[i]))
 
+# compare theta at replacement sites for TM and EX using paired tests
+P_rep = stats.wilcoxon(theta_rep_TM, theta_rep_EX)[1]
+# compare theta at synonymous sites using paired tests
+P_syn = stats.wilcoxon(theta_syn_TM, theta_syn_EX)[1]
+# compare ratio theta rep / theta syn using paired test
+P_omega = stats.wilcoxon(theta_omega_TM, theta_omega_EX)[1]
 
-# open file to write summary of analysis
-newfile = open('summary_chemo_partitions_diversity.txt', 'w')
+print('P_rep', P_rep)
+print('P_syn', P_syn)
+print('P_omega', P_omega)
 
-newfile.write('comparison theta nonsynonymous TM & EX:\n')
-newfile.write('-' * 40 + '\n')
+# create a list of means
+Means = [np.mean(theta_rep_TM), np.mean(theta_rep_EX),
+         np.mean(theta_syn_TM), np.mean(theta_syn_EX),
+         np.mean(theta_omega_TM), np.mean(theta_omega_EX)]
 
-newfile.write('\t'.join(['\t', 'N', 'mean', 'standard_error']) + '\n')
-newfile.write('\t'.join(['theta_nonsyn_TM', str(len(theta_rep_TM)), str(np.mean(theta_rep_TM)), str(np.std(theta_rep_TM) / math.sqrt(len(theta_rep_TM)))]) + '\n')
-newfile.write('\t'.join(['theta_nonsyn_EX', str(len(theta_rep_EX)), str(np.mean(theta_rep_EX)), str(np.std(theta_rep_EX) / math.sqrt(len(theta_rep_EX)))]) + '\n')
-# test difference using paired test
-newfile.write('Wilcoxon paired test: ' + '\t' + str(stats.wilcoxon(theta_rep_TM, theta_rep_EX)[1]) + '\n')
+# create a lit of SEM
+SEM = [np.std(theta_rep_TM) / math.sqrt(len(theta_rep_TM)),
+       np.std(theta_rep_EX) / math.sqrt(len(theta_rep_EX)),
+       np.std(theta_syn_TM) / math.sqrt(len(theta_syn_TM)),
+       np.std(theta_syn_EX) / math.sqrt(len(theta_syn_EX)),
+       np.std(theta_omega_TM) / math.sqrt(len(theta_omega_TM)),
+       np.std(theta_omega_EX) / math.sqrt(len(theta_omega_EX))]
 
-newfile.write('\n')
+# create figure
+fig = plt.figure(1, figsize = (4, 2))
+# add a plot to figure (1 row, 1 column, 1 plot)
+ax = fig.add_subplot(1, 1, 1)  
 
+# set width of bar
+width = 0.2
+# set colors
+colorscheme = ['#f03b20', '#ffeda0','#f03b20', '#ffeda0', '#f03b20', '#ffeda0']
 
-newfile.write('comparison theta synonymous TM & EX:\n')
-newfile.write('-' * 37 + '\n')
+# plot nucleotide divergence
+ax.bar([0, 0.2, 0.8, 1, 1.6, 1.8], Means, width, yerr = SEM, color = colorscheme, 
+                edgecolor = 'black', linewidth = 1,
+                error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
-newfile.write('\t'.join(['\t', 'N', 'mean', 'standard_error']) + '\n')
-newfile.write('\t'.join(['theta_nonsyn_TM', str(len(theta_syn_TM)), str(np.mean(theta_syn_TM)), str(np.std(theta_syn_TM) / math.sqrt(len(theta_syn_TM)))]) + '\n')
-newfile.write('\t'.join(['theta_nonsyn_EX', str(len(theta_syn_EX)), str(np.mean(theta_syn_EX)), str(np.std(theta_syn_EX) / math.sqrt(len(theta_syn_EX)))]) + '\n')
-# test difference using paired test
-newfile.write('Wilcoxon paired test: ' + '\t' + str(stats.wilcoxon(theta_syn_TM, theta_syn_EX)[1]) + '\n')
+ax.set_ylabel('Proportion of SNPs', size = 10, ha = 'center', fontname = 'Arial')
 
-newfile.write('\n')
+## determine tick position on x axis
+#xpos =  [0, 1.2, 2.4, 3.6, 4.8, 6]
+#xtext = [0, 10, 20, 30, 40, 50]
+#xtext = list(map(lambda x : str(x), xtext))
+## set up tick positions and labels
+#plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+#plt.yticks(fontsize = 0)
+#
+## set x axis label
+#ax.set_xlabel('Minor Allele Frequency (%)', size = 10, ha = 'center', fontname = 'Arial')
+#
+## do not show lines around figure, keep bottow line  
+#ax.spines["top"].set_visible(False)    
+#ax.spines["bottom"].set_visible(True)    
+#ax.spines["right"].set_visible(False)    
+#ax.spines["left"].set_visible(False)      
+## offset the spines
+#for spine in ax.spines.values():
+#  spine.set_position(('outward', 5))
+#  
+## add a light grey horizontal grid to the plot, semi-transparent, 
+#ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
+## hide these grids behind plot objects
+#ax.set_axisbelow(True)
+#
+## do not show ticks on 1st graph
+#ax.tick_params(
+#    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
+#    which='both',      # both major and minor ticks are affected
+#    bottom='on',      # ticks along the bottom edge are off
+#    top='off',         # ticks along the top edge are off
+#    right = 'off',
+#    left = 'off',          
+#    labelbottom='on', # labels along the bottom edge are off 
+#    colors = 'black',
+#    labelsize = 10,
+#    direction = 'out') # ticks are outside the frame when bottom = 'on
+#
+## do not show ticks
+#ax.tick_params(
+#    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
+#    which='both',      # both major and minor ticks are affected
+#    bottom='off',      # ticks along the bottom edge are off
+#    top='off',         # ticks along the top edge are off
+#    right = 'off',
+#    left = 'off',          
+#    labelbottom='off', # labels along the bottom edge are off 
+#    colors = 'black',
+#    labelsize = 10,
+#    direction = 'out') # ticks are outside the frame when bottom = 'on
+#
+#for label in ax.get_yticklabels():
+#    label.set_fontname('Arial')
+#
+## create legend
+#syn = mpatches.Patch(color = '#810f7c' , edgecolor = 'black', linewidth = 1, label= 'Syn')
+#rep = mpatches.Patch(color = '#8856a7', edgecolor = 'black', linewidth = 1, label = 'Rep')
+#mirna = mpatches.Patch(color = '#8c96c6', edgecolor = 'black', linewidth = 1, label = 'miRNA')
+#nearmirna = mpatches.Patch(color = '#9ebcda', edgecolor = 'black', linewidth = 1, label = 'near miRNA')
+#targets = mpatches.Patch(color = '#bfd3e6', edgecolor = 'black', linewidth = 1, label = 'target')
+#utr = mpatches.Patch(color = '#edf8fb', edgecolor = 'black', linewidth = 1, label = 'UTR')
+#plt.legend(handles=[syn, rep, mirna, nearmirna, targets, utr], loc = 1, fontsize = 8, frameon = False)
+#
+## add margin on the x-axis
+#plt.margins(0.05)
 
-newfile.write('comparison theta nonsynonymous / theta syn TM & EX:\n')
-newfile.write('-' * 45 + '\n')
+fig.savefig('testfile.pdf', bbox_inches = 'tight')
 
-newfile.write('\t'.join(['\t', 'N', 'mean', 'standard_error']) + '\n')
-newfile.write('\t'.join(['theta_nonsyn_TM', str(len(theta_omega_TM)), str(np.mean(theta_omega_TM)), str(np.std(theta_omega_TM) / math.sqrt(len(theta_omega_TM)))]) + '\n')
-newfile.write('\t'.join(['theta_nonsyn_EX', str(len(theta_omega_EX)), str(np.mean(theta_omega_EX)), str(np.std(theta_omega_EX) / math.sqrt(len(theta_omega_EX)))]) + '\n')
-# test difference using paired test
-newfile.write('Wilcoxon paired test: ' + '\t' + str(stats.wilcoxon(theta_omega_TM, theta_omega_EX)[1]) + '\n')
-
-newfile.write('\n')
-
-newfile.write('comparison theta coding sites TM & EX:\n')
-newfile.write('-' * 39 + '\n')
-
-newfile.write('\t'.join(['\t', 'N', 'mean', 'standard_error']) + '\n')
-newfile.write('\t'.join(['theta_nonsyn_TM', str(len(theta_cod_TM)), str(np.mean(theta_cod_TM)), str(np.std(theta_cod_TM) / math.sqrt(len(theta_cod_TM)))]) + '\n')
-newfile.write('\t'.join(['theta_nonsyn_EX', str(len(theta_cod_EX)), str(np.mean(theta_cod_EX)), str(np.std(theta_cod_EX) / math.sqrt(len(theta_cod_EX)))]) + '\n')
-newfile.write('Wilcoxon paired test: ' + '\t' + str(stats.wilcoxon(theta_cod_TM, theta_cod_EX)[1]) + '\n')
-
-
-newfile.close()
