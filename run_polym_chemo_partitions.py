@@ -79,12 +79,6 @@ TM_syn, EX_syn = count_SNPs_degenerate_sites_chemo_paritions('../Genome_Files/CD
 TM_theta_syn, EX_theta_syn = compute_theta_chemo_partitions(TM_syn, EX_syn, 'SYN', MinimumSites)
 print('computed theta for synonymous sites')
 
-# count SNPs for the CDS in each partition
-TM_cod, EX_cod = count_SNPs_degenerate_sites_chemo_paritions('../Genome_Files/CDS_SNP_DIVERG.txt', proba_domain, 'coding', 0.95)
-# compute theta for CDS, accept a minimum of 15 sites
-TM_theta_cod, EX_theta_cod = compute_theta_chemo_partitions(TM_cod, EX_cod, 'coding', MinimumSites)
-print('computed theta for coding sites')
-
 # create lists for theta in different partitions keeping the same gene between lists
 theta_rep_TM = []
 theta_rep_EX = []
@@ -134,7 +128,7 @@ a = [theta_rep_TM, theta_rep_EX, theta_syn_TM, theta_syn_EX, theta_omega_TM, the
 b = ['theta_rep_tm', 'theta_rp_ex', 'theta_syn_tm', 'theta_syn_ex', 'theta_omega_tm', 'theta_omega_ex']
 for i in range(len(a)):
     print('N', b[i], len(a[i]))
-print('\n\n')
+print('\n')
 for i in range(len(a)):
     print('max', b[i], max(a[i]))
 
@@ -173,77 +167,75 @@ width = 0.2
 colorscheme = ['#f03b20', '#ffeda0','#f03b20', '#ffeda0', '#f03b20', '#ffeda0']
 
 # plot nucleotide divergence
-ax.bar([0, 0.2, 0.8, 1, 1.6, 1.8], Means, width, yerr = SEM, color = colorscheme, 
+ax.bar([0, 0.2, 0.6, 0.8, 1.4, 1.6], Means, width, yerr = SEM, color = colorscheme, 
                 edgecolor = 'black', linewidth = 1,
                 error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
-ax.set_ylabel('Proportion of SNPs', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_ylabel('Nucleotide diversity', size = 10, ha = 'center', fontname = 'Arial')
 
-## determine tick position on x axis
-#xpos =  [0, 1.2, 2.4, 3.6, 4.8, 6]
-#xtext = [0, 10, 20, 30, 40, 50]
-#xtext = list(map(lambda x : str(x), xtext))
-## set up tick positions and labels
-#plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
-#plt.yticks(fontsize = 0)
-#
-## set x axis label
-#ax.set_xlabel('Minor Allele Frequency (%)', size = 10, ha = 'center', fontname = 'Arial')
-#
-## do not show lines around figure, keep bottow line  
-#ax.spines["top"].set_visible(False)    
-#ax.spines["bottom"].set_visible(True)    
-#ax.spines["right"].set_visible(False)    
-#ax.spines["left"].set_visible(False)      
-## offset the spines
-#for spine in ax.spines.values():
-#  spine.set_position(('outward', 5))
-#  
-## add a light grey horizontal grid to the plot, semi-transparent, 
-#ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
-## hide these grids behind plot objects
-#ax.set_axisbelow(True)
-#
-## do not show ticks on 1st graph
-#ax.tick_params(
-#    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
-#    which='both',      # both major and minor ticks are affected
-#    bottom='on',      # ticks along the bottom edge are off
-#    top='off',         # ticks along the top edge are off
-#    right = 'off',
-#    left = 'off',          
-#    labelbottom='on', # labels along the bottom edge are off 
-#    colors = 'black',
-#    labelsize = 10,
-#    direction = 'out') # ticks are outside the frame when bottom = 'on
-#
-## do not show ticks
-#ax.tick_params(
-#    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
-#    which='both',      # both major and minor ticks are affected
-#    bottom='off',      # ticks along the bottom edge are off
-#    top='off',         # ticks along the top edge are off
-#    right = 'off',
-#    left = 'off',          
-#    labelbottom='off', # labels along the bottom edge are off 
-#    colors = 'black',
-#    labelsize = 10,
-#    direction = 'out') # ticks are outside the frame when bottom = 'on
-#
-#for label in ax.get_yticklabels():
-#    label.set_fontname('Arial')
-#
-## create legend
-#syn = mpatches.Patch(color = '#810f7c' , edgecolor = 'black', linewidth = 1, label= 'Syn')
-#rep = mpatches.Patch(color = '#8856a7', edgecolor = 'black', linewidth = 1, label = 'Rep')
-#mirna = mpatches.Patch(color = '#8c96c6', edgecolor = 'black', linewidth = 1, label = 'miRNA')
-#nearmirna = mpatches.Patch(color = '#9ebcda', edgecolor = 'black', linewidth = 1, label = 'near miRNA')
-#targets = mpatches.Patch(color = '#bfd3e6', edgecolor = 'black', linewidth = 1, label = 'target')
-#utr = mpatches.Patch(color = '#edf8fb', edgecolor = 'black', linewidth = 1, label = 'UTR')
-#plt.legend(handles=[syn, rep, mirna, nearmirna, targets, utr], loc = 1, fontsize = 8, frameon = False)
-#
-## add margin on the x-axis
-#plt.margins(0.05)
+# set y limits
+plt.ylim([0, 0.20])
+
+# determine tick position on x axis
+xpos =  [0.2, 0.8, 1.4]
+xtext = ['Rep.', 'Syn', 'Rep. / Syn.']
+# set up tick positions and labels
+plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+
+# set x axis label
+ax.set_xlabel('Sites in coding sequences', size = 10, ha = 'center', fontname = 'Arial')
+
+# do not show lines around figure, keep bottow line  
+ax.spines["top"].set_visible(False)    
+ax.spines["bottom"].set_visible(True)    
+ax.spines["right"].set_visible(False)    
+ax.spines["left"].set_visible(False)      
+# offset the spines
+for spine in ax.spines.values():
+  spine.set_position(('outward', 5))
+  
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
+
+# do not show ticks on 1st graph
+ax.tick_params(
+    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='on',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='on', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on
+
+# do not show ticks
+ax.tick_params(
+    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='off',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='off', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on
+
+for label in ax.get_yticklabels():
+    label.set_fontname('Arial')
+
+# add margin on the x-axis
+plt.margins(0.05)
+
+# create legend
+TransMb = mpatches.Patch(facecolor = '#f03b20' , edgecolor = 'black', linewidth = 1, label= 'Transmembrane')
+ExtraMb = mpatches.Patch(facecolor = '#ffeda0', edgecolor = 'black', linewidth = 1, label = 'Extra-membrane')
+plt.legend(handles=[TransMb, ExtraMb], loc = 2, fontsize = 8, frameon = False)
+
 
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
 
