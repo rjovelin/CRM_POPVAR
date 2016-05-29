@@ -171,7 +171,7 @@ ax.set_ylabel('Nucleotide diversity', size = 10, ha = 'center', fontname = 'Aria
 plt.ylim([0, 0.20])
 
 # determine tick position on x axis
-xpos =  [0.2, 0.6, 1.2]
+xpos =  [0.2, 0.7, 1.2]
 xtext = ['Rep.', 'Syn', 'Rep. / Syn.']
 # set up tick positions and labels
 plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
@@ -237,25 +237,25 @@ P = '***'
 
 # annotate figure to add significance
 # add bracket
-ax.annotate("", xy=(0.1, 0.0025), xycoords='data',
-            xytext=(0.3, 0.0025), textcoords='data',
+ax.annotate("", xy=(0.1, 0.025), xycoords='data',
+            xytext=(0.3, 0.025), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(0.2, 0.003, P, horizontalalignment='center',
+ax.text(0.2, 0.035, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
-ax.annotate("", xy=(0.5, 0.075), xycoords='data',
-            xytext=(0.7, 0.075), textcoords='data',
+ax.annotate("", xy=(0.6, 0.06), xycoords='data',
+            xytext=(0.8, 0.06), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(0.5, 0.080, P, horizontalalignment='center',
+ax.text(0.7, 0.075, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
 ax.annotate("", xy=(1.1, 0.18), xycoords='data',
             xytext=(1.3, 0.18), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(1.1, 0.21, P, horizontalalignment='center',
+ax.text(1.2, 0.195, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
 fig.savefig('DiversityChemoPartitions.pdf', bbox_inches = 'tight')
