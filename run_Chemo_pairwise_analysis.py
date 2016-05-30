@@ -7,8 +7,8 @@ Created on Thu Jun 25 21:34:28 2015
 
 
 from chemoreceptors import *
-from accessories import *
-from run_tcoffee_noncoding import *
+from manipulate_sequences import *
+from tcoffee_alignment import *
 import os
 from divergence import *
 import numpy as np
