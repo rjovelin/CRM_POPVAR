@@ -14,24 +14,26 @@ from divergence import *
 import numpy as np
 
 
+# use this script to plot histograms of pairwise protein distance within
+# each chemoreceptor family
+
 # assign genes to chemoreceptor families
-chemo = chemo_families('./PX356_protein_seq.tsv')
+chemo = chemo_families('../Genome_Files/PX356_protein_seq.tsv')
 
 # remove ambiguous genes belonging to multiple families
 chemo = remove_ambiguous_chemoreceptors(chemo)
 
 # create a set of valid transcripts
-transcripts = get_valid_transcripts('../CREM_CLA_protein_divergence/unique_transcripts.txt')
+transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
 
 # get the CDS sequences
-CDS = convert_fasta('../CREM_CLA_protein_divergence/noamb_PX356_all_CDS.fasta')
+CDS = convert_fasta('../Genome_Files/noamb_PX356_all_CDS.fasta')
 
 # create new directory
 os.mkdir('Pairwise_Chemos')
 
 # remove genes that are not in transcripts
-chemo = clean_chemo_families(chemo, '../CREM_CLA_protein_divergence/unique_transcripts.txt')
-
+chemo = clean_chemo_families(chemo, '../Genome_Files/unique_transcripts.txt')
 
 # loop over families
 for family in chemo:
