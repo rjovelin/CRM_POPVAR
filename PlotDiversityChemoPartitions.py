@@ -31,7 +31,7 @@ from genomic_coordinates import *
 
 
 # set up minimum number of sites in partition
-MinimumSites = 15
+MinimumSites = 30
 
 # get the set of chemoreceptors from the iprscan outputfile
 chemo = get_chemoreceptors('../Genome_Files//PX356_protein_seq.tsv') 
