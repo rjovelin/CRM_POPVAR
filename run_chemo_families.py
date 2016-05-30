@@ -6,22 +6,22 @@ Created on Tue Jun 23 15:58:57 2015
 """
 
 from chemoreceptors import *
-from accessories import *
+from manipulate_sequences import *
 import os
 
 
 
 # assign genes to chemoreceptor families
-chemo = chemo_families('./PX356_protein_seq.tsv')
+chemo = chemo_families('../Genome_Files/PX356_protein_seq.tsv')
 
 # remove ambiguous genes belonging to multiple families
 chemo = remove_ambiguous_chemoreceptors(chemo)
 
 # create a set of valid transcripts
-transcripts = get_valid_transcripts('../CREM_CLA_protein_divergence/unique_transcripts.txt')
+transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
 
 # get the CDS sequences
-CDS = convert_fasta('../CREM_CLA_protein_divergence/noamb_PX356_all_CDS.fasta')
+CDS = convert_fasta('../Genome_Files/noamb_PX356_all_CDS.fasta')
 
 # create new directory
 os.mkdir('Chemo_families')
@@ -48,7 +48,7 @@ for family in chemo:
     newfile.close()
 
 # copy Tcoffee perl script to current directory
-os.system('cp ../../CREM_CLA_protein_divergence/runTcoffee.pl ./')
+os.system('cp ../Genome_Files/runTcoffee.pl ./')
     
 
 # run t-coffee on chemo families
@@ -69,30 +69,6 @@ print('done aligning sequences')
 #
 #
 #
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
