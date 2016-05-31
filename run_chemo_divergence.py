@@ -18,6 +18,8 @@ TM_files = [filename for filename in os.listdir('./Partitions/Membrane/') if 'TM
 Out_files = [filename for filename in os.listdir('./Partitions/Outside/') if 'outside' in filename]
 In_files = [filename for filename in os.listdir('./Partitions/Inside/') if 'inside' in filename]
 Extra_files =[filename for filename in os.listdir('./Partitions/Extra_membrane/') if 'ExtraTM' in filename]
+print('made lists of files')
+
 
 # generate codeml control files for each alignment files in each partition folder
 for alignment_file in TM_files:
@@ -28,6 +30,7 @@ for alignment_file in In_files:
     generate_codeml_control_file(alignment_file, '../CREM_CLA_protein_divergence/codeml.ctl', './Partitions/Inside/')
 for alignment_file in Extra_files:
     generate_codeml_control_file(alignment_file, '../CREM_CLA_protein_divergence/codeml.ctl', './Partitions/Extra_membrane/')
+print('generated codem ctl files')
 
 # run codeml on each partition
 # get the the list of control files
@@ -35,12 +38,14 @@ TM_ctl = [filename for filename in os.listdir('./Partitions/Membrane/') if 'ctl'
 Out_ctl = [filename for filename in os.listdir('./Partitions/Outside/') if 'ctl' in filename]
 In_ctl = [filename for filename in os.listdir('./Partitions/Inside/') if 'ctl' in filename]
 Extra_ctl = [filename for filename in os.listdir('./Partitions/Extra_membrane/') if 'ctl' in filename]
+print('grabbed ctl files')
 
 # copy tree files to directories
 os.system('cp CREMCLATREE.tre.txt ./Partitions/Membrane/')
 os.system('cp CREMCLATREE.tre.txt ./Partitions/Outside/')
 os.system('cp CREMCLATREE.tre.txt ./Partitions/Inside/')
 os.system('cp CREMCLATREE.tre.txt ./Partitions/Extra_membrane/')
+print('copied tree file to folders')
 
 # change directory to run codeml
 os.chdir('./Partitions/Membrane/')
@@ -49,6 +54,8 @@ for filename in TM_ctl:
     os.system('codeml ' + filename)
 # remove tree file
 os.system('rm CREMCLATREE.tre.txt')
+print('done computing divergence for Membrane')
+
 
 # change directory
 os.chdir('../Outside')
@@ -57,6 +64,8 @@ for filename in Out_ctl:
     os.system('codeml ' + filename)
 # remove tree file
 os.system('rm CREMCLATREE.tre.txt')
+print('done computing divergence for Outside')
+
 
 # change directory
 os.chdir('../Inside')
@@ -65,6 +74,8 @@ for filename in In_ctl:
     os.system('codeml ' + filename)
 # remove tree file
 os.system('rm CREMCLATREE.tre.txt')
+print('done computing divergence for Inside')    
+    
     
 # change directory
 os.chdir('../Extra_membrane/')
@@ -73,5 +84,5 @@ for filename in Extra_ctl:
     os.system('codeml ' + filename)
 # remove tree file
 os.system('rm CREMCLATREE.tre.txt')
-
+print('done computing divergence for Extramembrane')
 
