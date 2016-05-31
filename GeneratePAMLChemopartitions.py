@@ -14,6 +14,10 @@ from chemoreceptors import *
 import os
 
 
+# set number of minimum codons of each partition
+MinimumCodons = 5
+
+
 # get the set of chemoreceptors from the iprscan outputfile
 chemo = get_chemoreceptors('../Genome_Files/PX356_protein_seq.tsv') 
 print('got chemo genes')
@@ -97,8 +101,8 @@ for gene in GPCRs:
                     cla_not_TM += codons[i][1]
             # get cla_gene name
             cla_gene = filename[filename.index('CLA'):filename.index('_aln')]
-            # check that remanei sequence is not empty and that latens sequence has at least 5 codons
-            if len(crm_TM) != 0 and len(crm_not_TM) != 0 and len(cla_TM.replace('-', '')) >= 5 and len(cla_not_TM.replace('-', '')) >= 5:
+            # check that remanei sequence is not empty and that latens sequence has minimum codons
+            if len(crm_TM) != 0 and len(crm_not_TM) != 0 and len(cla_TM.replace('-', '')) >= MinimumCodons and len(cla_not_TM.replace('-', '')) >= MinimumCodons:
                 # gene has both membrane and extra-membrane residues
                 # open file for writing
                 newfile = open('./Partitions/Membrane/' + gene + '_TM.txt', 'w')
@@ -118,7 +122,7 @@ for gene in GPCRs:
                 newfile.write('>' + cla_gene + '\n')
                 newfile.write(cla_not_TM + '\n')
                 newfile.close()
-            if len(crm_intra) != 0 and len(cla_intra.replace('-', '')) >= 5:
+            if len(crm_intra) != 0 and len(cla_intra.replace('-', '')) >= MinimumCodons:
                 # gene has intra-cellular domain
                 # open file for writing
                 newfile = open('./Partitions/Inside/' + gene + '_inside.txt', 'w')
@@ -129,7 +133,7 @@ for gene in GPCRs:
                 newfile.write('>' + cla_gene + '\n')
                 newfile.write(cla_intra + '\n')
                 newfile.close()
-            if len(crm_extra) != 0 and len(cla_extra.replace('-', '')) >= 5:
+            if len(crm_extra) != 0 and len(cla_extra.replace('-', '')) >= MinimumCodons:
                 # gene has extra-cellular domain
                 # open file for writing 
                 newfile = open('./Partitions/Outside/' + gene + '_outside.txt', 'w')
