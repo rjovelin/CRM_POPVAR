@@ -5,14 +5,39 @@ Created on Mon May 30 20:23:16 2016
 @author: Richard
 """
 
-# use this script to generate a summary 
+# use this script to plot a bar graph comparing divergence for TransMembrane and Extramemebrane domains
 
 
-
-
-from protein_divergence import *
-from chemoreceptors import *
+# use Agg backend on server without X server
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib import rc
+rc('mathtext', default='regular')
+# import modules
+import numpy as np
+from scipy import stats
+import math
 import os
+# import custom modules
+from chemoreceptors import *
+from manipulate_sequences import *
+from diversity_chemo_partitions import *
+from genomic_coordinates import *
+from protein_divergence import *
+
+
+
+# set minimum number of codons
+
+
+
+# makde dictionaries with {gene: length partition}
+
+
+
+
 
 
 
