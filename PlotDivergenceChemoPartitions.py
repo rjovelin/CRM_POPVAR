@@ -32,6 +32,12 @@ from protein_divergence import *
 # set minimum number of sites (number of cosons = N sites / 3)
 MinimumSites = 30
 
+# set threshold for dN, dS and omega, remove genes instead of removing values
+# genes are removed if any divergence estimate is greater than following thresholds
+MaxdN = 2
+MaxdS = 1.5
+MaxOmega = 5
+
 # use this function to get the number of sites without gaps in partitions used to compute divergence
 def GetNumbSitesNoGaps(folder):
     '''
@@ -131,14 +137,18 @@ omegaTM, omegaEX = [], []
 for gene in ChemoDiv:
     # check if divergence is defined
     if ChemoDiv[gene][0] != 'NA' and ChemoDiv[gene][3] != 'NA':
-        dNTM.append(ChemoDiv[gene][0])
-        dNEX.append(ChemoDiv[gene][3])
+        # check if dN is greater than max val
+        if ChemoDiv[gene][0] <= MaxdN and ChemoDiv[gene][3] <= MaxdN:
+            dNTM.append(ChemoDiv[gene][0])
+            dNEX.append(ChemoDiv[gene][3])
     if ChemoDiv[gene][1] != 'NA' and ChemoDiv[gene][4] != 'NA':
-        dSTM.append(ChemoDiv[gene][1])
-        dSEX.append(ChemoDiv[gene][4])
+        if ChemoDiv[gene][1] <= MaxdS and ChemoDiv[gene][4] <= MaxdS:
+            dSTM.append(ChemoDiv[gene][1])
+            dSEX.append(ChemoDiv[gene][4])
     if ChemoDiv[gene][2] != 'NA' and ChemoDiv[gene][5] != 'NA':
-        omegaTM.append(ChemoDiv[gene][2])
-        omegaEX.append(ChemoDiv[gene][5])
+        if ChemoDiv[gene][2] <= MaxOmega and ChemoDiv[gene][5] <= MaxOmega:
+            omegaTM.append(ChemoDiv[gene][2])
+            omegaEX.append(ChemoDiv[gene][5])
 
 a = [dNTM, dNEX, dSTM, dSEX, omegaTM, omegaEX]
 b = ['dNTM', 'dNEX', 'dSTM', 'dSEX', 'omegaTM', 'omegaEX']
@@ -191,7 +201,7 @@ ax.bar([0, 0.2, 0.5, 0.7, 1, 1.2], Means, width, yerr = SEM, color = colorscheme
 ax.set_ylabel('Nucleotide divergence', size = 10, ha = 'center', fontname = 'Arial')
 
 # set y limits
-plt.ylim([0, 0.20])
+plt.ylim([0, 1])
 
 # determine tick position on x axis
 xpos =  [0.2, 0.7, 1.2]
