@@ -67,9 +67,12 @@ os.chdir('./Pairwise_Chemos/')
 folders = [folder for folder in os.listdir() if '_family' in folder]
 # sort folders
 folders.sort()
+print('made list of folders')
+
 
 # loop over directories
 for folder in folders:
+    print(folder)
     # change directory
     os.chdir(folder)
     # create a list of filenames
@@ -78,12 +81,14 @@ for folder in folders:
     # run tcoffee
     for filename in files:
         os.system('t_coffee ' + filename)
+    print('done aligning sequences for', folder)
     # create a list of t-coffee output files
     alignments = [filename for filename in os.listdir() if '.aln' in filename]
     # convert t-coffee format to text files
     for filename in alignments:
         convert_tcoffee_prot_to_fasta(filename)
+    print('fasta convertion done')
+    # move to parent directory
+    os.chdir('../')
 print('done aligning sequences')
 
-
-    
