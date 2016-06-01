@@ -191,7 +191,8 @@ ax = fig.add_subplot(1, 1, 1)
 # set width of bar
 width = 0.2
 # set colors
-colorscheme = ['#f03b20', '#ffeda0','#f03b20', '#ffeda0', '#f03b20', '#ffeda0']
+colorscheme = ['#31a354', '#e5f5e0','#31a354', '#e5f5e0', '#31a354', '#e5f5e0']
+
 
 # plot nucleotide divergence
 ax.bar([0, 0.2, 0.5, 0.7, 1, 1.2], Means, width, yerr = SEM, color = colorscheme, 
@@ -201,7 +202,7 @@ ax.bar([0, 0.2, 0.5, 0.7, 1, 1.2], Means, width, yerr = SEM, color = colorscheme
 ax.set_ylabel('Nucleotide divergence', size = 10, ha = 'center', fontname = 'Arial')
 
 # set y limits
-plt.ylim([0, 1])
+plt.ylim([0, 0.45])
 
 # determine tick position on x axis
 xpos =  [0.2, 0.7, 1.2]
@@ -259,8 +260,8 @@ for label in ax.get_yticklabels():
 plt.margins(0.05)
 
 # create legend
-TransMb = mpatches.Patch(facecolor = '#f03b20' , edgecolor = 'black', linewidth = 1, label= 'Transmembrane')
-ExtraMb = mpatches.Patch(facecolor = '#ffeda0', edgecolor = 'black', linewidth = 1, label = 'Extra-membrane')
+TransMb = mpatches.Patch(facecolor = '#31a354' , edgecolor = 'black', linewidth = 1, label= 'Transmembrane')
+ExtraMb = mpatches.Patch(facecolor = '#e5f5e0', edgecolor = 'black', linewidth = 1, label = 'Extra-membrane')
 plt.legend(handles=[TransMb, ExtraMb], loc = 2, fontsize = 8, frameon = False)
 
 # I already determined that all site categories are significantly different
