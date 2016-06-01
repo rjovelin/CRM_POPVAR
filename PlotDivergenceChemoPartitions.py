@@ -271,25 +271,25 @@ P = '***'
 
 # annotate figure to add significance
 # add bracket
-ax.annotate("", xy=(0.1, 0.025), xycoords='data',
-            xytext=(0.3, 0.025), textcoords='data',
+ax.annotate("", xy=(0.1, 0.10), xycoords='data',
+            xytext=(0.3, 0.10), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(0.2, 0.035, P, horizontalalignment='center',
+ax.text(0.2, 0.12, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
-ax.annotate("", xy=(0.6, 0.06), xycoords='data',
-            xytext=(0.8, 0.06), textcoords='data',
+ax.annotate("", xy=(0.6, 0.30), xycoords='data',
+            xytext=(0.8, 0.30), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(0.7, 0.075, P, horizontalalignment='center',
+ax.text(0.7, 0.32, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
-ax.annotate("", xy=(1.1, 0.18), xycoords='data',
-            xytext=(1.3, 0.18), textcoords='data',
+ax.annotate("", xy=(1.1, 0.23), xycoords='data',
+            xytext=(1.3, 0.23), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(1.2, 0.195, P, horizontalalignment='center',
+ax.text(1.2, 0.25, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
