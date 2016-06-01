@@ -5,6 +5,9 @@ Created on Mon May 30 20:23:16 2016
 @author: Richard
 """
 
+# use this script to generate a summary 
+
+
 
 
 from protein_divergence import *
@@ -19,6 +22,7 @@ TM_out = [filename for filename in os.listdir('./Partitions/Membrane/') if '.out
 Out_out = [filename for filename in os.listdir('./Partitions/Outside/') if '.out' in filename]
 In_out = [filename for filename in os.listdir('./Partitions/Inside/') if '.out' in filename]
 Extra_out = [filename for filename in os.listdir('./Partitions/Extra_membrane/') if '.out' in filename]
+print('generated file lists')
 
 
 # create dictionnaries to store the divergence of each partition {gene1 :[dN, dS, omega], gene2 : [dN, dS, omega]}
@@ -31,6 +35,7 @@ for filename in TM_out:
     # populate divergence dict
     for gene in gene_diverg:
         TM_diverg[gene] = list(gene_diverg[gene])
+print('got divergence in Transmembrane')
 
 for filename in Out_out:
     # parse codeml outputfile, return a dict {gene :[ dN, dS. omega]}
@@ -38,6 +43,7 @@ for filename in Out_out:
     # populate divergence dict
     for gene in gene_diverg:
         Out_diverg[gene] = list(gene_diverg[gene])
+print('got divergence in Outside domain')
 
 for filename in In_out:
     # parse codeml outputfile, return a dict {gene :[ dN, dS. omega]}
@@ -45,6 +51,7 @@ for filename in In_out:
     # populate divergence dict
     for gene in gene_diverg:
         In_diverg[gene] = list(gene_diverg[gene])
+print('got divergence in Inside domain')
 
 for filename in Extra_out:
     # parse codeml outputfile, return a dict {gene :[ dN, dS. omega]}
@@ -52,6 +59,7 @@ for filename in Extra_out:
     # populate divergence dict
     for gene in gene_diverg:
         Extra_diverg[gene] = list(gene_diverg[gene])
+print('got divergence in Extramembrane')
 
 # open file to store divergence in the different partitions
 # do not consider partitions of genes that do not have TM and extra-TM domains
@@ -73,9 +81,7 @@ for gene in TM_diverg:
             line.append(str(Extra_diverg[gene][i]))
     else:
         # gene does not have extra-membrane domain, add 'NA' to divergence
-       line.append('NA')
-       line.append('NA')
-       line.append('NA')
+       line.extend(['NA', 'NA', 'NA'])
     # check if gene has outside domain
     if gene in Out_diverg:
         # gene has extra-cellular domain
@@ -83,9 +89,7 @@ for gene in TM_diverg:
             line.append(str(Out_diverg[gene][i]))
     else:
         # gene does not have extra-cellular domain
-        line.append('NA')
-        line.append('NA')
-        line.append('NA')
+        line.extend(['NA', 'NA', 'NA'])        
     # check if gene has intra-cellular domain
     if gene in In_diverg:
         # gene has intra-cellular domain
@@ -93,9 +97,7 @@ for gene in TM_diverg:
             line.append(str(In_diverg[gene][i]))
     else:
         # gene does not have intra-cellular domain, add 'NA' to line
-        line.append('NA')
-        line.append('NA')
-        line.append('NA')
+        line.extend(['NA', 'NA', 'NA'])
     # write line to file
     line = '\t'.join(line)
     newfile.write(line + '\n')
