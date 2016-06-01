@@ -87,34 +87,3 @@ print('done aligning sequences')
 
 
     
-#    # create a list of filenames
-#    files = [filename for filename in os.listdir() if '.txt' in filename]
-#    # create a list to store the distances
-#    distances = []
-#    # loop over files, convert to fasta
-#    for filename in files:
-#        proteins = convert_fasta(filename)
-#        # get the sequences
-#        genes = [i for i in proteins]
-#        seq1 = proteins[genes[0]]
-#        seq2 = proteins[genes[1]]
-#        # get p-distances
-#        p_distance = pairwise_distance(seq1, seq2, 'protein') 
-#        if p_distance != 'NA':
-#            # multiply by 100 to get %
-#            p_distance *= 100
-#            distances.append(p_distance)
-#    # create a histogram
-#    hist = np.histogram(distances, range(0, 101, 10))
-#    # get the folder name
-#    folder_name = folder[:folder.index('_')] + '_hist'
-#    # create new file in parent directory
-#    newfile = open('../' + folder_name + '.txt', 'w')
-#    for i in range(len(hist[0])):
-#        newfile.write(str(hist[1][i]) + ':' + str(hist[1][i] + 10) + '\t' + str(hist[0][i]) + '\n')
-#    # close file
-#    newfile.close()
-#    # go back to parent directory
-#    os.chdir('../')
-#    
-#    
