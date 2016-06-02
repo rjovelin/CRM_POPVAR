@@ -107,8 +107,6 @@ plt.tick_params(
     labelsize = 10,
     direction = 'out') # ticks are outside the frame when bottom = 'on'  
 
-
-
 # determine tick position on x axis
 xpos =  [i for i in range(0, 110, 10)]
 Dist = ['0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1']
@@ -130,43 +128,3 @@ fig.savefig('testfile.pdf', bbox_inches = 'tight')
 
 
 
-    
-    
-########################## EDIT THIS ASCRIP TO make hist for each famile
-    
-## loop over directories
-#for folder in folders:
-#    print(folder)
-#    # create a list of filenames of aligned sequences
-#    files = [filename for filename in os.listdir('./Pairwise_Chemos/' + folder) if '.txt' in filename]
-#    print(len(files))    
-#    
-#    # create a list to store the distances
-#    distances = []
-#    # loop over files, convert to fasta
-#    for filename in files:
-#        proteins = convert_fasta(filename)
-#        # get the sequences
-#        genes = [i for i in proteins]
-#        seq1 = proteins[genes[0]]
-#        seq2 = proteins[genes[1]]
-#        # get p-distances
-#        p_distance = pairwise_distance(seq1, seq2, 'protein') 
-#        if p_distance != 'NA':
-#            # multiply by 100 to get %
-#            p_distance *= 100
-#            distances.append(p_distance)
-#    # create a histogram
-#    hist = np.histogram(distances, range(0, 101, 10))
-#    # get the folder name
-#    folder_name = folder[:folder.index('_')] + '_hist'
-#    # create new file in parent directory
-#    newfile = open('../' + folder_name + '.txt', 'w')
-#    for i in range(len(hist[0])):
-#        newfile.write(str(hist[1][i]) + ':' + str(hist[1][i] + 10) + '\t' + str(hist[0][i]) + '\n')
-#    # close file
-#    newfile.close()
-#    # go back to parent directory
-#    os.chdir('../')
-#    
-    
