@@ -67,7 +67,6 @@ ax = fig.add_subplot(1, 1, 1)
 # create histogram
 ax.hist(FamDist, range(0, 110, 10), color = '#e34a33', edgecolor = '#e34a33')
 
-
 # set y axis label
 ax.set_ylabel('Number of protein pairs', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
@@ -110,9 +109,5 @@ plt.xticks(xpos, Dist, rotation = 0, fontsize = 10, ha = 'center', fontname = 'H
 # add margins on right and left of gragh
 plt.margins(0.05)
 
-
 # save figure
 fig.savefig('ChemoPairwiseProteinDistances.pdf', bbox_inches = 'tight')
-
-
-
