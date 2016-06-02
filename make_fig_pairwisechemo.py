@@ -5,16 +5,6 @@ Created on Wed Jun  1 19:35:16 2016
 @author: RJovelin
 """
 
-
-
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jun 25 21:34:28 2015
-
-@author: Richard
-"""
-
-
 from chemoreceptors import *
 from manipulate_sequences import *
 from tcoffee_alignment import *
@@ -23,49 +13,9 @@ from divergence import *
 import numpy as np
 
 
-# use this script to plot histograms of pairwise protein distance within
-# each chemoreceptor family
+# use this script to generate a histogram with protein distance between pairs
+# of chemoreceptor within each family
 
-# assign genes to chemoreceptor families
-chemo = chemo_families('../Genome_Files/PX356_protein_seq.tsv')
-print('got chemo genes')
-
-# remove ambiguous genes belonging to multiple families
-chemo = remove_ambiguous_chemoreceptors(chemo)
-print('removed genes assigned to multiple families')
-
-# create a set of valid transcripts
-transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
-print('got valid transcripts')
-
-# get the CDS sequences
-CDS = convert_fasta('../Genome_Files/noamb_PX356_all_CDS.fasta')
-print('got CDS sequences')
-
-# create new directory
-os.mkdir('Pairwise_Chemos')
-
-# remove genes that are not in transcripts
-chemo = clean_chemo_families(chemo, '../Genome_Files/unique_transcripts.txt')
-print('got valid chemo genes')
-
-
-# loop over families
-for family in chemo:
-    # create direcory with family name
-    os.mkdir('./Pairwise_Chemos/' + family + '_family' + '/')
-    # create a list of genes for the given family
-    genes = [i for i in chemo[family]]
-    # loop over genes in list, create files with pairs of protei sequences
-    for i in range(len(genes)-1):
-        for j in range(i+1, len(genes)):
-            # create new file
-            newfile = open('./Pairwise_Chemos/' + family + '_family/' + genes[i] + '_o_' + genes[j] + '.fasta', 'w')
-            newfile.write('>' + genes[i] + '\n')
-            newfile.write(cds_translate(CDS[genes[i]]) + '\n')
-            newfile.write('>' + genes[j] + '\n')
-            newfile.write(cds_translate(CDS[genes[j]]) + '\n')
-            newfile.close()
 
 # change directory
 os.chdir('./Pairwise_Chemos/')
