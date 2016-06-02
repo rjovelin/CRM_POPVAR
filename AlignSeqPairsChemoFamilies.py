@@ -84,15 +84,14 @@ for folder in folders:
     # move back to parent directory
     os.chdir('../')
 
-
 # loop over directories, convert t-coffee format to fasta
 for folder in folders:
     # create a list of t-coffee output files
-    alignments = [filename for filename in os.listdir('./Pairwise_Chemos/' + folder) if '.aln' in filename]
+    alignments = [filename for filename in os.listdir(folder) if '.aln' in filename]
     print(folder, len(alignments))
     # convert t-coffee format to text files
     for filename in alignments:
-        convert_tcoffee_prot_to_fasta('./Pairwise_Chemos/' + folder + '/' + filename)
+        convert_tcoffee_prot_to_fasta(folder + '/' + filename)
     print('fasta convertion done')
 
 print('done aligning sequences')
