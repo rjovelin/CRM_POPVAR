@@ -32,46 +32,23 @@ folders = [folder for folder in os.listdir('./Pairwise_Chemos/') if '_family' in
 folders.sort()
 print('generated a list of directories')
 
-# loop over directories
-for folder in folders:
-    print(folder)
-    # create a list of filenames of aligned sequences
-    files = [filename for filename in os.listdir('./Pairwise_Chemos/' + folder) if '.txt' in filename]
-    print(len(files))    
-    # loop over files, convert to fasta
-    for filename in files:
-        proteins = convert_fasta('./Pairwise_Chemos/' + folder + '/' + filename)
-        # get the sequences
-        genes = [i for i in proteins]
-        seq1 = proteins[genes[0]]
-        seq2 = proteins[genes[1]]
-        # get p-distances
-        p_distance = pairwise_distance(seq1, seq2, 'protein') 
-        if p_distance != 'NA':
-            # add distance to list
-            FamDist.append(p_distance)
-            
 # multiply by 100 to get %
 for i in range(len(FamDist)):
     FamDist[i] = FamDist[i] * 100
 
+# create a dictionnary 
+Distances = {}
 
-
-
-######################### EDIT THIS ASCRIP TO make hist for each famile
-    
 # loop over directories
 for folder in folders:
-    print(folder)
     # create a list of filenames of aligned sequences
     files = [filename for filename in os.listdir('./Pairwise_Chemos/' + folder) if '.txt' in filename]
-    print(len(files))    
-    
+    print(folder, len(files))    
     # create a list to store the distances
     distances = []
     # loop over files, convert to fasta
     for filename in files:
-        proteins = convert_fasta(filename)
+        proteins = convert_fasta('./Pairwise_Chemos/' + folder + './' + filename)
         # get the sequences
         genes = [i for i in proteins]
         seq1 = proteins[genes[0]]
@@ -84,34 +61,50 @@ for folder in folders:
             distances.append(p_distance)
     # create a histogram
     hist = np.histogram(distances, range(0, 101, 10))
-    # get the folder name
-    folder_name = folder[:folder.index('_')] + '_hist'
-    # create new file in parent directory
-    newfile = open('../' + folder_name + '.txt', 'w')
-    for i in range(len(hist[0])):
-        newfile.write(str(hist[1][i]) + ':' + str(hist[1][i] + 10) + '\t' + str(hist[0][i]) + '\n')
-    # close file
-    newfile.close()
-    # go back to parent directory
-    os.chdir('../')
+    # grab family name
+    family = folder[:folder.index('_family')]
+    # populate dict with pairs counts
+    Distance[family] = hist[0]
 
 
-
-
-
-
-
+# print pairs counts    
+print('Distances', len(Distances))
+for family in Distances:
+    print(family, sum(Distances[family]))
     
+
 # create figure
-fig = plt.figure(1, figsize = (4.3,2.56))
+fig = plt.figure(1, figsize = (6,2.5))
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)  
 
-# create histogram
-ax.hist(FamDist, range(0, 110, 10), color = '#e34a33', edgecolor = '#e34a33')
+# make a list of families
+families = [i for i in Distances]
 
-## add title
-#ax.set_title('Stop codon mutations along coding sequences\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+
+#############################
+
+
+# set width of bar
+width = 0.1
+
+
+# plot SNP proportions SYN
+graph1 = ax.bar([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], Distances[families[0]], width, color = 'black', edgecolor = 'black', linewidth = 1)
+# plot SNP proportions REP
+graph2 = ax.bar([1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2], Distances[families[1]], width, color = 'black', edgecolor = 'black', linewidth = 1)
+# plot SNP proportions miRNAs
+graph3 = ax.bar([2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3, 3.1], Distances[families[2]], width, color = 'black', edgecolor = 'black', linewidth = 1)
+
+
+
+
+
+
+
+
+
+################################
 
 # set y axis label
 ax.set_ylabel('Number of protein pairs', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
