@@ -70,7 +70,7 @@ fig = plt.figure(1, figsize = (4.3,2.56))
 ax = fig.add_subplot(1, 1, 1)  
 
 # create histogram
-ax.hist(FamDist, range(0, 110, 10), color = '#e34a33', edgecolor = 'b')
+ax.hist(FamDist, range(0, 110, 10), color = '#e34a33', edgecolor = '#e34a33')
 
 ## add title
 #ax.set_title('Stop codon mutations along coding sequences\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
