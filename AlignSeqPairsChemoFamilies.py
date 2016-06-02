@@ -46,7 +46,7 @@ for family in chemo:
     os.mkdir('./Pairwise_Chemos/' + family + '_family' + '/')
     # create a list of genes for the given family
     genes = [i for i in chemo[family]]
-    # loop over genes in list, create files with pairs of protei sequences
+    # loop over genes in list, create files with pairs of protein sequences
     for i in range(len(genes)-1):
         for j in range(i+1, len(genes)):
             # create new file
@@ -59,9 +59,12 @@ for family in chemo:
 print('generated sequence pairs fasta file')
 
 
+# move to Pairwise folder
+os.chdir('./Pairwise_Chemos/')
+
 # run t-coffee on all files in each folder
 # make a list of folders
-folders = [folder for folder in os.listdir('./Pairwise_Chemos/') if '_family' in folder]
+folders = [folder for folder in os.listdir() if '_family' in folder]
 # sort folders
 folders.sort()
 print('made list of folders')
@@ -69,13 +72,17 @@ print('made list of folders')
 
 # loop over directories, align pairs of sequences
 for folder in folders:
+    # move to folder so that tcoffee output files are saved in folder
+    os.chdir(folder)
     # create a list of filenames
-    files = [filename for filename in os.listdir('./Pairwise_Chemos/' + folder) if 'fasta' in filename]
+    files = [filename for filename in os.listdir() if 'fasta' in filename]
     print(folder, len(files))
     # run tcoffee
     for filename in files:
-        os.system('t_coffee ' + './Pairwise_Chemos/' + folder + '/' + filename)
+        os.system('t_coffee ' + filename)
     print('done aligning sequences for', folder)
+    # move back to parent directory
+    os.chdir('../')
 
 
 # loop over directories, convert t-coffee format to fasta
