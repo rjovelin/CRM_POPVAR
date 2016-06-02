@@ -67,18 +67,12 @@ ax = fig.add_subplot(1, 1, 1)
 # create histogram
 ax.hist(FamDist, range(0, 110, 10), color = '#e34a33', edgecolor = '#e34a33')
 
-## add title
-#ax.set_title('Stop codon mutations along coding sequences\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
 # set y axis label
 ax.set_ylabel('Number of protein pairs', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
 # set x axis label
 ax.set_xlabel('Protein distance', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-
-## remove top axes and right axes ticks
-#ax.get_xaxis().tick_bottom()
-#ax.get_yaxis().tick_left()
 
 # do not show lines around figure, keep bottow line  
 ax.spines["top"].set_visible(False)    
@@ -113,18 +107,12 @@ Dist = ['0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1']
 # set up tick positions and labels
 plt.xticks(xpos, Dist, rotation = 0, fontsize = 10, ha = 'center', fontname = 'Helvetica')
 
-## add labels to x-ticks, rotate and align right
-#ax.set_xticklabels(range(0, 110, 10), rotation = 0, ha = 'center', size = 10, fontname = 'Helvetica', family = 'sans-serif')
-#
-#plt.yticks(fontsize = 10)
-#plt.xticks(range(0, 110, 10))
-
 # add margins on right and left of gragh
 plt.margins(0.05)
 
 
 # save figure
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('ChemoPairwiseProteinDistances.pdf', bbox_inches = 'tight')
 
 
 
