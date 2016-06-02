@@ -59,36 +59,34 @@ for family in chemo:
 print('generated sequence pairs fasta file')
 
 
-# change directory
-os.chdir('./Pairwise_Chemos/')
-
 # run t-coffee on all files in each folder
 # make a list of folders
-folders = [folder for folder in os.listdir() if '_family' in folder]
+folders = [folder for folder in os.listdir('./Pairwise_Chemos/') if '_family' in folder]
 # sort folders
 folders.sort()
 print('made list of folders')
 
 
-# loop over directories
+# loop over directories, align pairs of sequences
 for folder in folders:
-    print(folder)
-    # change directory
-    os.chdir(folder)
     # create a list of filenames
-    files = [filename for filename in os.listdir() if 'fasta' in filename]
+    files = [filename for filename in os.listdir('./Pairwise_Chemos/' + folder) if 'fasta' in filename]
     print(folder, len(files))
     # run tcoffee
     for filename in files:
-        os.system('t_coffee ' + filename)
+        os.system('t_coffee ' + './Pairwise_Chemos/' + folder + '/' + filename)
     print('done aligning sequences for', folder)
+
+
+# loop over directories, convert t-coffee format to fasta
+for folder in folders:
     # create a list of t-coffee output files
-    alignments = [filename for filename in os.listdir() if '.aln' in filename]
+    alignments = [filename for filename in os.listdir('./Pairwise_Chemos/' + folder) if '.aln' in filename]
+    print(folder, len(alignments))
     # convert t-coffee format to text files
     for filename in alignments:
-        convert_tcoffee_prot_to_fasta(filename)
+        convert_tcoffee_prot_to_fasta('./Pairwise_Chemos/' + folder + '/' + filename)
     print('fasta convertion done')
-    # move to parent directory
-    os.chdir('../')
+
 print('done aligning sequences')
 
