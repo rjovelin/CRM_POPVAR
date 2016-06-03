@@ -177,7 +177,7 @@ for i in range(len(LG)):
     graph = ax.plot(Positions[LG[i]], WindowCount[LG[i]], linewidth = 1.2, color = colorscheme[i], alpha = 0.7)
     Graph[LG[i]] = graph
     
-ax.set_ylabel('Number of GPCRs /100 Kb', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_ylabel('GPCRs /100 Kb', size = 10, ha = 'center', fontname = 'Arial')
  
 # set x axis label
 ax.set_xlabel('Position along linkage group (Mb)', size = 10, ha = 'center', fontname = 'Arial')
