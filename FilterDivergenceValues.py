@@ -10,8 +10,8 @@ Created on Wed May 11 11:29:46 2016
 # set threshold for dN, dS and omega, remove genes instead of removing values
 # genes are removed if any divergence estimate is greater than following thresholds
 dN = 2
-dS = 1.5
-omega = 5
+dS = 2
+omega = 7
 
 # open file for reading
 infile = open('CRM_CLA_protein_divergence.txt')

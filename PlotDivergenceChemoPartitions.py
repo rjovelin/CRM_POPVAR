@@ -35,8 +35,8 @@ MinimumSites = 30
 # set threshold for dN, dS and omega, remove genes instead of removing values
 # genes are removed if any divergence estimate is greater than following thresholds
 MaxdN = 2
-MaxdS = 1.5
-MaxOmega = 5
+MaxdS = 2
+MaxOmega = 7
 
 # use this function to get the number of sites without gaps in partitions used to compute divergence
 def GetNumbSitesNoGaps(folder):
