@@ -40,6 +40,7 @@ for i in genes:
             to_delete.add(i)
         if float(genes[i][6]) > omega:
             to_delete.add(i)
+
 print('remove {0} genes'.format(len(to_delete)))
 # delete genes
 for i in to_delete:
