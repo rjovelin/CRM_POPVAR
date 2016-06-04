@@ -15,6 +15,9 @@ Created on Sat Jun  4 12:50:50 2016
 
 # use this script to compare divergence dN between chemoreceptor genes of different families 
 
+# usage python3 PlotNuclDivChemoFam.py [dN/dS/omega]
+ 
+
 # use Agg backend on server without X server
 import matplotlib as mpl
 mpl.use('Agg')
@@ -27,6 +30,7 @@ import numpy as np
 from scipy import stats
 import math
 import os
+import sys
 # import custom modules
 from chemoreceptors import *
 from manipulate_sequences import *
@@ -34,7 +38,10 @@ from genomic_coordinates import *
 from multiple_testing import *
 
 
-# use this function to get the chemoreceptor genes in each chemoreceptor family
+# get the nucleotide divergence to plot from command line
+NuclDiverg = sys.argv[1]
+
+# get the chemoreceptor genes in each chemoreceptor family
 Families = chemo_families('../Genome_Files/PX356_protein_seq.tsv')
 print('assigned GPCRs to gene families')
 
@@ -70,55 +77,32 @@ for family in Families:
         Families[family].remove(gene)
 print('removed non genes in chemo families')
     
-# create dicts with divergence with {family name : [list of divergence]}
-dN, dS, omega = {}, {}, {}
-
-missing = {}
+# create dict with divergence with {family name : [list of divergence]}
+Divergence = {}
 
 # populate dicts 
 for family in Families:
-    if family not in dN:
+    if family not in Divergence:
         # initialize list
-        dN[family] = []
-    # add dN values for all chemo genes in that family
+        Divergence[family] = []
+    # add divergence values for all chemo genes in that family
     for gene in Families[family]:
         if gene in ProtDiverg:
-            dN[family].append(ProtDiverg[gene][0])
-        else:
-            if family not in missing:
-                missing[family] = []
-            missing[family].append(gene)
-    if family not in dS:
-        # initialize list
-        dS[family] = []
-    # add dS values for all chemo genes in that family
-    for gene in Families[family]:
-        if gene in ProtDiverg:
-            dS[family].append(ProtDiverg[gene][1])
-    if family not in omega:
-        omega[family] = []
-        # add omega values for all chemo genes in that family
-        for gene in Families[family]:
-            if gene in ProtDiverg:
-                omega[family].append(ProtDiverg[gene][2])
-    
+            # check which nucleotide divergence to report
+            if NuclDiverg == 'dN':
+                Divergence[family].append(ProtDiverg[gene][0])
+            elif NuclDiverg == 'dS':
+                Divergence[family].append(ProtDiverg[gene][1])
+            elif NuclDiverg == 'omega' and ProtDiverg[gene][2] != 'NA':
+                Divergence[family].append(ProtDiverg[gene][2])
 
-print('missing', len(missing))
-for family in missing:
-    print(family, len(missing[family]))
+for family in Divergence:
+    print(NuclDiverg, family, len(Divergence[family]), np.mean(Divergence[family]), max(Divergence[family]), sep = '\t')
 
-for family in dN:
-    print('dN', family, np.mean(dN[family]), max(dN[family]))
-for family in dS:
-    print('dS', family, np.mean(dS[family]), max(dS[family]))
-for family in dN:
-    print('omega', family, np.mean(omega[family]), max(omega[family]))
-
-    
 # create a list of [mean, SEM, family] for each family
 MeanFam = []
 for family in Families:
-    MeanFam.append([np.mean(dN[family]), np.std(dN[family]) / math.sqrt(len(dN[family])), family])
+    MeanFam.append([np.mean(Divergence[family]), np.std(Divergence[family]) / math.sqrt(len(Divergence[family])), family])
 # sort according to mean from highest to lowest mean
 MeanFam.sort()
 MeanFam.reverse()
@@ -134,8 +118,7 @@ print('created mean and SEM lists sorted according to means')
 # create a list of list of DNN values, according to the family in FamNames
 a = []
 for family in FamNames:
-    a.append(dN[family])
-
+    a.append(Divergence[family])
 
 # compare divergence between chemo family wilcoxon sum rank tests
 # create a dict of {family-family : P value} for each pairwise comparison
@@ -167,17 +150,29 @@ ax = fig.add_subplot(1, 1, 1)
 # set width of bar
 width = 0.2
 # set colors
-colorscheme = ['#9ecae1']
+if NuclDiverg == 'dN':
+    colorscheme = ['#deebf7']
+elif NuclDiverg == 'dS':
+    colorscheme = ['#9ecae1']
+elif NuclDiverg == 'omega':
+    colorscheme = ['#3182bd']
 
 # plot nucleotide divergence
 ax.bar([i / 10 for i in range(0, 38, 2)], Means, width, yerr = SEM, color = colorscheme, 
                 edgecolor = 'black', linewidth = 1,
                 error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
-ax.set_ylabel('Nucleotide divergence (dN)', size = 10, ha = 'center', fontname = 'Arial')
+# write Y axis label
+if NuclDiverg == 'dN':
+    ax.set_ylabel('Nucleotide divergence (dN)', size = 10, ha = 'center', fontname = 'Arial')
+elif NuclDiverg == 'dS':
+    ax.set_ylabel('Nucleotide divergence (dS)', size = 10, ha = 'center', fontname = 'Arial')
+elif NuclDiverg == 'omega':
+    ax.set_ylabel('Nucleotide divergence (dN/dS)', size = 10, ha = 'center', fontname = 'Arial')
+
 
 # set y limits
-plt.ylim([0, 0.20])
+#plt.ylim([0, 0.20])
 
 # set x axis label
 ax.set_xlabel('Chemoreceptor families', size = 10, ha = 'center', fontname = 'Arial')
@@ -235,5 +230,16 @@ for label in ax.get_yticklabels():
 # add margin on the x-axis
 plt.margins(0.05)
 
+fig.savefig('testfile.pdf', bbox_inches = 'tight')
 
-fig.savefig('DivergencedNChemoFamilies.pdf', bbox_inches = 'tight')
+## save file
+#if NuclDiverg == 'dN':
+#    fig.savefig('DivergencedNChemoFamilies.pdf', bbox_inches = 'tight')
+#elif NuclDiverg == 'dS':
+#    fig.savefig('DivergencedSChemoFamilies.pdf', bbox_inches = 'tight')
+#elif NuclDiverg == 'omega':
+#    fig.savefig('DivergenceOmegaChemoFamilies.pdf', bbox_inches = 'tight')
+
+
+
+
