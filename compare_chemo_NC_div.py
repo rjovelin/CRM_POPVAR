@@ -45,15 +45,6 @@ for line in infile:
         ProtDiverg[gene] = [dN, dS, omega]
 print('parse divergence table')
 
-
-#
-#
-## set threshold for dN, dS and omega, remove genes instead of removing values
-## genes are removed if any divergence estimate is greater than following thresholds
-#MaxdN = 2
-#MaxdS = 1.5
-#MaxOmega = 5
-
 # get the set of chemoreceptors from the iprscan outputfile
 chemo = get_chemoreceptors('../Genome_Files//PX356_protein_seq.tsv') 
 print('parsed chemo genes')
@@ -80,7 +71,7 @@ chemodS, NCdS = [], []
 chemoomega, NComega = [], [] 
 
 # populate lists
-for gene in ChemoDiv:
+for gene in ProtDiverg:
     if gene in GPCRs:
         chemodN.append(ProtDiverg[gene][0])
         chemodS.append(ProtDiverg[gene][1])
@@ -116,21 +107,13 @@ Means = [np.mean(chemodN), np.mean(NCdN),
          np.mean(chemodS), np.mean(NCdS),
          np.mean(chemoomega), np.mean(NComega)]
 
-
-###################### continue here
-
-
-
-
-
-
 # create a lit of SEM
-SEM = [np.std(dNTM) / math.sqrt(len(dNTM)),
-       np.std(dNEX) / math.sqrt(len(dNEX)),
-       np.std(dSTM) / math.sqrt(len(dSTM)),
-       np.std(dSEX) / math.sqrt(len(dSEX)),
-       np.std(omegaTM) / math.sqrt(len(omegaTM)),
-       np.std(omegaEX) / math.sqrt(len(omegaEX))]
+SEM = [np.std(chemodN) / math.sqrt(len(chemodN)),
+       np.std(NCdN) / math.sqrt(len(NCdN)),
+       np.std(chemodS) / math.sqrt(len(chemodS)),
+       np.std(NCdS) / math.sqrt(len(NCdS)),
+       np.std(chemoomega) / math.sqrt(len(chemoomega)),
+       np.std(NComega) / math.sqrt(len(NComega))]
 
 # create figure
 fig = plt.figure(1, figsize = (3, 2))
@@ -140,8 +123,7 @@ ax = fig.add_subplot(1, 1, 1)
 # set width of bar
 width = 0.2
 # set colors
-colorscheme = ['#31a354', '#e5f5e0','#31a354', '#e5f5e0', '#31a354', '#e5f5e0']
-
+colorscheme = ['#2ca25f', '#99d8c9','#2ca25f', '#99d8c9', '#2ca25f', '#99d8c9']
 
 # plot nucleotide divergence
 ax.bar([0, 0.2, 0.5, 0.7, 1, 1.2], Means, width, yerr = SEM, color = colorscheme, 
@@ -151,7 +133,7 @@ ax.bar([0, 0.2, 0.5, 0.7, 1, 1.2], Means, width, yerr = SEM, color = colorscheme
 ax.set_ylabel('Nucleotide divergence', size = 10, ha = 'center', fontname = 'Arial')
 
 # set y limits
-plt.ylim([0, 0.45])
+plt.ylim([0, 0.31])
 
 # determine tick position on x axis
 xpos =  [0.2, 0.7, 1.2]
@@ -209,9 +191,9 @@ for label in ax.get_yticklabels():
 plt.margins(0.05)
 
 # create legend
-TransMb = mpatches.Patch(facecolor = '#31a354' , edgecolor = 'black', linewidth = 1, label= 'Transmembrane')
-ExtraMb = mpatches.Patch(facecolor = '#e5f5e0', edgecolor = 'black', linewidth = 1, label = 'Extra-membrane')
-plt.legend(handles=[TransMb, ExtraMb], loc = 2, fontsize = 8, frameon = False)
+ChemoGene = mpatches.Patch(facecolor = '#2ca25f' , edgecolor = 'black', linewidth = 1, label= 'GPCR')
+NCGene = mpatches.Patch(facecolor = '#99d8c9', edgecolor = 'black', linewidth = 1, label = 'NC')
+plt.legend(handles=[ChemoGene, NCGene], loc = 2, fontsize = 8, frameon = False)
 
 # I already determined that all site categories are significantly different
 # using Wilcoxon rank sum tests, so we need now to add letters to show significance
@@ -220,18 +202,18 @@ P = '***'
 
 # annotate figure to add significance
 # add bracket
-ax.annotate("", xy=(0.1, 0.10), xycoords='data',
-            xytext=(0.3, 0.10), textcoords='data',
+ax.annotate("", xy=(0.1, 0.08), xycoords='data',
+            xytext=(0.3, 0.08), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(0.2, 0.12, P, horizontalalignment='center',
+ax.text(0.2, 0.10, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
-ax.annotate("", xy=(0.6, 0.30), xycoords='data',
-            xytext=(0.8, 0.30), textcoords='data',
+ax.annotate("", xy=(0.6, 0.27), xycoords='data',
+            xytext=(0.8, 0.27), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(0.7, 0.32, P, horizontalalignment='center',
+ax.text(0.7, 0.29, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
 ax.annotate("", xy=(1.1, 0.23), xycoords='data',
@@ -241,5 +223,5 @@ ax.annotate("", xy=(1.1, 0.23), xycoords='data',
 ax.text(1.2, 0.25, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('ChemoNonChemoDivergence.pdf', bbox_inches = 'tight')
 
