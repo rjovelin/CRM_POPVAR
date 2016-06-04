@@ -230,15 +230,13 @@ for label in ax.get_yticklabels():
 # add margin on the x-axis
 plt.margins(0.05)
 
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
-
-## save file
-#if NuclDiverg == 'dN':
-#    fig.savefig('DivergencedNChemoFamilies.pdf', bbox_inches = 'tight')
-#elif NuclDiverg == 'dS':
-#    fig.savefig('DivergencedSChemoFamilies.pdf', bbox_inches = 'tight')
-#elif NuclDiverg == 'omega':
-#    fig.savefig('DivergenceOmegaChemoFamilies.pdf', bbox_inches = 'tight')
+# save file
+if NuclDiverg == 'dN':
+    fig.savefig('DivergencedNChemoFamilies.pdf', bbox_inches = 'tight')
+elif NuclDiverg == 'dS':
+    fig.savefig('DivergencedSChemoFamilies.pdf', bbox_inches = 'tight')
+elif NuclDiverg == 'omega':
+    fig.savefig('DivergenceOmegaChemoFamilies.pdf', bbox_inches = 'tight')
 
 
 
