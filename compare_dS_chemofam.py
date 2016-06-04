@@ -5,15 +5,8 @@ Created on Sat Jun  4 17:54:41 2016
 @author: Richard
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jun  4 12:50:50 2016
 
-@author: Richard
-"""
-
-
-# use this script to compare divergence dN between chemoreceptor genes of different families 
+# use this script to compare divergence dS between chemoreceptor genes of different families 
 
 # use Agg backend on server without X server
 import matplotlib as mpl
@@ -71,23 +64,12 @@ for family in Families:
 print('removed non genes in chemo families')
     
 # create dicts with divergence with {family name : [list of divergence]}
-dN, dS, omega = {}, {}, {}
+dS = {}
 
 missing = {}
 
 # populate dicts 
 for family in Families:
-    if family not in dN:
-        # initialize list
-        dN[family] = []
-    # add dN values for all chemo genes in that family
-    for gene in Families[family]:
-        if gene in ProtDiverg:
-            dN[family].append(ProtDiverg[gene][0])
-        else:
-            if family not in missing:
-                missing[family] = []
-            missing[family].append(gene)
     if family not in dS:
         # initialize list
         dS[family] = []
@@ -95,30 +77,23 @@ for family in Families:
     for gene in Families[family]:
         if gene in ProtDiverg:
             dS[family].append(ProtDiverg[gene][1])
-    if family not in omega:
-        omega[family] = []
-        # add omega values for all chemo genes in that family
-        for gene in Families[family]:
-            if gene in ProtDiverg:
-                omega[family].append(ProtDiverg[gene][2])
-    
+        else:
+            if family not in missing:
+                missing[family] = []
+            missing[family].append(gene)
 
 print('missing', len(missing))
 for family in missing:
     print(family, len(missing[family]))
 
-for family in dN:
-    print('dN', family, np.mean(dN[family]), max(dN[family]))
 for family in dS:
     print('dS', family, np.mean(dS[family]), max(dS[family]))
-for family in dN:
-    print('omega', family, np.mean(omega[family]), max(omega[family]))
 
-    
+  
 # create a list of [mean, SEM, family] for each family
 MeanFam = []
 for family in Families:
-    MeanFam.append([np.mean(dN[family]), np.std(dN[family]) / math.sqrt(len(dN[family])), family])
+    MeanFam.append([np.mean(dS[family]), np.std(dS[family]) / math.sqrt(len(dS[family])), family])
 # sort according to mean from highest to lowest mean
 MeanFam.sort()
 MeanFam.reverse()
@@ -236,4 +211,4 @@ for label in ax.get_yticklabels():
 plt.margins(0.05)
 
 
-fig.savefig('DivergencedNChemoFamilies.pdf', bbox_inches = 'tight')
+fig.savefig('DivergencedSChemoFamilies.pdf', bbox_inches = 'tight')
