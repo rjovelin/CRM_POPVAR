@@ -5,13 +5,6 @@ Created on Sat Jun  4 17:55:30 2016
 @author: Richard
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jun  4 12:50:50 2016
-
-@author: Richard
-"""
-
 
 # use this script to compare divergence dN between chemoreceptor genes of different families 
 
