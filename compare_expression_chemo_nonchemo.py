@@ -29,37 +29,9 @@ from crm_expression import *
 
 
 # get gene expression (average across developmental time points) {CRE_gene_ID: mean expression}
-Expression = expression_developmental_stages(expression_file, gene_ID_file)
-
-    
-
-
-
-
-
-
-
-
-
-
-# parse protein divergence
-ProtDiverg = {}
-infile = open('../CREM_CLA_protein_divergence/CRM_CLA_ProtDiverg_FILTERED.txt')
-infile.readline()
-for line in infile:
-    line = line.rstrip()
-    if line != '':
-        line = line.split('\t')
-        gene = line[0]
-        dN = float(line[4])
-        dS = float(line[5])
-        if dS == 0:
-            omega = 'NA'
-        else:
-            omega = float(line[6])
-        ProtDiverg[gene] = [dN, dS, omega]
-print('parse divergence table')
-
+Expression = expression_developmental_stages('../Genome_Files/WBPaper00041190.cre.mr.csv', '../Genome_Files/c_remanei.PRJNA53967.WS248.geneIDs.txt')
+print('parsed expression level')
+ 
 # get the set of chemoreceptors from the iprscan outputfile
 chemo = get_chemoreceptors('../Genome_Files//PX356_protein_seq.tsv') 
 print('parsed chemo genes')
@@ -77,87 +49,61 @@ NonGPCRs = set(gene for gene in transcripts if gene not in chemo)
 print('NonGPCRs', len(NonGPCRs))
 print('made set of valid non-chemo genes')
 
-# create lists of divergence for chemo and nonchemo genes
+# create lists of expression for chemo and nonchemo genes
 # make lists of dN values for chemo and non-chemo genes
-chemodN, NCdN = [], []
-#make lists of dS values for chemo and non-chemo genes
-chemodS, NCdS = [], []
-# make lists of omega values for chemo and non-chemo genes
-chemoomega, NComega = [], [] 
+chemoExp, NCExp = [], []
 
 # populate lists
-for gene in ProtDiverg:
+for gene in Expression:
     if gene in GPCRs:
-        chemodN.append(ProtDiverg[gene][0])
-        chemodS.append(ProtDiverg[gene][1])
-        if ProtDiverg[gene][-1] != 'NA':
-            chemoomega.append(ProtDiverg[gene][-1])
+        chemoExp.append(Expression[gene])
     elif gene in NonGPCRs:
-        NCdN.append(ProtDiverg[gene][0])
-        NCdS.append(ProtDiverg[gene][1])
-        if ProtDiverg[gene][-1] != 'NA':
-            NComega.append(ProtDiverg[gene][-1])
-print('populated lists with divergence values')
+        NCExp.append(Expression[gene])
+print('populated lists with expression values')
     
-
-a = [chemodN, NCdN, chemodS, NCdS, chemoomega, NComega]
-b = ['dN-Chemo', 'dN-NC', 'dS-Chemo', 'dS-NC', 'omega-Chemo', 'omega-NC']
+a = [chemoExp, NCExp]
+b = ['Chemo', 'NC']
 for i in range(len(a)):
     print('N', b[i], len(a[i]))
-print('\n')
 for i in range(len(a)):
     print('max', b[i], max(a[i]))
 
-# compare divergence for chemo and non-chemo using wilcoxon sum rank tests
-P_rep = stats.ranksums(chemodN, NCdN)[1]
-P_syn = stats.ranksums(chemodS, NCdS)[1]
-P_omega = stats.ranksums(chemoomega, NComega)[1]
-
-print('P_rep', P_rep)
-print('P_syn', P_syn)
-print('P_omega', P_omega)
+# compare expression for chemo and non-chemo using Wilcoxon sum rank tests
+P = stats.ranksums(chemoExp, NCExp)[1]
+print('P', P)
 
 # create a list of means
-Means = [np.mean(chemodN), np.mean(NCdN),
-         np.mean(chemodS), np.mean(NCdS),
-         np.mean(chemoomega), np.mean(NComega)]
+Means = [np.mean(chemoExp), np.mean(NCExp)]
 
 # create a lit of SEM
-SEM = [np.std(chemodN) / math.sqrt(len(chemodN)),
-       np.std(NCdN) / math.sqrt(len(NCdN)),
-       np.std(chemodS) / math.sqrt(len(chemodS)),
-       np.std(NCdS) / math.sqrt(len(NCdS)),
-       np.std(chemoomega) / math.sqrt(len(chemoomega)),
-       np.std(NComega) / math.sqrt(len(NComega))]
+SEM = [np.std(chemoExp) / math.sqrt(len(chemoExp)),
+       np.std(NCExp) / math.sqrt(len(NCExp))]
 
 # create figure
-fig = plt.figure(1, figsize = (3, 2))
+fig = plt.figure(1, figsize = (1, 2))
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)  
 
 # set width of bar
 width = 0.2
 # set colors
-colorscheme = ['#2ca25f', '#99d8c9','#2ca25f', '#99d8c9', '#2ca25f', '#99d8c9']
+colorscheme = ['#8856a7', '#9ebcda']
 
 # plot nucleotide divergence
-ax.bar([0, 0.2, 0.5, 0.7, 1, 1.2], Means, width, yerr = SEM, color = colorscheme, 
+ax.bar([0, 0.2], Means, width, yerr = SEM, color = colorscheme, 
                 edgecolor = 'black', linewidth = 1,
                 error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
-ax.set_ylabel('Nucleotide divergence', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_ylabel('Expression level', size = 10, ha = 'center', fontname = 'Arial')
 
 # set y limits
-plt.ylim([0, 0.31])
+plt.ylim([0, 10])
 
 # determine tick position on x axis
-xpos =  [0.2, 0.7, 1.2]
-xtext = ['dN', 'dS', 'omega']
+xpos =  [0.1, 0.3]
+xtext = ['GPCR', 'NC']
 # set up tick positions and labels
 plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
-
-# set x axis label
-ax.set_xlabel('Sites in coding sequences', size = 10, ha = 'center', fontname = 'Arial')
 
 # do not show lines around figure, keep bottow line  
 ax.spines["top"].set_visible(False)    
@@ -205,11 +151,6 @@ for label in ax.get_yticklabels():
 # add margin on the x-axis
 plt.margins(0.05)
 
-# create legend
-ChemoGene = mpatches.Patch(facecolor = '#2ca25f' , edgecolor = 'black', linewidth = 1, label= 'GPCR')
-NCGene = mpatches.Patch(facecolor = '#99d8c9', edgecolor = 'black', linewidth = 1, label = 'NC')
-plt.legend(handles=[ChemoGene, NCGene], loc = 2, fontsize = 8, frameon = False)
-
 # I already determined that all site categories are significantly different
 # using Wilcoxon rank sum tests, so we need now to add letters to show significance
 # P_rep, P_syn and P_omega < 0.001 ---> P = ***
@@ -217,36 +158,12 @@ P = '***'
 
 # annotate figure to add significance
 # add bracket
-ax.annotate("", xy=(0.1, 0.08), xycoords='data',
-            xytext=(0.3, 0.08), textcoords='data',
+ax.annotate("", xy=(0.1, 8.2), xycoords='data',
+            xytext=(0.3, 8.2), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(0.2, 0.10, P, horizontalalignment='center',
+ax.text(0.2, 8.8, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
-ax.annotate("", xy=(0.6, 0.27), xycoords='data',
-            xytext=(0.8, 0.27), textcoords='data',
-            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
-# add stars for significance
-ax.text(0.7, 0.29, P, horizontalalignment='center',
-        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
+fig.savefig('ExpressionChemoNonChemo.pdf', bbox_inches = 'tight')
 
-ax.annotate("", xy=(1.1, 0.23), xycoords='data',
-            xytext=(1.3, 0.23), textcoords='data',
-            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
-# add stars for significance
-ax.text(1.2, 0.25, P, horizontalalignment='center',
-        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
-
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
-
-  
-    
-    
-    
-    
-    
-    
-    
-    
-    
