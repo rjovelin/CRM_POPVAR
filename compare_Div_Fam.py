@@ -6,7 +6,7 @@ Created on Sat Jun  4 12:50:50 2016
 """
 
 
-# use this script to compare divergence between chemoreceptor genes of different families 
+# use this script to compare divergence dN between chemoreceptor genes of different families 
 
 # use Agg backend on server without X server
 import matplotlib as mpl
@@ -23,9 +23,8 @@ import os
 # import custom modules
 from chemoreceptors import *
 from manipulate_sequences import *
-from diversity_chemo_partitions import *
 from genomic_coordinates import *
-from protein_divergence import *
+from multiple_testing import *
 
 
 # use this function to get the chemoreceptor genes in each chemoreceptor family
@@ -65,10 +64,7 @@ for family in Families:
 print('removed non genes in chemo families')
     
 # create dicts with divergence with {family name : [list of divergence]}
-dN, dS, omega = {}, {}, {}
-
-missing = {}
-
+dN = {}
 # populate dicts 
 for family in Families:
     if family not in dN:
@@ -78,57 +74,17 @@ for family in Families:
     for gene in Families[family]:
         if gene in ProtDiverg:
             dN[family].append(ProtDiverg[gene][0])
-        else:
-            if family not in missing:
-                missing[family] = []
-            missing[family].append(gene)
-    if family not in dS:
-        # initialize list
-        dS[family] = []
-    # add dS values for all chemo genes in that family
-    for gene in Families[family]:
-        if gene in ProtDiverg:
-            dS[family].append(ProtDiverg[gene][1])
-    if family not in omega:
-        omega[family] = []
-        # add omega values for all chemo genes in that family
-        for gene in Families[family]:
-            if gene in ProtDiverg:
-                omega[family].append(ProtDiverg[gene][2])
-    
-
-print('missing', len(missing))
-for family in missing:
-    print(family, len(missing[family]))
 
 for family in dN:
-    print('dN', family, np.mean(dN[family]), max(dN[family]))
-for family in dS:
-    print('dS', family, np.mean(dS[family]), max(dS[family]))
-for family in dN:
-    print('omega', family, np.mean(omega[family]), max(omega[family]))
+    print('dN', family, len(dN[family]), np.mean(dN[family]), max(dN[family]))
     
-    
-# compare divergence for chemo and non-chemo using wilcoxon sum rank tests
-
-
-
-
-#P_rep = stats.ranksums(chemodN, NCdN)[1]
-#P_syn = stats.ranksums(chemodS, NCdS)[1]
-#P_omega = stats.ranksums(chemoomega, NComega)[1]
-#
-#print('P_rep', P_rep)
-#print('P_syn', P_syn)
-#print('P_omega', P_omega)
-
-
 # create a list of [mean, SEM, family] for each family
 MeanFam = []
 for family in Families:
     MeanFam.append([np.mean(dN[family]), np.std(dN[family]) / math.sqrt(len(dN[family])), family])
-# sort according to mean
+# sort according to mean from highest to lowest mean
 MeanFam.sort()
+MeanFam.reverse()
     
 # create parallel lists of means, SEN amd family names, sorted accoring to mean values
 Means, SEM, FamNames = [], [], []
@@ -137,6 +93,33 @@ for i in range(len(MeanFam)):
     SEM.append(MeanFam[i][1])
     FamNames.append(MeanFam[i][2])
 print('created mean and SEM lists sorted according to means')
+
+
+# compare divergence between chemo family wilcoxon sum rank tests
+# create a dict of {family-family : P value} for each pairwise comparison
+# create a list of list of DNN values, according to the family in FamNames
+a = []
+for family in FamNames:
+    a.append(dN[family])
+
+Pval = {}
+for i in range(0, len(a) -1):
+    for j in range(i+1, len(a)):
+        P = stats.ranksums(a[i], a[j])[1]
+        comparison = FamNames[i] + '_' + FamNames[j]
+        Pval[comparison] = P
+# make a list of [P, comparison]
+Pvalues = [[val, key] for key, val in Pval.items()]
+print('computed P values for pairwise differences')
+
+# apply Benjamini_Hochberg correction, get a dict of comparison: adjusted Pval
+CorrectedPval = Benjamini_Hochberg_correction(Pvalues)
+print('corrected P values with Benjamini_Hochberg')
+
+for comparison in CorrectedPval:
+    # consider significance with FDR = 0.05
+    if CorrectedPval[comparison] < 0.05:
+        print(comparison, CorrectedPval[comparison])
 
 
 # create figure
@@ -154,16 +137,10 @@ ax.bar([i / 10 for i in range(0, 38, 2)], Means, width, yerr = SEM, color = colo
                 edgecolor = 'black', linewidth = 1,
                 error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
 
-ax.set_ylabel('Nucleotide divergence', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_ylabel('Nucleotide divergence (dN)', size = 10, ha = 'center', fontname = 'Arial')
 
 # set y limits
-#plt.ylim([0, 0.31])
-
-# determine tick position on x axis
-xpos =  [i / 10 for i in range(0, 38, 2)]
-xtext = FamNames
-# set up tick positions and labels
-plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+plt.ylim([0, 0.20])
 
 # set x axis label
 ax.set_xlabel('Chemoreceptor families', size = 10, ha = 'center', fontname = 'Arial')
@@ -192,7 +169,7 @@ ax.tick_params(
     left = 'off',          
     labelbottom='on', # labels along the bottom edge are off 
     colors = 'black',
-    labelsize = 10,
+    labelsize = 8,
     direction = 'out') # ticks are outside the frame when bottom = 'on
 
 # do not show ticks
@@ -205,50 +182,21 @@ ax.tick_params(
     left = 'off',          
     labelbottom='off', # labels along the bottom edge are off 
     colors = 'black',
-    labelsize = 10,
+    labelsize = 8,
     direction = 'out') # ticks are outside the frame when bottom = 'on
 
+# determine tick position on x axis
+xpos =  [(i / 10) + 0.1 for i in range(0, 38, 2)]
+xtext = FamNames
+# set up tick positions and labels
+plt.xticks(xpos, xtext, rotation = 30, ha = 'right', fontsize = 8, fontname = 'Arial')
+
+# change font of y ticks
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
 
 # add margin on the x-axis
 plt.margins(0.05)
 
-## create legend
-#ChemoGene = mpatches.Patch(facecolor = '#2ca25f' , edgecolor = 'black', linewidth = 1, label= 'GPCR')
-#NCGene = mpatches.Patch(facecolor = '#99d8c9', edgecolor = 'black', linewidth = 1, label = 'NC')
-#plt.legend(handles=[ChemoGene, NCGene], loc = 2, fontsize = 8, frameon = False)
 
-# I already determined that all site categories are significantly different
-# using Wilcoxon rank sum tests, so we need now to add letters to show significance
-# P_rep, P_syn and P_omega < 0.001 ---> P = ***
-P = '***'
-
-# annotate figure to add significance
-# add bracket
-#ax.annotate("", xy=(0.1, 0.08), xycoords='data',
-#            xytext=(0.3, 0.08), textcoords='data',
-#            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
-## add stars for significance
-#ax.text(0.2, 0.10, P, horizontalalignment='center',
-#        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
-#
-#ax.annotate("", xy=(0.6, 0.27), xycoords='data',
-#            xytext=(0.8, 0.27), textcoords='data',
-#            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
-## add stars for significance
-#ax.text(0.7, 0.29, P, horizontalalignment='center',
-#        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
-#
-#ax.annotate("", xy=(1.1, 0.23), xycoords='data',
-#            xytext=(1.3, 0.23), textcoords='data',
-#            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
-## add stars for significance
-#ax.text(1.2, 0.25, P, horizontalalignment='center',
-#        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
-
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
-
-
-
-
+fig.savefig('DivergencedNChemoFamilies.pdf', bbox_inches = 'tight')
