@@ -5,7 +5,15 @@ Created on Wed Jul  1 16:51:27 2015
 @author: Richard
 """
 
-from accessories import *
+
+
+
+
+
+
+
+
+from manipulate_sequences import *
 from MK_test import *
 from crm_expression import *
 from multiple_testing import *
@@ -13,13 +21,13 @@ from Gene_ontologies import *
 import numpy as np
 
 # create a set of valid transcripts
-transcripts = get_valid_transcripts('unique_transcripts.txt')
+transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
 
 # create a set of genes with orthologs
 orthos = set()
 
 # open divergence file
-infile = open('CRM_CLA_prot_diverg_filtered.txt', 'r') 
+infile = open('../CRM_CLA_ProtDiverg_FILTERED.txt') 
 # skiper header
 infile.readline()
 # loop over file
@@ -32,7 +40,7 @@ infile.close()
 
 
 # get expression level for all genes
-expression = expression_developmental_stages('WBPaper00041190.cre.mr.csv', '../Premature_stops/c_remanei.PRJNA53967.WS248.geneIDs.txt')
+expression = expression_developmental_stages('../Genome_Files/WBPaper00041190.cre.mr.csv', '../Genome_Files/c_remanei.PRJNA53967.WS248.geneIDs.txt')
 
 
 # make a list of expression level
