@@ -156,14 +156,9 @@ for gene in MK:
     elif gene in NonGPCRs:
         NCPolymDivCounts[gene] = list(MK[gene])
 
-# compute average alpha for chemo and non-chemo genes
-
-for i in range(10):
-    ChemoAlpha = ComputeAlphaSEW2002(ChemoPolymDivCounts, i)
-    NCAlpha = ComputeAlphaSEW2002(NCPolymDivCounts, i)
-    print('alpha GPCR', i, ChemoAlpha)
-    print('alpha NC', i, NCAlpha)
-
+# record alpha removing genes with PS = 0
+ChemoAlpha = ComputeAlphaSEW2002(ChemoPolymDivCounts, 1)
+NCAlpha = ComputeAlphaSEW2002(NCPolymDivCounts, 1)
 # Bootstrap genes to generate distrobution of alpha
 ChemoBootstrap = BootstrapAlphaSEW2002(ChemoPolymDivCounts, 1, 1000, 500)
 print('boostraped alpha for chemo genes')
@@ -180,3 +175,61 @@ NCHCI = np.mean(NCBootstrap) + (1.96 * SEMNCBootstrap)
 
 print('chemo', ComputeAlphaSEW2002(ChemoPolymDivCounts, 1), '({0}, {1})'.format(ChemoLCI, ChemoHCI))
 print('non-chemo', ComputeAlphaSEW2002(NCPolymDivCounts, 1), '({0}, {1})'.format(NCLCI, NCHCI))
+
+
+# make summary table
+newfile = open('TableSummaryChemoNonChemoAlpha.txt', 'w')
+header = ['Genes', 'Adaptive', 'Negative', 'Neutral', 'AdaptiveCorrected', 'NegativeCorrected', 'NeutralCorrected', 'alpha (95% CI)']
+newfile.write((len('\t'.join(header)) + 1) * '-')
+newfile.write('\t'.join(header) + '\n')
+newfile.write((len('\t'.join(header)) + 1) * '-') 
+line1 = ['GPCRs', len(PositiveChemo), len(NegativeChemo), len(NonsignificantChemo),
+         len(PositiveChemoCorr), len(NegativeChemoCorr), len(NonsignificantChemoCorr),
+         '{0} ({1}, {2})'.format(round(ChemoAlpha, 3), round(ChemoLCI, 3), round(ChemoHCI, 3))]
+line1 = list(map(lambda x: str(x), line1))
+newfile.write('\t'.join(line1) + '\n')
+
+line2 = ['Non-chemo', len(PositiveNC), len(NegativeNC), len(NonsignificantNC),
+         len(PositiveNCCorr), len(NegativeNCCorr), len(NonsignificantNCCorr),
+         '{0} ({1}, {2})'.format(round(NCAlpha, 3), round(NCLCI, 3), round(NCHCI, 3))]
+line2 = list(map(lambda x: str(x), line2))
+newfile.write('\t'.join(line2) + '\n')         
+newfile.write((len('\t'.join(header)) + 1) * '-')
+newfile.write('\n' * 3)
+
+# perform chi square of independance for genes under selection for chemo and non-chemo genes
+header = ['Comparison', 'Chi2', 'P']
+comps = ['+ vs NS', '- vs NS', '+ vs -', '+ vs NS corr', '- vs NS corr', '+ vs - corr']
+data = [[[len(PositiveChemo), len(NonsignificantChemo)], [len(PositiveNC), len(NonsignificantNC)]],
+        [[len(NegativeChemo), len(NonsignificantChemo)], [len(NegativeNC), len(NonsignificantNC)]],
+        [[len(PositiveChemo), len(NegativeChemo)], [len(PositiveNC), len(NegativeNC)]],
+        [[len(PositiveChemoCorr), len(NonsignificantChemoCorr)], [len(PositiveNCCorr), len(NonsignificantNCCorr)]],
+        [[len(NegativeChemoCorr), len(NonsignificantChemoCorr)], [len(NegativeNCCorr), len(NonsignificantNCCorr)]],
+        [[len(PositiveChemoCorr), len(NegativeChemoCorr)], [len(PositiveNCCorr), len(NegativeNCCorr)]]
+        ]
+
+newfile.write((len('\t'.join(header)) + 1) * '-')
+newfile.write('\t'.join(header) + '\n')
+newfile.write((len('\t'.join(header)) + 1) * '-')
+for i in range(len(comps)):
+    chi2 = stats.chi2_contingency(data[i])[0]
+    p = stats.chi2_contingency(data[i])[1]
+    newfile.write('\t'.join([comps[i], str(round(chi2, 4)), str(round(p, 4))]) + '\n')
+newfile.write((len('\t'.join(header)) + 1) * '-') 
+
+# close file after writing
+newfile.close()
+
+# compute average alpha for chemo and non-chemo genes for different syn polym cutoffs
+newfile.open('TableSynPolymCutoffAlphaChemoNC.txt', 'w')
+header = ['x', 'alpha GPCRs', 'alpha Non-chemo']
+newfile.write((len('\t'.join(header)) + 1) * '-')
+newfile.write('\t'.join(header) + '\n')
+newfile.write((len('\t'.join(header)) + 1) * '-')
+
+for i in range(10):
+    ChemoAlpha = ComputeAlphaSEW2002(ChemoPolymDivCounts, i)
+    NCAlpha = ComputeAlphaSEW2002(NCPolymDivCounts, i)
+    newfile.write('\t'.join([str(i), str(round(ChemoAlpha, 4)), str(round(NCAlpha, 4))]) + '\n')
+newfile.write((len('\t'.join(header)) + 1) * '-')
+newfile.close()
