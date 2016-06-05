@@ -71,17 +71,15 @@ MK = count_polym_diverg('../Genome_Files/CDS_SNP_DIVERG.txt', 'KSR_PX', 'count',
 # perform MK test using Fisher exact test
 mk = MK_test(MK, 'fisher')
 
-
-
 # make a list of genes with significant MK test
-significant_MK = [gene for gene in mk if mk[gene][-1] < 0.05]
-
+significant = [gene for gene in mk if mk[gene][-1] < 0.05]
+nonsignificant = [gene for gene in mk if mk[gene][-1] >= 0.05]
 
 # determine genes with significant MK that are under positive or negative selection
 negative, positive = [], []
 for gene in MK:
     # check if gene has significant departure from neutrality
-    if gene in significant_MK:
+    if gene in significant:
         # check if PS is defined
         if MK[gene][1] != 0:
             # compute ratio PN / PS
@@ -102,21 +100,93 @@ for gene in MK:
             positive.append(gene)
         elif divergence < polymorphism:
             negative.append(gene)
-            
-print('significant', len(significant_MK))
+
+
+print('significant', len(significant))
 print('positive', len(positive))
 print('negative', len(negative))
 
+assert len(mk) == len(positive) + len(negative) + len(nonsignificant)
 
 
+# create lists of GPCR and non-GPCR genes
+PositiveChemo = [gene for gene in positive if gene in GPCRs]
+NegativeChemo = [gene for gene in negative if gene in GPCRs]
+NonsignificantChemo = [gene for gene in nonsignificant if gene in GPCRs]
 
+PositiveNC = [gene for gene in positive if gene in NonGPCRs]
+NegativeNC = [gene for gene in negative if gene in NonGPCRs]
+NonsignificantNC = [gene for gene in nonsignificant if gene in NonGPCRs]
 
-# apply a Bejamini-Hochberg correction for multiple testing
+print('chemo +', len(PositiveChemo))
+print('chemo -', len(NegativeChemo))
+print('chemo NS', len(NonsignificantChemo))
+print('NC +', len(PositiveNC))
+print('NC -', len(NegativeNC))
+print('NC NS', len(NonsignificantNC))
+
+# apply a Bejamini-Hochberg correction for multiple testing {gene: corrected_Pval}
 mk_p = {}
 for gene in mk:
     mk_p[gene] = mk[gene][-1]
 pvals = [(p, gene) for gene, p in mk_p.items()]
 corrected = Benjamini_Hochberg_correction(pvals)
+
+# count the number of genes with significant MK after BJ correction with 10% FDR 
+FDR = 0.1
+signifcorr = [gene for gene in corrected if corrected[gene] < FDR]
+print('FDR', FDR, len(signifcorr))
+nonsignifcorr = [gene for gene in corrected if corrected[gene] >= FDR]
+
+# determine genes with significant MK that are under positive or negative selection
+negativecorr, positivecorr = [], []
+for gene in MK:
+    # check if gene has significant departure from neutrality
+    if gene in signifcorr:
+        # check if PS is defined
+        if MK[gene][1] != 0:
+            # compute ratio PN / PS
+            polymorphism = MK[gene][0] / MK[gene][1]
+        elif MK[gene][1] == 0:
+            # add small number to PS
+            polymorphism = MK[gene][0] / (MK[gene][1] + 0.1)
+        # check if DS is defined
+        if MK[gene][3] != 0:
+            # compute DN / DS
+            divergence = MK[gene][2] / MK[gene][3]
+        elif MK[gene][3] == 0:
+            # add small number to DS
+            divergence = MK[gene][2] / (MK[gene][3] + 0.1)
+        # check if divergence is lower r higher than polymorphism
+        if divergence > polymorphism:
+            # positive selection
+            positivecorr.append(gene)
+        elif divergence < polymorphism:
+            negativecorr.append(gene)
+
+
+
+# create lists of GPCR and non-GPCR genes
+PositiveChemo = [gene for gene in positivecorr if gene in GPCRs]
+NegativeChemo = [gene for gene in negativecorr if gene in GPCRs]
+NonsignificantChemo = [gene for gene in nonsignifcorr if gene in GPCRs]
+
+PositiveNC = [gene for gene in positivecorr if gene in NonGPCRs]
+NegativeNC = [gene for gene in negativecorr if gene in NonGPCRs]
+NonsignificantNC = [gene for gene in nonsignifcorr if gene in NonGPCRs]
+
+print('chemo +', len(PositiveChemo))
+print('chemo -', len(NegativeChemo))
+print('chemo NS', len(NonsignificantChemo))
+print('NC +', len(PositiveNC))
+print('NC -', len(NegativeNC))
+print('NC NS', len(NonsignificantNC))
+
+for gene in PositiveChemo:
+    for family in Families:
+        if gene in Families[family]:
+            print(family)
+
 
 ## determine the number of genes in expression groups for significant genes after correction
 ## use a 10% FDR
@@ -157,6 +227,6 @@ corrected = Benjamini_Hochberg_correction(pvals)
 #
 #print(len(positive_over))
 #print(len(negative_over))
-
-
-
+#
+#
+#
