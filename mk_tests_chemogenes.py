@@ -24,6 +24,7 @@ from scipy import stats
 import math
 import os
 import sys
+import random
 # import custom modules
 from chemoreceptors import *
 from manipulate_sequences import *
@@ -163,11 +164,19 @@ for i in range(10):
     print('alpha GPCR', i, ChemoAlpha)
     print('alpha NC', i, NCAlpha)
 
+# Bootstrap genes to generate distrobution of alpha
+ChemoBootstrap = BootstrapAlphaSEW2002(ChemoPolymDivCounts, 1, 1000, 500)
+print('boostraped alpha for chemo genes')
+NCBootstrap = BootstrapAlphaSEW2002(NCPolymDivCounts, 1, 1000, 5000)
+print('bootstraped alpha for non-chemo genes')
 
-# Bootstrap genes to compute 
+# compte 95% confidence interval
+SEMChemoBootstrap = np.std(ChemoBootstrap) / math.sqrt(len(ChemoBootstrap))
+ChemoLCI = np.mean(ChemoBootstrap) - (1.96 * SEMChemoBootstrap)
+ChemoHCI = np.mean(ChemoBootstrap) + (1.96 * SEMChemoBootstrap)
+SEMNCBootstrap = np.std(NCBootstrap) / math.sqrt(len(NCBootstrap))
+NCLCI = np.mean(NCBootstrap) - (1.96 * SEMNCBootstrap)
+NCHCI = np.mean(NCBootstrap) + (1.96 * SEMNCBootstrap)
 
-
-
-
-
-
+print('chemo', ComputeAlphaSEW2002(ChemoPolymDivCounts, 1), '({0}, {1})'.format(ChemoLCI, ChemoHCI))
+print('non-chemo', ComputeAlphaSEW2002(NCPolymDivCounts, 1), '({0}, {1})'.format(NCLCI, NCHCI))
