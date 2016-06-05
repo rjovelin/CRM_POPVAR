@@ -83,41 +83,6 @@ mk = MK_test(MK, 'fisher')
 significant = [gene for gene in mk if mk[gene][-1] < 0.05]
 nonsignificant = [gene for gene in mk if mk[gene][-1] >= 0.05]
 
-# create a function to determine genes under positive or negative selection
-def NaturalSelection(SynDivCounts, Significant):
-    '''
-    (dict, list) -> (list, list)
-    Take the dictionary with polymorphism and divergence counts and a list of
-    genes with significant MK test and return a tuple with lists of genes
-    that are respectively under negative and positive selection
-    '''
-    negative, positive = [], []
-    for gene in SynDivCounts:
-        # check if gene has significant departure from neutrality
-        if gene in Significant:
-            # check if PS is defined
-            if SynDivCounts[gene][1] != 0:
-                # compute ratio PN / PS
-                polymorphism = SynDivCounts[gene][0] / SynDivCounts[gene][1]
-            elif SynDivCounts[gene][1] == 0:
-                # add small number to PS
-                polymorphism = SynDivCounts[gene][0] / (SynDivCounts[gene][1] + 0.1)
-            # check if DS is defined
-            if SynDivCounts[gene][3] != 0:
-                # compute DN / DS
-                divergence = SynDivCounts[gene][2] / SynDivCounts[gene][3]
-            elif SynDivCounts[gene][3] == 0:
-                # add small number to DS
-                divergence = SynDivCounts[gene][2] / (SynDivCounts[gene][3] + 0.1)
-            # check if divergence is lower r higher than polymorphism
-            if divergence > polymorphism:
-                # positive selection
-                positive.append(gene)
-            elif divergence < polymorphism:
-                negative.append(gene)
-    return negative, positive
-
-
 # determine genes with significant MK that are under positive or negative selection
 negative, positive = NaturalSelection(MK, significant)
 
@@ -178,4 +143,30 @@ print('NC -', len(NegativeNCCorr))
 print('NC NS', len(NonsignificantNCCorr))
 assert len(mk) == len(PositiveChemoCorr) + len(NegativeChemoCorr) + len(NonsignificantChemoCorr) + \
                   len(PositiveNCCorr) + len(NegativeNCCorr) + len(NonsignificantNCCorr)
+
+
+# compute alpha according to the Smith-EyreWalker 2002 method
+
+# generate dicts with polymorphism amd divergence counts for chemo and nonchemo genes
+ChemoPolymDivCounts, NCPolymDivCounts = {}, {}
+for gene in MK:
+    if gene in GPCRs:
+        ChemoPolymDivCounts[gene] = list(MK[gene])
+    elif gene in NonGPCRs:
+        NCPolymDivCounts[gene] = list(MK[gene])
+
+# compute average alpha for chemo and non-chemo genes    
+ChemoAlpha = ComputeAlphaSEW2002(ChemoPolymDivCounts)
+NCAlpha = ComputeAlphaSEW2002(NCPolymDivCounts)
+
+print('alpha GPCR', ChemoAlpha)
+print('alpha NC', NCAlpha)
+
+
+
+
+
+
+
+
 
