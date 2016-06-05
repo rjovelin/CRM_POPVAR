@@ -104,18 +104,10 @@ def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
             if line[19] in {'A', 'C', 'T', 'G'}:
                 # record only sites labeled snp or no_snp and valid snp type
                 if line[6] in {'snp', 'no_snp'} and line[9] in {'NA', 'COD', 'SYN', 'REP'}:
-                    # get reference codon
-                    ref_codon = line[3]
-                    # get alternative codon
-                    alt_codon = line[8]
-                    # get latens codon
-                    cla_codon = line[18]
-                    # get reference allele
-                    ref = line[5]
-                    # get alternative allele
-                    alt = line[7]
-                    # get latens base
-                    cla_base = line[19]
+                    # get reference and alternative codons and latens codon
+                    ref_codon, alt_codon, cla_codon = line[3], line[8], line[18]
+                    # get reference, alternative and latens alleles
+                    ref, alt, cla_base = line[5], line[7], line[19]
                     # get SNP type
                     snp = line[9]
                     # do not consider stop codons
@@ -137,12 +129,6 @@ def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
                             if ref_count + alt_count >= 10:
                                 # do not consider codons with more than 1 substitutions
                                 if diff_codon(cla_codon, alt_codon) <= 1:
-                                        
-                                
-                                
-                                
-                                
-                                
                                     # determine if site is polymorphic or fixed
                                     # fixed diff if alternative allele fixed and different from latens 
                                     if ref_count == 0 and alt_count != 0 and cla_base != alt:
@@ -166,47 +152,38 @@ def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
                                             SNPs[gene][3] += 1
                                     elif ref_count != 0 and alt_count != 0:
                                         # site is polymorphic
+                                        # set up boolean to identify polymorphic site after filtering based on MAF or raw count
+                                        PolymorphicSite = False
                                         # check if cutoff or raw_count applies
                                         if rare_sites == 'freq':
                                             # use frequency cutoff
-                                            # compare the snp frequency to cutoff
+                                            # compare the snp MAF frequency to cutoff
                                             if ref_count >= alt_count:
-                                                freq = alt_count / ref_count
+                                                freq = alt_count / (ref_count + alt_count)
                                             elif ref_count < alt_count:
-                                                freq = ref_count / alt_count
+                                                freq = ref_count / (ref_count + alt_count)
                                             if freq >= cutoff:
-                                                # determine the type of snp
-                                                if snp == 'SYN' and genetic_code[ref_codon] == genetic_code[alt_codon]:
-                                                    # mutation is synonymous
-                                                    SNPs[gene][1] += 1
-                                                elif snp == 'REP' and genetic_code[ref_codon] != genetic_code[alt_codon]:
-                                                    # mutation is nonsynonymous
-                                                    SNPs[gene][0] += 1
+                                                # record polymorphic site
+                                                PolymorphicSite = True
                                         elif rare_sites == 'count':
                                             # use allele count to filter sites
-                                            # determine the allele with lower count
-                                            if ref_count >= alt_count:
-                                                # compre the count of alt_codon to raw_count
-                                                if alt_count >= raw_count:
-                                                    # alt_count is greater than minimum required threshold
-                                                    # dtermine the type of mutation
-                                                    if snp == 'SYN' and genetic_code[ref_codon] == genetic_code[alt_codon]:
-                                                        # mutation is synonymous
-                                                        SNPs[gene][1] += 1
-                                                    elif snp == 'REP' and genetic_code[ref_codon] != genetic_code[alt_codon]:
-                                                        # mutation is nonsynonymous
-                                                        SNPs[gene][0] += 1
-                                            elif ref_count < alt_count:
-                                                # compare the count of ref-codon to raw_count
-                                                if ref_count >= raw_count:
-                                                    # ref_count is greater than minimum required thereshold
-                                                    # determine the type of mutation
-                                                    if snp == 'SYN' and genetic_code[ref_codon] == genetic_code[alt_codon]:
-                                                        # mutation is synonymous
-                                                        SNPs[gene][1] += 1
-                                                    elif snp == 'REP' and genetic_code[ref_codon] != genetic_code[alt_codon]:
-                                                        # mutation is nonsynonymous
-                                                        SNPs[gene][0] += 1
+                                            # check that allele with lowest count > raw_count threshold
+                                            if ref_count >= alt_count and alt_count > raw_count:
+                                                # alt_count is greater than minimum required threshold
+                                                # record polymorphic site
+                                                PolymorphicSite = True
+                                            elif ref_count < alt_count and ref_count > raw_count:
+                                                # ref_count is greater than minimum required thereshold
+                                                # record polymorphic site
+                                                PolymorphicSite = True
+                                        # determine the type of mutation if polymorphic site is to be recorded
+                                        if PolymorphicSite == True:
+                                            if snp == 'SYN' and genetic_code[ref_codon] == genetic_code[alt_codon]:
+                                                # mutation is synonymous
+                                                SNPs[gene][1] += 1
+                                            elif snp == 'REP' and genetic_code[ref_codon] != genetic_code[alt_codon]:
+                                                # mutation is nonsynonymous
+                                                SNPs[gene][0] += 1
                                                     
     # close file after readling
     infile.close()
