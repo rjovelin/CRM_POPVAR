@@ -9,6 +9,7 @@ Created on Tue Jun  9 14:25:11 2015
 from manipulate_sequences import *
 from scipy import stats
 import numpy as np
+import random
 
 
 # define global variable with genetic code
@@ -300,4 +301,45 @@ def ComputeAlphaSEW2002(PolymDivCounts, MinimumPS):
      alpha = 1 - ((np.mean(DS) / np.mean(DN)) * np.mean(Polym))
      return alpha     
      
-     
+
+# use this function to bootstrap genes to compoute a distribution of alpha values
+def BootstrapAlphaSEW2002(PolymDivCounts, MinimumPS, replicates, Ngenes):
+    '''
+    (dict, int, int, int) -> list
+    Take a dictionary with polymorphim and divergence counts at synonymous 
+    and replacement sites, the minimum number of synonymous polymorphisms,
+    the number of bootstrap replicates, the number of genes to draw with replacement,
+    and return a list with distribution of alpha (Smith-Eyre-Walker 2002)
+    for each replicate
+    '''
+    
+    # create a list to store alpha values
+    AlphaDistribution = []
+    
+    # create a list of genes to draw genes at random    
+    GeneNames = [gene for gene in PolymDivCounts]
+        
+    # loop over number of replicates
+    while replicates != 0:
+        # create a dictionary with {gene : [PN, PS, DN, DS]} from genes draw at random
+        RandomDraw = {}
+        i = Ngenes
+        # draw Ngenes from PolymDivCounts
+        while i != 0:
+            # draw the index of gene at random (randint include last number)
+            # draw genes with replacement
+            position = random.randint(0, len(GeneNames)-1)
+            gene = GeneNames[position]
+            # populate dict
+            RandomDraw[gene] = list(PolymDivCounts[gene])
+            # update counter
+            i -= 1
+        # compute alpha
+        alpha = ComputeAlphaSEW2002(RandomDraw, MinimumPS)
+        AlphaDistribution.append(alpha)
+        # update counter
+        replicates -= 1
+        
+    return AlphaDistribution
+
+
