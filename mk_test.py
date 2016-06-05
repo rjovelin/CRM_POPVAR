@@ -150,7 +150,7 @@ def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
                                         elif genetic_code[cla_codon] == genetic_code[ref_codon]:
                                             # fixed synonymous change
                                             SNPs[gene][3] += 1
-                                    elif ref_count != 0 and alt_count != 0:
+                                    elif ref_count != 0 and alt_count != 0 and (ref == cla_base or alt == cla_base):
                                         # site is polymorphic
                                         # set up boolean to identify polymorphic site after filtering based on MAF or raw count
                                         PolymorphicSite = False
