@@ -76,8 +76,10 @@ chemoDivRatio = sum([ChemoPolymDivCounts[gene][2] for gene in ChemoPolymDivCount
 NCDivRatio = sum([NCPolymDivCounts[gene][2] for gene in NCPolymDivCounts]) / sum([NCPolymDivCounts[gene][3] for gene in NCPolymDivCounts])
 
 # create lists of ratio for individial genes if Ps and Ds are > 0
-
-
+chemoGenePolym = [ChemoPolymDivCounts[gene][0] / ChemoPolymDivCounts[gene][1] for gene in ChemoPolymDivCounts if ChemoPolymDivCounts[gene][1] > 0]
+NCGenePolym = [NCPolymDivCounts[gene][0] / NCPolymDivCounts[gene][1] for gene in NCPolymDivCounts if NCPolymDivCounts[gene][1] > 0]
+chemoGeneDiv = [ChemoPolymDivCounts[gene][2] / ChemoPolymDivCounts[gene][3] for gene in ChemoPolymDivCounts if ChemoPolymDivCounts[gene][3] > 0]
+NCGeneDiv = [NCPolymDivCounts[gene][2] / NCPolymDivCounts[gene][3] for gene in NCPolymDivCounts if NCPolymDivCounts[gene][3] > 0]
 
 
 
