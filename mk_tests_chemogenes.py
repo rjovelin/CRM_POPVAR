@@ -155,15 +155,16 @@ for gene in MK:
     elif gene in NonGPCRs:
         NCPolymDivCounts[gene] = list(MK[gene])
 
-# compute average alpha for chemo and non-chemo genes    
-ChemoAlpha = ComputeAlphaSEW2002(ChemoPolymDivCounts)
-NCAlpha = ComputeAlphaSEW2002(NCPolymDivCounts)
+# compute average alpha for chemo and non-chemo genes
 
-print('alpha GPCR', ChemoAlpha)
-print('alpha NC', NCAlpha)
+for i in range(10):
+    ChemoAlpha = ComputeAlphaSEW2002(ChemoPolymDivCounts, i)
+    NCAlpha = ComputeAlphaSEW2002(NCPolymDivCounts, i)
+    print('alpha GPCR', i, ChemoAlpha)
+    print('alpha NC', i, NCAlpha)
 
 
-
+# Bootstrap genes to compute 
 
 
 

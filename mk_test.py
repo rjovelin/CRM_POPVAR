@@ -274,13 +274,13 @@ def NaturalSelection(PolymDivCounts, Significant):
     
     
 # use this function to compute alpha according to Smith-EyreWalker 2002    
-def ComputeAlphaSEW2002(PolymDivCounts):
+def ComputeAlphaSEW2002(PolymDivCounts, MinimumPS):
      '''
-     (dict) -> float
+     (dict, int) -> float
      Take a dictionary with polymorphim and divergence counts at synonymous 
-     and replacement sites and compute alpha, the average proportion of amino-acid
-     substitutions driven by positive selection according to the method of
-     Smith and Eyre-Walker Science 2002
+     and replacement sites and the minimum number of synonymous polymorphisms
+     and compute alpha, the average proportion of amino-acid substitutions
+     driven by positive selection according to the method of Smith-Eyre-Walker 2002
      '''
      
      # alpha = 1 - ((MeanDS / MeanDN) * (Mean(PN / (PS + 1))))
@@ -295,9 +295,9 @@ def ComputeAlphaSEW2002(PolymDivCounts):
      DS = [PolymDivCounts[gene][3] for gene in PolymDivCounts]
      
      # create list with polymorphism ratio
-     Polym = [(PolymDivCounts[gene][0] / (PolymDivCounts[gene][1] + 1)) for gene in PolymDivCounts]
+     Polym = [(PolymDivCounts[gene][0] / (PolymDivCounts[gene][1] + 1)) for gene in PolymDivCounts if PolymDivCounts[gene][1] >= MinimumPS]
      
-     alpha = 1 - ((np.mean(DN) / np.mean(DS)) * np.mean(Polym))
+     alpha = 1 - ((np.mean(DS) / np.mean(DN)) * np.mean(Polym))
      return alpha     
      
      
