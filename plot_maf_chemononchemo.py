@@ -277,6 +277,6 @@ lns = graph1+graph2+graph3+graph4+graph5+graph6
 # get labels
 labs = ['GPCR Syn.', 'GPCR Rep.', 'GPCR PTC', 'NC Syn.', 'NC Rep.', 'NC PTC']
 # plot legend
-ax.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
+ax.legend(lns, labs, loc=4, fontsize = 8, frameon = False)
 
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('CDFMAFChemoNonChemo.pdf', bbox_inches = 'tight')
