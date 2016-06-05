@@ -32,6 +32,7 @@ from premature_stops import *
 from randomize_SNPs import *
 from get_coding_sequences import *
 from mk_test import * 
+from chemoreceptors import *
 
 
 #######
@@ -142,7 +143,7 @@ transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
 print('got list of valid transcripts')
 
 # get the set of chemoreceptors from the iprscan outputfile
-chemo = get_chemoreceptors('../Genome_Files//PX356_protein_seq.tsv') 
+chemo = get_chemoreceptors('../Genome_Files/PX356_protein_seq.tsv') 
 print('parsed chemo genes')
 
 # create a set of valid chemoreceptors
