@@ -8,6 +8,7 @@ Created on Tue Jun  9 14:25:11 2015
 
 from manipulate_sequences import *
 from scipy import stats
+import numpy as np
 
 
 # define global variable with genetic code
@@ -47,9 +48,6 @@ def diff_codon(codon1, codon2):
             
     return diff
         
-
-
-
 
 # use this function to count the number of replacement and synonymous changes
 def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
@@ -204,8 +202,8 @@ def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
     # return dict
     return SNPs
     
-    
 
+# use this function to compute the MK test     
 def MK_test(SNPs, test_mode):
     '''
     (dict, str) -> dict
@@ -236,8 +234,70 @@ def MK_test(SNPs, test_mode):
         MK[gene] = list(SNPs[gene])
         MK[gene].append(P)
         
-    # return modified dict
     return MK
             
     
+# use this function determine genes significantly under positive or negative selection
+def NaturalSelection(PolymDivCounts, Significant):
+    '''
+    (dict, list) -> (list, list)
+    Take the dictionary with polymorphism and divergence counts and a list of
+    genes with significant MK test and return a tuple with lists of genes
+    that are respectively under negative and positive selection
+    '''
+    negative, positive = [], []
+    for gene in PolymDivCounts:
+        # check if gene has significant departure from neutrality
+        if gene in Significant:
+            # check if PS is defined
+            if PolymDivCounts[gene][1] != 0:
+                # compute ratio PN / PS
+                polymorphism = PolymDivCounts[gene][0] / PolymDivCounts[gene][1]
+            elif PolymDivCounts[gene][1] == 0:
+                # add small number to PS
+                polymorphism = PolymDivCounts[gene][0] / (PolymDivCounts[gene][1] + 0.1)
+            # check if DS is defined
+            if PolymDivCounts[gene][3] != 0:
+                # compute DN / DS
+                divergence = PolymDivCounts[gene][2] / PolymDivCounts[gene][3]
+            elif PolymDivCounts[gene][3] == 0:
+                # add small number to DS
+                divergence = PolymDivCounts[gene][2] / (PolymDivCounts[gene][3] + 0.1)
+            # check if divergence is lower r higher than polymorphism
+            if divergence > polymorphism:
+                # positive selection
+                positive.append(gene)
+            elif divergence < polymorphism:
+                negative.append(gene)
+    return negative, positive    
     
+    
+    
+# use this function to compute alpha according to Smith-EyreWalker 2002    
+def ComputeAlphaSEW2002(PolymDivCounts):
+     '''
+     (dict) -> float
+     Take a dictionary with polymorphim and divergence counts at synonymous 
+     and replacement sites and compute alpha, the average proportion of amino-acid
+     substitutions driven by positive selection according to the method of
+     Smith and Eyre-Walker Science 2002
+     '''
+     
+     # alpha = 1 - ((MeanDS / MeanDN) * (Mean(PN / (PS + 1))))
+     # MeanDS: average number of fixed differences at synonymous sites
+     # MeanDN: average number of of fixed differences at nonsynonymous sites
+     # PN: number of nonymous replacement polymorphisms for a given gene
+     # PS: number of synonymous polymorphisms or a given gene
+     # PolymDivCounts  if in the form {gene : [PN, PS, DN, DS]}
+     
+     # create lists with divergence counts
+     DN = [PolymDivCounts[gene][2] for gene in PolymDivCounts]
+     DS = [PolymDivCounts[gene][3] for gene in PolymDivCounts]
+     
+     # create list with polymorphism ratio
+     Polym = [(PolymDivCounts[gene][0] / (PolymDivCounts[gene][1] + 1)) for gene in PolymDivCounts]
+     
+     alpha = 1 - ((np.mean(DN) / np.mean(DS)) * np.mean(Polym))
+     return alpha     
+     
+     
