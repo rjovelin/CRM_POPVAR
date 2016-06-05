@@ -6,7 +6,6 @@ Created on Tue Jun  9 14:25:11 2015
 """
 
 
-#!/usr/bin/env python3
 from manipulate_sequences import *
 from scipy import stats
 
@@ -71,7 +70,6 @@ def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
     # create a set of stop codons
     stop_codons = {'TAG', 'TGA', 'TAA'} 
     
-    
     # initialize dict
     SNPs = {}
     # initialize gene : empty list pairs
@@ -100,7 +98,7 @@ def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
         line = line.rstrip()
         if line != '':
             line = line.split()
-            # gett dict key
+            # get dict key
             gene = line[2]
             # record only sites for which ancestral state is defined
             if line[19] in {'A', 'C', 'T', 'G'}:
@@ -137,13 +135,18 @@ def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
                                 alt_count = int(line[17])
                             # Consider sites that have a sample size >= 10
                             if ref_count + alt_count >= 10:
-                                # determine if site is polymorphic or fixed
-                                # fixed diff if alternative allele fixed and different from latens 
-                                if ref_count == 0 and alt_count != 0 and cla_base != alt:
-                                    # fixed difference between latens and remanei
-                                    # check the number of substitutions between codons
-                                    if diff_codon(cla_codon, alt_codon) <= 1:
-                                        # do not consider codons with more than 1 substitutions
+                                # do not consider codons with more than 1 substitutions
+                                if diff_codon(cla_codon, alt_codon) <= 1:
+                                        
+                                
+                                
+                                
+                                
+                                
+                                    # determine if site is polymorphic or fixed
+                                    # fixed diff if alternative allele fixed and different from latens 
+                                    if ref_count == 0 and alt_count != 0 and cla_base != alt:
+                                        # fixed difference between latens and remanei
                                         # check if change is synonymous or nonsynonymous
                                         if genetic_code[cla_codon] != genetic_code[alt_codon]:
                                             # fixed nonsynonymous change
@@ -151,10 +154,8 @@ def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
                                         elif genetic_code[cla_codon] == genetic_code[alt_codon]:
                                             # fixed synonymous change
                                             SNPs[gene][3] += 1
-                                elif ref_count != 0 and alt_count == 0 and cla_base != ref:
-                                    # fixed difference between latens and remanei
-                                    # check the number of difference between latens and remanei
-                                    if diff_codon(cla_codon, ref_codon) <= 1:
+                                    elif ref_count != 0 and alt_count == 0 and cla_base != ref:
+                                        # fixed difference between latens and remanei
                                         # do not consider codons with more than 1 substitutions
                                         # check if change is synonymous or nonsynonymous
                                         if genetic_code[cla_codon] != genetic_code[ref_codon]:
@@ -163,11 +164,8 @@ def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
                                         elif genetic_code[cla_codon] == genetic_code[ref_codon]:
                                             # fixed synonymous change
                                             SNPs[gene][3] += 1
-                                elif ref_count != 0 and alt_count != 0:
-                                    # site is polymorphic
-                                    # check the number of differences between ref_codon and alt_codon within remanei
-                                    if diff_codon(ref_codon, alt_codon) <= 1:
-                                        # do not consider codons with more than 1 substitutions
+                                    elif ref_count != 0 and alt_count != 0:
+                                        # site is polymorphic
                                         # check if cutoff or raw_count applies
                                         if rare_sites == 'freq':
                                             # use frequency cutoff
