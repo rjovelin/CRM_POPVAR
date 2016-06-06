@@ -69,15 +69,20 @@ for i in range(len(NCUpstream)):
 ChemoHist = np.histogram(ChemoUpstream, range(0, 110, 10))
 NCHist = np.histogram(NCUpstream, range(0, 110, 10))
 
+# transform the gene counts to proportions
+ChemoFreq = [i / sum(ChemoHist[0]) for i in ChemoHist[0]]
+NCFreq = [i / sum(NCHist[0]) for i in NCHist[0]]
+
+print(len(NCFreq))
+
 # test uniformity of the distribution of the 5' most upstream PTC
 chemotest = stats.chisquare(ChemoHist[0])
 NCtest = stats.chisquare(NCHist[0])
 print('chemo Pval uniformity', chemotest[1])
 print('non-chemo Pval uniformity', NCtest[1])
 
-
 # create figure
-fig = plt.figure(1, figsize = (3, 2))
+fig = plt.figure(1, figsize = (4, 2))
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)  
 
@@ -85,14 +90,14 @@ ax = fig.add_subplot(1, 1, 1)
 width = 0.2
 
 # plot positions chemo
-graph1 = ax.bar([i / 10 for i in range(10)], ChemoHist[0], width, color = '#de2d26', edgecolor = 'grey', linewidth = 1, alpha = 0.5)
+graph1 = ax.bar([i / 10 for i in range(10)], ChemoFreq, width, color = '#de2d26', edgecolor = 'grey', linewidth = 1, alpha = 0.5)
 # plot positions non-chemo
-graph2 = ax.bar([i / 10 for i in range(10)], NCHist[0], width, color = '#3182bd', edgecolor = 'grey', linewidth = 1, alpha = 0.5)
+graph2 = ax.bar([i / 10 for i in range(10)], NCFreq, width, color = '#3182bd', edgecolor = 'grey', linewidth = 1, alpha = 0.5)
 
 ax.set_ylabel('Proportion of genes with a PTC', size = 10, ha = 'center', fontname = 'Arial')
 
 # determine tick position on x axis
-xpos =  [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 10]
+xpos =  [0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1,6, 1.8, 2]
 xtext = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 xtext = list(map(lambda x : str(x), xtext))
 # set up tick positions and labels
