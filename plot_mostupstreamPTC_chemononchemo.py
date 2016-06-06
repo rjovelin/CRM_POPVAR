@@ -91,14 +91,14 @@ ax = fig.add_subplot(1, 1, 1)
 width = 0.1
 
 # plot positions chemo
-graph1 = ax.bar([i / 10 for i in range(10)], ChemoFreq, width, color = '#de2d26', edgecolor = 'black', linewidth = 1, alpha = 0.5)
+graph1 = ax.bar([i / 10 for i in range(10)], ChemoFreq, width, color = '#de2d26', edgecolor = '#de2d26', linewidth = 1, alpha = 0.7)
 # plot positions non-chemo
-graph2 = ax.bar([i / 10 for i in range(10)], NCFreq, width, color = '#3182bd', edgecolor = 'grey', linewidth = 1, alpha = 0.5)
+graph2 = ax.bar([i / 10 for i in range(10)], NCFreq, width, color = '#3182bd', edgecolor = '#3182bd', linewidth = 1, alpha = 0.7)
 
 ax.set_ylabel('Proportion of genes with a PTC', size = 10, ha = 'center', fontname = 'Arial')
 
 # determine tick position on x axis
-xpos =  [0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1,6, 1.8, 2]
+xpos =  [i / 10 for i in range(10)] + [1]
 xtext = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 xtext = list(map(lambda x : str(x), xtext))
 # set up tick positions and labels
@@ -151,8 +151,8 @@ for label in ax.get_yticklabels():
     label.set_fontname('Arial')
 
 # create legend
-chemoptc = mpatches.Patch(facecolor = '#de2d26' , edgecolor = 'grey', linewidth = 1, label= 'GPCR')
-NCptc = mpatches.Patch(facecolor = '#3182bd', edgecolor = 'grey', linewidth = 1, label = 'NC')
+chemoptc = mpatches.Patch(facecolor = '#de2d26' , edgecolor = 'grey', linewidth = 1, label= 'GPCR', alpha = 0.7)
+NCptc = mpatches.Patch(facecolor = '#3182bd', edgecolor = 'grey', linewidth = 1, label = 'NC', alpha = 0.7)
 plt.legend(handles=[chemoptc, NCptc], loc = 1, fontsize = 8, frameon = False)
 
 # add margin on the x-axis
