@@ -74,6 +74,7 @@ ChemoFreq = [i / sum(ChemoHist[0]) for i in ChemoHist[0]]
 NCFreq = [i / sum(NCHist[0]) for i in NCHist[0]]
 
 print(len(NCFreq))
+print(NCFreq)
 
 # test uniformity of the distribution of the 5' most upstream PTC
 chemotest = stats.chisquare(ChemoHist[0])
@@ -87,10 +88,10 @@ fig = plt.figure(1, figsize = (4, 2))
 ax = fig.add_subplot(1, 1, 1)  
 
 # set width of bar
-width = 0.2
+width = 0.1
 
 # plot positions chemo
-graph1 = ax.bar([i / 10 for i in range(10)], ChemoFreq, width, color = '#de2d26', edgecolor = 'grey', linewidth = 1, alpha = 0.5)
+graph1 = ax.bar([i / 10 for i in range(10)], ChemoFreq, width, color = '#de2d26', edgecolor = 'black', linewidth = 1, alpha = 0.5)
 # plot positions non-chemo
 graph2 = ax.bar([i / 10 for i in range(10)], NCFreq, width, color = '#3182bd', edgecolor = 'grey', linewidth = 1, alpha = 0.5)
 
