@@ -5,7 +5,7 @@ Created on Wed Jun 10 11:08:59 2015
 @author: Richard
 """
 
-#!/usr/bin/env python3
+
 
 
 # import modules
@@ -429,21 +429,17 @@ def DAF_SNP(snp_file, unique_transcripts, indel_transcripts, site_type, threshol
     return DAF
     
 # use this funtion to find the 5' most upstream PTC SNPs
-def position_first_PTC(snp_file, unique_transcripts, indel_transcripts, CDS_fasta):
+def position_first_PTC(snp_file, GeneList, indel_transcripts, CDS_fasta):
     '''
-    (file, file, file, file) -> list
-    Take the file with snps in CDS, the file with unique transcripts and the
-    file with transcripts having indels and the remanei fasta CDS sequences and
-    return a list with the relative position of the 5' most upstream premature
-    in the CDS
+    (file, set, file, file) -> list
+    Take the file with snps in CDS, a set of genes of interest, the file with
+    transcripts with indels and the remanei fasta CDS sequences and return a
+    list with the relative position of the 5' most upstream premature in the CDS
     Note: PTC with > 1 difference from reference allele are considered in gene counts    
     '''
     
     # convert fasta file to dict
     CDS = convert_fasta(CDS_fasta)
-    
-    # get the set of valid transcripts
-    transcripts = get_valid_transcripts(unique_transcripts)    
     
     # get the set of transcripts with indels in their CDS
     indels = get_genes_with_indels(indel_transcripts)
@@ -479,7 +475,7 @@ def position_first_PTC(snp_file, unique_transcripts, indel_transcripts, CDS_fast
                 # update position variable
                 i += 1
             # check that gene is in valid transcripts and does not have indels
-            if gene in transcripts and gene not in indels:
+            if gene in GeneList and gene not in indels:
                 # check only valid snps
                 if line[6] == 'snp' and line[5] != line[7] and line[5] in valid_base and line[7] in valid_base:
                     # get ref codon
@@ -514,6 +510,71 @@ def position_first_PTC(snp_file, unique_transcripts, indel_transcripts, CDS_fast
             PTC_positions.append(PTC[gene][0])
             
     return PTC_positions
+
+
+# use this funtion to get the relative position of all PTC SNPs, including genes with alleles
+def RelativePositionPTC(snp_file, GeneList, CDS_fasta):
+    '''
+    (file, set, file) -> list
+    Take the file with snps in CDS, a set of gene of interest, the remanei
+    fasta CDS sequences and return a list with the relative position of all
+    PTC SNPs in the CDS (excluding natural stop codon)
+    Note: PTC with > 1 difference from reference allele are considered in gene counts    
+    '''
+    
+    # convert fasta file to dict
+    CDS = convert_fasta(CDS_fasta)
+    
+    # create a set of valid nucleotides
+    valid_base = {'A', 'T', 'C', 'G'}    
+        
+    # create a dict {gene : [PTC position]}
+    PTC = {}
+    
+    # set up gene variable, gene is updated only when a new gene is reached
+    gene = ''    
+    
+    # open file for reading
+    infile = open(snp_file, 'r')
+    # skip header
+    infile.readline()
+    # loop over file
+    for line in infile:
+        line = line.rstrip()
+        if line != '':
+            line = line.split()
+            # check that a new gene is reached
+            if line[2] != gene:
+                # a new gene is reached, update gene
+                gene = line[2]
+                # initialize position variable
+                i = 0
+                # initialize dict
+                PTC[gene] = []
+            elif line[2] == gene:
+                # still in the same gene
+                # update position variable
+                i += 1
+            # check that gene is gene of interest
+            if gene in GeneList:
+                # check only valid snps
+                if line[6] == 'snp' and line[5] != line[7] and line[5] in valid_base and line[7] in valid_base:
+                    # get ref and alt codons
+                    ref_codon, alt_codon = line[3], line[8]
+                    # ignore natural stop codon
+                    if genetic_code[ref_codon] != '*':
+                        # verify that SNP is in KSR+PX
+                        alt_count = int(line[17])
+                        if alt_count != 0:
+                            # alternative present in KSR+PX
+                            # check that alternative codon is stop codon
+                            if genetic_code[alt_codon] == '*':
+                                # mutation results in stop
+                                # add the position of PTC SNP relative to the CDS length
+                                PTC[gene].append(i / len(CDS[gene]))
+    # close file
+    infile.close()
+    return PTC
 
 
 # use this function to get the frequency of the 5' most upstream PTC SNP
