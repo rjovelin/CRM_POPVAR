@@ -7,6 +7,9 @@ Created on Sun Jun  5 23:29:57 2016
 
 # use this script to make a multiple plot figure comparing PTC between chemo and non-chemo genes 
 
+# visit this page for plotting multiple subplots in a singlr figure
+#http://matplotlib.org/users/gridspec.html
+
 
 # use Agg backend on server without X server
 import matplotlib as mpl
@@ -27,6 +30,7 @@ from chemoreceptors import *
 from manipulate_sequences import *
 from mk_test import *
 from premature_stops import *
+from crm_expression import *
 
 
 # create a set of valid transcripts
@@ -70,6 +74,13 @@ assert len(transcripts) == len(ChemoPTC) + len(NCPTC) + len(ChemoNonPTC) + len(N
 Pchi2PTC = stats.chi2_contingency([[len(ChemoPTC), len(ChemoNonPTC)], [len(NCPTC), len(NCNonPTC)]])[1]
 print('chi2', Pchi2PTC)
 
+# get proportions of genes
+ChemoPTCProp = len(ChemoPTC) / len(GPCRs)
+ChemoNonPTCProp = len(ChemoNonPTC) / len(GPCRs)
+NCPTCProp = len(NCPTC) / len(NonGPCRs)
+NCNonPTCProp = len(NCNonPTC) / len(NonGPCRs)
+
+
 # compare expression level between PTC and non-PTC genes
 # use all PTC genes, including genes with indels
 
@@ -86,26 +97,20 @@ NCNonPTCExp = [Expression[gene] for gene in Expression if gene in NonGPCRs and g
 # test differences in gene expression between chemo PTC and non-PTC genes
 PchemoPtc = stats.ranksums(ChemoPTCExp, ChemoNonPTCExp)[1]
 PNCPtc = stats.ranksums(NCPTCExp, NCNonPTCExp)[1]
-print('chemo expression PTC', PchemoPtc)
-print('nonchemo expression PTC', PNCPtc)
+print('chemo expression PTC', np.mean(ChemoPTCExp), np.mean(ChemoNonPTCExp), PchemoPtc)
+print('nonchemo expression PTC', np.mean(NCPTCExp), np.mean(NCNonPTCExp), PNCPtc)
 
 
-######################################################################
-
-#### CODE BELOW WORKS WELL FOR PLOTTING % TRUNCATION
-#### NEED TO ADD A AX FORMATTING FUNCTION
-
+# compute the distribution of position of the 5' miost upstream PTC
 
 # get the relative position of the 5' most PTC allele in chemo and non-chemo genes
-ChemoUpstream = upstream_PTC = position_first_PTC('../Genome_Files/CDS_SNP_DIVERG.txt',
-                                                  GPCRs, '../Genome_Files/transcripts_indels_CDS.txt',
-                                                  '../Genome_Files/noamb_PX356_all_CDS.fasta')
-print('grabbed positions of PTC alleles for chemo genes')
+ChemoUpstream = position_first_PTC('../Genome_Files/CDS_SNP_DIVERG.txt', GPCRs,
+                                   '../Genome_Files/transcripts_indels_CDS.txt', '../Genome_Files/noamb_PX356_all_CDS.fasta')
+print('grabbed positions of 5\' PTC alleles for chemo genes')
 
-NCUpstream = upstream_PTC = position_first_PTC('../Genome_Files/CDS_SNP_DIVERG.txt',
-                                                  NonGPCRs, '../Genome_Files/transcripts_indels_CDS.txt',
-                                                  '../Genome_Files/noamb_PX356_all_CDS.fasta')
-print('grabbed positions of PTC alleles for non-chemo genes')
+NCUpstream = position_first_PTC('../Genome_Files/CDS_SNP_DIVERG.txt', NonGPCRs,
+                                '../Genome_Files/transcripts_indels_CDS.txt', '../Genome_Files/noamb_PX356_all_CDS.fasta')
+print('grabbed positions of 5\' PTC alleles for non-chemo genes')
 
 # express relative position in % of the CDS length
 for i in range(len(ChemoUpstream)):
@@ -121,8 +126,6 @@ NCHist = np.histogram(NCUpstream, range(0, 110, 10))
 ChemoFreq = [i / sum(ChemoHist[0]) for i in ChemoHist[0]]
 NCFreq = [i / sum(NCHist[0]) for i in NCHist[0]]
 
-print(len(NCFreq))
-print(NCFreq)
 
 # test uniformity of the distribution of the 5' most upstream PTC
 chemotest = stats.chisquare(ChemoHist[0])
@@ -135,14 +138,17 @@ print('non-chemo Pval uniformity', NCtest[1])
 # make a dictionary with relative positions of PTC SNPs for chemo and non-chemo genes
 ChemoPTCPos = RelativePositionPTC('../Genome_Files/CDS_SNP_DIVERG.txt',
                                GPCRs, '../Genome_Files/noamb_PX356_all_CDS.fasta')
+print('recorded all PTC positions for chemo genes')
+
 NCPTCPos = RelativePositionPTC('../Genome_Files/CDS_SNP_DIVERG.txt',
                                NonGPCRs, '../Genome_Files/noamb_PX356_all_CDS.fasta')
+print('recorded all PTC postions for non-chemo genes')
 
 # express relative position in % of the CDS length
-for i in range(len(ChemoPTCPos)):
+for i in ChemoPTCPos:
     ChemoPTCPos[i] = ChemoPTCPos[i] * 100
-for i in range(len(NCPTCPos)):
-    NCPTCPos[i] = NCUPTCPos[i] * 100
+for i in NCPTCPos:
+    NCPTCPos[i] = NCPTCPos[i] * 100
 
 # make a histogram
 ChemoPosHist = np.histogram(ChemoUpstream, range(0, 105, 5))
@@ -159,210 +165,238 @@ print(len(NCPosFreq))
 print(NCPosFreq)
 
 
-  
-
-## plot MAF synonymous sites
-#graph1 = ax.step(ChemoMAFSYN, np.linspace(0, 1, len(ChemoMAFSYN), endpoint=False), linewidth = 1.2, color = '#fb6a4a', alpha = 0.7)
-## plot MAF replacement sites
-#graph2 = ax.step(ChemoMAFREP, np.linspace(0, 1, len(ChemoMAFREP), endpoint=False), linewidth = 1.2, color = '#cb181d', alpha = 0.7)
-## plot MAF PTC
-#graph3 = ax.step(ChemoMAFPTC, np.linspace(0, 1, len(ChemoMAFPTC), endpoint=False), linewidth = 1.2, color = '#fcae91', alpha = 0.7)
-## plot MAF syn NC
-#graph4 = ax.step(NCMAFSYN, np.linspace(0, 1, len(NCMAFSYN), endpoint=False), linewidth = 1.2, color = '#6baed6', alpha = 0.7)
-## plot MAF rep NC
-#graph5 = ax.step(NCMAFREP, np.linspace(0, 1, len(NCMAFREP), endpoint=False), linewidth = 1.2, color = '#2171b5', alpha = 0.7)
-## plot MAF ptc NC
-#graph6 = ax.step(NCMAFPTC, np.linspace(0, 1, len(NCMAFPTC), endpoint=False), linewidth = 1.2, color = '#bdd7e7', alpha = 0.7)
-#print('plotted CDF')
-
-
-#####
-
-
-
-
-#http://matplotlib.org/users/gridspec.html
-
-#ax1 = plt.subplot2grid((3,3), (0,0), colspan=3)
-#ax2 = plt.subplot2grid((3,3), (1,0), colspan=2)
-#ax3 = plt.subplot2grid((3,3), (1, 2), rowspan=2)
-#ax4 = plt.subplot2grid((3,3), (2, 0))
-#ax5 = plt.subplot2grid((3,3), (2, 1))
-
 # create figure
 fig = plt.figure(1, figsize = (6, 6))
 
 
 # create a function to format the subplots
-def FormatAx(AxNum, Position, Xscale, Data, figure, width, XLabel = True, Legend = False):
+def FormatAx(AxNum, XTicksPos, XTicklabels, Xscale, Data, figure, width, colorscheme,
+             XLabel, YLabel, isXLabel = True, Legend = False, FirstData = '', AnnotateP = False):
     
-    
-    # use subplot2grid to specify position of subplots
+    # use subplot2grid to specify position of subplots (# row, # column)
     if AxNum == 1:
-        
-        
-        ########## use this code to plot a bar graph on top of the other
-## Create a bar plot, in position bar_left for cnv greater
-#plt.bar(bar_left, cnv_greater, width=bar_width, color= 'black')
-## Create a bar plot, in position bar_left for cnv lower on top of cnv_greater
-#plt.bar(bar_left, cnv_lower, width=bar_width, bottom= cnv_greater, color = 'grey')
-## create a bar plot, in position bar_left for no diff on top of cnv lower
-#plt.bar(bar_left, nodiff, width = bar_width, bottom = cnv_added , color = 'white')
-        
-        
-        
-        
-        ax1 = plt.subplot2grid((3,3), (0,0), colspan=3)
-        ax2 = plt.subplot2grid((3,3), (1,0), colspan=2)
-        ax3 = plt.subplot2grid((3,3), (1, 2), rowspan=2)
-        ax4 = plt.subplot2grid((3,3), (2, 0))
-        ax5 = plt.subplot2grid((3,3), (2, 1))
+        ax = plt.subplot2grid((3,2), (0,0))
+        # plot proportions of genes
+        ax.bar(Xscale, Data, width, color = colorscheme, edgecolor = 'black', linewidth = 1)
+    elif AxNum == 2:
+        ax = plt.subplot2grid((3,2), (0,0))
+        # plot proportion of genes on top of the other proportions 
+        ax.bar(Xscale, Data, width, color = colorscheme, edgecolor = 'black', linewidth = 1, bottom = FirstData)
+    elif AxNum == 3:
+        ax = plt.subplot2grid((3,2), (0,1))
+        # plot bar graphs comparing expression Means = Data[0], SEM = Data[1] 
+        ax.bar(Xscale, Data[0], width, colorscheme, yerr = Data[1], color = colorscheme, edgecolor = 'black', linewidth = 1,
+               error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
+    elif AxNum == 4:
+        # plot the % truncation 
+        ax = plt.subplot2grid((3,2), (1,0))
+        ax.bar(Xscale, Data, width, color = colorscheme, edgecolor = 'black', linewidth = 1)
+    elif AxNum == 5:
+        # plot the % truncation for chemo genes
+        ax = plt.subplot2grid((3,2), (2,0))
+        ax.bar(Xscale, Data, width, color = colorscheme, edgecolor = 'black', linewidth = 1)
+    elif AxNum == 6:
+        ax = plt.subplot2grid((3,2), (1,1), rowspan = 2)
+        ax.step(Data, np.linespace(0, 1, len(data), endpoint = False), linewidth = 1.2, color = colorscheme, alpha = 0.7)
+    elif AxNum == 7:
+        ax = plt.subplot2grid((3,2), (1,1), rowspan = 2)
+        ax.step(Data, np.linespace(0, 1, len(data), endpoint = False), linewidth = 1.2, color = colorscheme, alpha = 0.7)
+    elif AxNum == 8:
+        ax = plt.subplot2grid((3,2), (1,1), rowspan = 2)
+        ax.step(Data, np.linespace(0, 1, len(data), endpoint = False), linewidth = 1.2, color = colorscheme, alpha = 0.7)
+    elif AxNum == 9:
+        ax = plt.subplot2grid((3,2), (1,1), rowspan = 2)
+        ax.step(Data, np.linespace(0, 1, len(data), endpoint = False), linewidth = 1.2, color = colorscheme, alpha = 0.7)
 
-    
-    
-    
-    # create subplot in figure
-    # add a plot to figure (N row, N column, plot N)
-    ax = figure.add_subplot(Rows, Columns, Position)
-    ax.bar(Xscale, Data, width, color = 'black', edgecolor = 'black', linewidth = 1)
-    ax.set_title(Title, size = 10)
-    
-    if YLabel == True:
-        # set y axis label
-        ax.set_ylabel('Protein pairs', size = 7, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-    if XLabel == True:
-        # set x axis label
-        ax.set_xlabel('Protein distance', size = 7, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+        
+    # set Y label
+    ax.set_ylabel(YLabel, size = 10, ha = 'center', fontname = 'Arial')
+    # set x ticks
+    plt.xticks(XTicksPos, XTicklabels, fontsize = 10, fontname = 'Arial')
+    # set x axis label
+    if isXLabel == True:
+        ax.set_xlabel(XLabel, size = 10, ha = 'center', fontname = 'Arial')
 
     # do not show lines around figure, keep bottow line  
     ax.spines["top"].set_visible(False)    
+    ax.spines["bottom"].set_visible(True)    
     ax.spines["right"].set_visible(False)    
     ax.spines["left"].set_visible(False)      
-    
-    if BottomLine == True:
-        ax.spines["bottom"].set_visible(True)
-    else:
-        ax.spines["bottom"].set_visible(False)
-    
-        # add a light grey horizontal grid to the plot, semi-transparent, 
-    ax.yaxis.grid(True, linestyle=':', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
-    # hide these grids behind plot objects
-    ax.set_axisbelow(True)    
-        
-    if BottomLine == True:
-        # do not show ticks
-        plt.tick_params(
-            axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
-            which='both',      # both major and minor ticks are affected
-            bottom='on',      # ticks along the bottom edge are off
-            top='off',         # ticks along the top edge are off
-            right = 'off',
-            left = 'off',          
-            labelbottom='on', # labels along the bottom edge are on
-            colors = 'black',
-            labelsize = 7,
-            direction = 'out') # ticks are outside the frame when bottom = 'on'  
-    else:
-        # do not show ticks
-        plt.tick_params(
-            axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
-            which='both',      # both major and minor ticks are affected
-            bottom='off',      # ticks along the bottom edge are off
-            top='off',         # ticks along the top edge are off
-            right = 'off',
-            left = 'off',          
-            labelbottom='off', # labels along the bottom edge are on
-            colors = 'black',
-            labelsize = 7,
-            direction = 'out') # ticks are outside the frame when bottom = 'on'  
-
-    if XLabel == True:
-        # determine tick position on x axis
-        xpos =  [i /10  for i in range(11)]
-        Dist = ['0', '', '', '', '', '0.5', '', '', '', '', '1']
-        # set up tick positions and labels
-        plt.xticks(xpos, Dist, rotation = 0, fontsize = 7, ha = 'center', fontname = 'Helvetica')
-
-    if YLabel == True:
-        plt.yticks(fontsize = 8)
+    # offset the spines
+    for spine in ax.spines.values():
+        spine.set_position(('outward', 5))
   
+    # add a light grey horizontal grid to the plot, semi-transparent, 
+    ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
+    # hide these grids behind plot objects
+    ax.set_axisbelow(True)
+
+    # do not show ticks on 1st graph
+    ax.tick_params(
+        axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
+        which='both',      # both major and minor ticks are affected
+        bottom='on',      # ticks along the bottom edge are off
+        top='off',         # ticks along the top edge are off
+        right = 'off',
+        left = 'off',          
+        labelbottom='on', # labels along the bottom edge are off 
+        colors = 'black',
+        labelsize = 10,
+        direction = 'out') # ticks are outside the frame when bottom = 'on
+
+    # do not show ticks
+    ax.tick_params(
+        axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
+        which='both',      # both major and minor ticks are affected
+        bottom='off',      # ticks along the bottom edge are off
+        top='off',         # ticks along the top edge are off
+        right = 'off',
+        left = 'off',          
+        labelbottom='off', # labels along the bottom edge are off 
+        colors = 'black',
+        labelsize = 10,
+        direction = 'out') # ticks are outside the frame when bottom = 'on
+
+    for label in ax.get_yticklabels():
+        label.set_fontname('Arial')
+
+#    if Legend == True:
+#        # create legend
+#        chemoptc = mpatches.Patch(facecolor = '#de2d26' , edgecolor = 'grey', linewidth = 1, label= 'GPCR', alpha = 0.7)
+#        NCptc = mpatches.Patch(facecolor = '#3182bd', edgecolor = 'grey', linewidth = 1, label = 'NC', alpha = 0.7)
+#        plt.legend(handles=[chemoptc, NCptc], loc = 1, fontsize = 8, frameon = False)
+
+    # add margin on the x-axis
+    #plt.margins(0.05)
+
     return ax
 
 
 
-# set width of bar
-width = 0.1
 
-# plot positions chemo
-graph1 = ax.bar([i / 10 for i in range(10)], ChemoFreq, width, color = '#de2d26', edgecolor = '#de2d26', linewidth = 1, alpha = 0.7)
-# plot positions non-chemo
-graph2 = ax.bar([i / 10 for i in range(10)], NCFreq, width, color = '#3182bd', edgecolor = '#3182bd', linewidth = 1, alpha = 0.7)
 
-ax.set_ylabel('Proportion of genes with a PTC', size = 10, ha = 'center', fontname = 'Arial')
+# plot proportions of PTC
+PTCProp = [ChemoPTCProp, NCPTCProp]
+ax1 = FormatAx(0, [0.1, 0.3], ['GPCRs', 'NC'], [0, 0.2], [ChemoPTCProp, NCPTCProp], fig, 0.2, ['#de2d26', '#3182bd'],
+               '', 'Proportion of genes', isXLabel = False, Legend = False, FirstData = '', AnnotateP = False)
+print('plotted graph 1')
 
-# determine tick position on x axis
-xpos =  [i / 10 for i in range(10)] + [1]
-xtext = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-xtext = list(map(lambda x : str(x), xtext))
-# set up tick positions and labels
-plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+ax2 = FormatAx(1, [0.1, 0.3], ['GPCRs', 'NC'], [0, 0.2], [ChemoNonPTCProp, NCNonPTCProp], fig, 0.2, ['#fee0d2', '#deebf7'],
+               '', 'Proportion of genes', isXLabel = False, Legend = False, FirstData = PTCProp, AnnotateP = False)
+print('plotted graph 2')
 
-# set x axis label
-ax.set_xlabel('Decile of CDS length', size = 10, ha = 'center', fontname = 'Arial')
+# plot expression level
+# create a list of expression data
+expdata [[np.mean(ChemoPTCExp), np.mean(ChemoNonPTCExp), np.mean(NCPTCExp), np.mean(NCNonPTCExp)],
+         [np.std(ChemoPTCExp) / math.sqrt(len(ChemoPTCExp)), np.std(ChemoNonPTCExp) / math.sqrt(len(ChemoNonPTCExp)),
+          np.std(NCPTCExp) / math.sqrt(len(NCPTCExp)), np.std(NCNonPTCExp) / math.sqrt(len(NCNonPTCExp))]]
+ax3 = FormatAx(3, [0.2, 0.7], ['GPCRs', 'NC'], [0, 0.2, 0.5, 0.7], expdata, fig, 0.2, ['#de2d26', '#fee0d2', '#3182bd', '#deebf7'],
+               '', 'Expression level', isXLabel = False, Legend = False, FirstData = '', AnnotateP = False)
 
-# do not show lines around figure, keep bottow line  
-ax.spines["top"].set_visible(False)    
-ax.spines["bottom"].set_visible(True)    
-ax.spines["right"].set_visible(False)    
-ax.spines["left"].set_visible(False)      
-# offset the spines
-for spine in ax.spines.values():
-  spine.set_position(('outward', 5))
-  
-# add a light grey horizontal grid to the plot, semi-transparent, 
-ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
-# hide these grids behind plot objects
-ax.set_axisbelow(True)
+print('plotted graph 3')
 
-# do not show ticks on 1st graph
-ax.tick_params(
-    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
-    which='both',      # both major and minor ticks are affected
-    bottom='on',      # ticks along the bottom edge are off
-    top='off',         # ticks along the top edge are off
-    right = 'off',
-    left = 'off',          
-    labelbottom='on', # labels along the bottom edge are off 
-    colors = 'black',
-    labelsize = 10,
-    direction = 'out') # ticks are outside the frame when bottom = 'on
+# plot truncation for chemo genes
+ax4 = FormatAx(4, [i / 10 for i in range(10)] + [1], ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'], [i / 10 for i in range(10)], ChemoFreq, fig, 0.1, '#de2d26',
+               XLabel, YLabel, isXLabel = True, Legend = False, FirstData = '', AnnotateP = False)
 
-# do not show ticks
-ax.tick_params(
-    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
-    which='both',      # both major and minor ticks are affected
-    bottom='off',      # ticks along the bottom edge are off
-    top='off',         # ticks along the top edge are off
-    right = 'off',
-    left = 'off',          
-    labelbottom='off', # labels along the bottom edge are off 
-    colors = 'black',
-    labelsize = 10,
-    direction = 'out') # ticks are outside the frame when bottom = 'on
+print('plotted graph 4')
 
-for label in ax.get_yticklabels():
-    label.set_fontname('Arial')
+ax5 = FormatAx(5, [i / 10 for i in range(10)] + [1], ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'], [i / 10 for i in range(10)], NCFreq, fig, 0.1, '#3182bd',
+               'Decile of CDS length', 'Proportion of genes with a PTC', isXLabel = True, Legend = False, FirstData = '', AnnotateP = False)
 
-# create legend
-chemoptc = mpatches.Patch(facecolor = '#de2d26' , edgecolor = 'grey', linewidth = 1, label= 'GPCR', alpha = 0.7)
-NCptc = mpatches.Patch(facecolor = '#3182bd', edgecolor = 'grey', linewidth = 1, label = 'NC', alpha = 0.7)
-plt.legend(handles=[chemoptc, NCptc], loc = 1, fontsize = 8, frameon = False)
+print('plotted graph 5')
 
-# add margin on the x-axis
-plt.margins(0.05)
+# plot the CDS of PTC allele counts
+ax6 = FormatAx(6, [i / 10 for i in range(11)], ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'], [i / 10 for i in range(20)], ChemoPosFreq, fig, 0.1, '#de2d26',
+               'CDS length', 'Proportions of PTC alleles', isXLabel = True, Legend = False, FirstData = '', AnnotateP = False)
+
+print('plotted graph 6')
+
+
+ax7 = FormatAx(7, [i / 10 for i in range(11)], ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'], [i / 10 for i in range(20)], NCPosFreq, fig, 0.1, '#3182bd',
+               'CDS length', 'Proportions of PTC alleles', isXLabel = True, Legend = False, FirstData = '', AnnotateP = False)
+
+print('plotted graph 7')
+
+
+############ code below works
+#
+## set width of bar
+#width = 0.1
+#
+## plot positions chemo
+#graph1 = ax.bar([i / 10 for i in range(10)], ChemoFreq, width, color = '#de2d26', edgecolor = '#de2d26', linewidth = 1, alpha = 0.7)
+## plot positions non-chemo
+#graph2 = ax.bar([i / 10 for i in range(10)], NCFreq, width, color = '#3182bd', edgecolor = '#3182bd', linewidth = 1, alpha = 0.7)
+#
+#ax.set_ylabel('Proportion of genes with a PTC', size = 10, ha = 'center', fontname = 'Arial')
+#
+## determine tick position on x axis
+#xpos =  [i / 10 for i in range(10)] + [1]
+#xtext = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+#xtext = list(map(lambda x : str(x), xtext))
+## set up tick positions and labels
+#plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+#
+## set x axis label
+#ax.set_xlabel('Decile of CDS length', size = 10, ha = 'center', fontname = 'Arial')
+#
+## do not show lines around figure, keep bottow line  
+#ax.spines["top"].set_visible(False)    
+#ax.spines["bottom"].set_visible(True)    
+#ax.spines["right"].set_visible(False)    
+#ax.spines["left"].set_visible(False)      
+## offset the spines
+#for spine in ax.spines.values():
+#  spine.set_position(('outward', 5))
+#  
+## add a light grey horizontal grid to the plot, semi-transparent, 
+#ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
+## hide these grids behind plot objects
+#ax.set_axisbelow(True)
+#
+## do not show ticks on 1st graph
+#ax.tick_params(
+#    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
+#    which='both',      # both major and minor ticks are affected
+#    bottom='on',      # ticks along the bottom edge are off
+#    top='off',         # ticks along the top edge are off
+#    right = 'off',
+#    left = 'off',          
+#    labelbottom='on', # labels along the bottom edge are off 
+#    colors = 'black',
+#    labelsize = 10,
+#    direction = 'out') # ticks are outside the frame when bottom = 'on
+#
+## do not show ticks
+#ax.tick_params(
+#    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
+#    which='both',      # both major and minor ticks are affected
+#    bottom='off',      # ticks along the bottom edge are off
+#    top='off',         # ticks along the top edge are off
+#    right = 'off',
+#    left = 'off',          
+#    labelbottom='off', # labels along the bottom edge are off 
+#    colors = 'black',
+#    labelsize = 10,
+#    direction = 'out') # ticks are outside the frame when bottom = 'on
+#
+#for label in ax.get_yticklabels():
+#    label.set_fontname('Arial')
+#
+## create legend
+#chemoptc = mpatches.Patch(facecolor = '#de2d26' , edgecolor = 'grey', linewidth = 1, label= 'GPCR', alpha = 0.7)
+#NCptc = mpatches.Patch(facecolor = '#3182bd', edgecolor = 'grey', linewidth = 1, label = 'NC', alpha = 0.7)
+#plt.legend(handles=[chemoptc, NCptc], loc = 1, fontsize = 8, frameon = False)
+#
+## add margin on the x-axis
+#plt.margins(0.05)
+
+# make sure subplots do not overlap
+plt.tight_layout()
+
 
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
-
 
 
 
