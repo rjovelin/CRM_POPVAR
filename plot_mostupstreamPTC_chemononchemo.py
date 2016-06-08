@@ -298,13 +298,13 @@ ax5 = FormatAx(5, [i / 10 for i in range(10)] + [1], ['0', '10', '20', '30', '40
 print('plotted graph 5')
 
 # plot the CDS of PTC allele counts
-ax6 = FormatAx(6, [i / 10 for i in range(11)], ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'], [i / 10 for i in range(20)], ChemoPosFreq, fig, 0.1, '#de2d26',
+ax6 = FormatAx(6, [i / 10 for i in range(11)], ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'], [i / 100 for i in range(10)], ChemoPosFreq, fig, 0.1, '#de2d26',
                'CDS length', 'Proportions of PTC alleles', isXLabel = True, Legend = False, FirstData = '', AnnotateP = False)
 
 print('plotted graph 6')
 
 
-ax7 = FormatAx(7, [i / 10 for i in range(11)], ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'], [i / 10 for i in range(20)], NCPosFreq, fig, 0.1, '#3182bd',
+ax7 = FormatAx(7, [i / 10 for i in range(11)], ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'], [i / 100 for i in range(10)], NCPosFreq, fig, 0.1, '#3182bd',
                'CDS length', 'Proportions of PTC alleles', isXLabel = True, Legend = False, FirstData = '', AnnotateP = False)
 
 print('plotted graph 7')
