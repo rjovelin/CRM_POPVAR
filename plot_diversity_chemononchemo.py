@@ -220,5 +220,5 @@ ax.annotate("", xy=(1.1, 0.32), xycoords='data',
 ax.text(1.2, 0.35, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('ChemoNonChemoDiversity.pdf', bbox_inches = 'tight')
 
