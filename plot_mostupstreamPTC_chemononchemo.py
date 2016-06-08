@@ -185,7 +185,7 @@ def FormatAx(AxNum, XTicksPos, XTicklabels, Xscale, Data, figure, width, colorsc
     elif AxNum == 3:
         ax = plt.subplot2grid((3,2), (0,1))
         # plot bar graphs comparing expression Means = Data[0], SEM = Data[1] 
-        ax.bar(Xscale, Data[0], width, colorscheme, yerr = Data[1], color = colorscheme, edgecolor = 'black', linewidth = 1,
+        ax.bar(Xscale, Data[0], width, color = colorscheme, yerr = Data[1], edgecolor = 'black', linewidth = 1,
                error_kw=dict(elinewidth=1, ecolor='black', markeredgewidth = 1))
     elif AxNum == 4:
         # plot the % truncation 
@@ -195,19 +195,10 @@ def FormatAx(AxNum, XTicksPos, XTicklabels, Xscale, Data, figure, width, colorsc
         # plot the % truncation for chemo genes
         ax = plt.subplot2grid((3,2), (2,0))
         ax.bar(Xscale, Data, width, color = colorscheme, edgecolor = 'black', linewidth = 1)
-    elif AxNum == 6:
+    elif AxNum >= 6:
         ax = plt.subplot2grid((3,2), (1,1), rowspan = 2)
-        ax.step(Data, np.linespace(0, 1, len(data), endpoint = False), linewidth = 1.2, color = colorscheme, alpha = 0.7)
-    elif AxNum == 7:
-        ax = plt.subplot2grid((3,2), (1,1), rowspan = 2)
-        ax.step(Data, np.linespace(0, 1, len(data), endpoint = False), linewidth = 1.2, color = colorscheme, alpha = 0.7)
-    elif AxNum == 8:
-        ax = plt.subplot2grid((3,2), (1,1), rowspan = 2)
-        ax.step(Data, np.linespace(0, 1, len(data), endpoint = False), linewidth = 1.2, color = colorscheme, alpha = 0.7)
-    elif AxNum == 9:
-        ax = plt.subplot2grid((3,2), (1,1), rowspan = 2)
-        ax.step(Data, np.linespace(0, 1, len(data), endpoint = False), linewidth = 1.2, color = colorscheme, alpha = 0.7)
-
+        ax.step(Data, np.linspace(0, 1, len(Data), endpoint = False), linewidth = 1.2, color = colorscheme, alpha = 0.7)
+    
         
     # set Y label
     ax.set_ylabel(YLabel, size = 10, ha = 'center', fontname = 'Arial')
@@ -277,19 +268,19 @@ def FormatAx(AxNum, XTicksPos, XTicklabels, Xscale, Data, figure, width, colorsc
 
 # plot proportions of PTC
 PTCProp = [ChemoPTCProp, NCPTCProp]
-ax1 = FormatAx(0, [0.1, 0.3], ['GPCRs', 'NC'], [0, 0.2], [ChemoPTCProp, NCPTCProp], fig, 0.2, ['#de2d26', '#3182bd'],
+ax1 = FormatAx(1, [0.1, 0.3], ['GPCRs', 'NC'], [0, 0.2], [ChemoPTCProp, NCPTCProp], fig, 0.2, ['#de2d26', '#3182bd'],
                '', 'Proportion of genes', isXLabel = False, Legend = False, FirstData = '', AnnotateP = False)
 print('plotted graph 1')
 
-ax2 = FormatAx(1, [0.1, 0.3], ['GPCRs', 'NC'], [0, 0.2], [ChemoNonPTCProp, NCNonPTCProp], fig, 0.2, ['#fee0d2', '#deebf7'],
+ax2 = FormatAx(2, [0.1, 0.3], ['GPCRs', 'NC'], [0, 0.2], [ChemoNonPTCProp, NCNonPTCProp], fig, 0.2, ['#fee0d2', '#deebf7'],
                '', 'Proportion of genes', isXLabel = False, Legend = False, FirstData = PTCProp, AnnotateP = False)
 print('plotted graph 2')
 
 # plot expression level
 # create a list of expression data
-expdata [[np.mean(ChemoPTCExp), np.mean(ChemoNonPTCExp), np.mean(NCPTCExp), np.mean(NCNonPTCExp)],
-         [np.std(ChemoPTCExp) / math.sqrt(len(ChemoPTCExp)), np.std(ChemoNonPTCExp) / math.sqrt(len(ChemoNonPTCExp)),
-          np.std(NCPTCExp) / math.sqrt(len(NCPTCExp)), np.std(NCNonPTCExp) / math.sqrt(len(NCNonPTCExp))]]
+expdata = [[np.mean(ChemoPTCExp), np.mean(ChemoNonPTCExp), np.mean(NCPTCExp), np.mean(NCNonPTCExp)],
+          [np.std(ChemoPTCExp) / math.sqrt(len(ChemoPTCExp)), np.std(ChemoNonPTCExp) / math.sqrt(len(ChemoNonPTCExp)),
+           np.std(NCPTCExp) / math.sqrt(len(NCPTCExp)), np.std(NCNonPTCExp) / math.sqrt(len(NCNonPTCExp))]]
 ax3 = FormatAx(3, [0.2, 0.7], ['GPCRs', 'NC'], [0, 0.2, 0.5, 0.7], expdata, fig, 0.2, ['#de2d26', '#fee0d2', '#3182bd', '#deebf7'],
                '', 'Expression level', isXLabel = False, Legend = False, FirstData = '', AnnotateP = False)
 
@@ -297,7 +288,7 @@ print('plotted graph 3')
 
 # plot truncation for chemo genes
 ax4 = FormatAx(4, [i / 10 for i in range(10)] + [1], ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'], [i / 10 for i in range(10)], ChemoFreq, fig, 0.1, '#de2d26',
-               XLabel, YLabel, isXLabel = True, Legend = False, FirstData = '', AnnotateP = False)
+               'Decile of CDS length', 'Proportion of genes with a PTC', isXLabel = True, Legend = False, FirstData = '', AnnotateP = False)
 
 print('plotted graph 4')
 
