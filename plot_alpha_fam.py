@@ -47,8 +47,6 @@ for family in Families:
             to_remove.append(gene)
     for gene in to_remove:
         Families[family].remove(gene)
-print('removed non genes in chemo families')
-
 
 # count divergence and polymorphisms in Ontario strains
 # eliminate singleton polymorphisms
