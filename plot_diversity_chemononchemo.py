@@ -63,7 +63,7 @@ for gene in nonchemo_syn:
 print('done computing theta at synonymous sites')
 print('Sites\tmean\tmin\tmax')
 print(' chemo SYN', np.mean(chemoSyn), min(chemoSyn), max(chemoSyn))
-print('non-chemo SYN', np.mean(nonchemoSyn), min(nonchemoSyn), max(nonchemoSyn))
+print('non-chemo SYN', np.mean(NCSyn), min(NCSyn), max(NCSyn))
 
 
 # compute theta at nonsynonymous sites
@@ -74,7 +74,7 @@ for gene in chemo_rep:
     chemoRep.append(chemo_rep[gene])
 
 # compute theta at nonsynonymous sites
-nonchemo_rep = compute_theta_diversity('../Genome_Files/CDS_SNP_DIVERG.txt', nonGPCRs, 'REP', 10)
+nonchemo_rep = compute_theta_diversity('../Genome_Files/CDS_SNP_DIVERG.txt', NonGPCRs, 'REP', 10)
 # make a list of theta values
 NCRep = []
 for gene in nonchemo_rep:
@@ -95,15 +95,6 @@ for gene in nonchemo_rep:
     if gene in nonchemo_syn and nonchemo_syn[gene] != 0:
         NCRatio.append(nonchemo_rep[gene] / nonchemo_syn[gene])
         
-
-a = [chemoRep, NCRep, chemoSyn, NCSyn, chemoRatio, NCRatio]
-b = ['rep-Chemo', 'rep-NC', 'syn-Chemo', 'syn-NC', 'ratio-Chemo', 'ratio-NC']
-for i in range(len(a)):
-    print('N', b[i], len(a[i]))
-print('\n')
-for i in range(len(a)):
-    print('max', b[i], max(a[i]))
-
 # compare divergence for chemo and non-chemo using wilcoxon sum rank tests
 P_rep = stats.ranksums(chemoRep, NCRep)[1]
 P_syn = stats.ranksums(chemoSyn, NCSyn)[1]
@@ -131,10 +122,11 @@ fig = plt.figure(1, figsize = (3, 2))
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)  
 
+
 # set width of bar
 width = 0.2
 # set colors
-colorscheme = ['#2ca25f', '#99d8c9','#2ca25f', '#99d8c9', '#2ca25f', '#99d8c9']
+colorscheme = ['#8856a7', '#9ebcda','#8856a7', '#9ebcda', '#8856a7', '#9ebcda']
 
 # plot nucleotide divergence
 ax.bar([0, 0.2, 0.5, 0.7, 1, 1.2], Means, width, yerr = SEM, color = colorscheme, 
@@ -144,16 +136,16 @@ ax.bar([0, 0.2, 0.5, 0.7, 1, 1.2], Means, width, yerr = SEM, color = colorscheme
 ax.set_ylabel('Nucleotide divergence', size = 10, ha = 'center', fontname = 'Arial')
 
 # set y limits
-#plt.ylim([0, 0.31])
+plt.ylim([0, 0.36])
 
 # determine tick position on x axis
 xpos =  [0.2, 0.7, 1.2]
-xtext = [chr(952) +"$_rep$", chr(952) +"$_syn$", chr(952) +"$_syn$" + '/' + chr(952) +"$_syn$"]
+xtext = ['$' + chr(952) +'_{rep}$', '$' + chr(952) + '_{syn}$', '$' + chr(952) + '_{syn}$' + '/' + '$' + chr(952) + '_{syn}$']
 # set up tick positions and labels
-plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
-
+#plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
+plt.xticks(xpos, xtext, fontsize = 10)
 # set x axis label
-ax.set_xlabel('Sites in coding sequences', size = 10, ha = 'center', fontname = 'Arial')
+#ax.set_xlabel('Sites in coding sequences', size = 10, ha = 'center', fontname = 'Arial')
 
 # do not show lines around figure, keep bottow line  
 ax.spines["top"].set_visible(False)    
@@ -201,9 +193,10 @@ for label in ax.get_yticklabels():
 # add margin on the x-axis
 plt.margins(0.05)
 
+
 # create legend
-ChemoGene = mpatches.Patch(facecolor = '#2ca25f' , edgecolor = 'black', linewidth = 1, label= 'GPCR')
-NCGene = mpatches.Patch(facecolor = '#99d8c9', edgecolor = 'black', linewidth = 1, label = 'NC')
+ChemoGene = mpatches.Patch(facecolor = '#8856a7' , edgecolor = 'black', linewidth = 1, label= 'GPCR')
+NCGene = mpatches.Patch(facecolor = '#9ebcda', edgecolor = 'black', linewidth = 1, label = 'NC')
 plt.legend(handles=[ChemoGene, NCGene], loc = 2, fontsize = 8, frameon = False)
 
 # I already determined that all site categories are significantly different
@@ -213,25 +206,18 @@ P = '***'
 
 # annotate figure to add significance
 # add bracket
-ax.annotate("", xy=(0.1, 0.08), xycoords='data',
-            xytext=(0.3, 0.08), textcoords='data',
+ax.annotate("", xy=(0.6, 0.08), xycoords='data',
+            xytext=(0.8, 0.08), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(0.2, 0.10, P, horizontalalignment='center',
+ax.text(0.7, 0.10, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
-ax.annotate("", xy=(0.6, 0.27), xycoords='data',
-            xytext=(0.8, 0.27), textcoords='data',
+ax.annotate("", xy=(1.1, 0.32), xycoords='data',
+            xytext=(1.3, 0.32), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(0.7, 0.29, P, horizontalalignment='center',
-        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
-
-ax.annotate("", xy=(1.1, 0.23), xycoords='data',
-            xytext=(1.3, 0.23), textcoords='data',
-            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
-# add stars for significance
-ax.text(1.2, 0.25, P, horizontalalignment='center',
+ax.text(1.2, 0.35, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
