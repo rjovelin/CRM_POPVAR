@@ -136,7 +136,7 @@ Names.reverse()
 # create parallel lists of means, SEN amd family names, sorted accoring to mean values
 Alpha, FamNames = [], []
 for i in range(len(Names)):
-    Alpa.append(Names[i][0])
+    Alpha.append(Names[i][0])
     FamNames.append(Names[i][1])
 print('created alpha and family names sorted according to alpha')
 
