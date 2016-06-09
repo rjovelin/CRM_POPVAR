@@ -122,6 +122,12 @@ for i in range(len(NCUpstream)):
 ChemoHist = np.histogram(ChemoUpstream, range(0, 110, 10))
 NCHist = np.histogram(NCUpstream, range(0, 110, 10))
 
+print(ChemoHist[0])
+print(ChemoHist[1])
+
+
+
+
 # transform the gene counts to proportions
 ChemoFreq = [i / sum(ChemoHist[0]) for i in ChemoHist[0]]
 NCFreq = [i / sum(NCHist[0]) for i in NCHist[0]]
@@ -152,25 +158,34 @@ NCAllPTCPos = []
 for gene in NCPTCPos:
     NCAllPTCPos.extend(NCPTCPos[gene])
 
-# express relative position in % of the CDS length
-for i in range(len(ChemoAllPTCPos)):
-    ChemoAllPTCPos[i] = ChemoAllPTCPos[i] * 100
-for i in range(len(NCAllPTCPos)):
-    NCAllPTCPos[i] = NCAllPTCPos[i] * 100
+## express relative position in % of the CDS length
+#for i in range(len(ChemoAllPTCPos)):
+#    ChemoAllPTCPos[i] = ChemoAllPTCPos[i] * 100
+#for i in range(len(NCAllPTCPos)):
+#    NCAllPTCPos[i] = NCAllPTCPos[i] * 100
 
-# make a histogram
-ChemoPosHist = np.histogram(ChemoAllPTCPos, range(0, 105, 5))
-NCPosHist = np.histogram(NCAllPTCPos, range(0, 105, 5))
+## make a histogram
+#ChemoPosHist = np.histogram(ChemoAllPTCPos, range(0, 110, 10))
+#NCPosHist = np.histogram(NCAllPTCPos, range(0, 110, 10))
 
-# transform the gene counts to proportions
-ChemoPosFreq = [i / sum(ChemoPosHist[0]) for i in ChemoPosHist[0]]
-NCPosFreq = [i / sum(NCPosHist[0]) for i in NCPosHist[0]]
-# sort values
-ChemoPosFreq.sort()
-NCPosFreq.sort()
-print('values are sorted')
-print(len(NCPosFreq))
-print(NCPosFreq)
+#print(ChemoPosHist[0])
+#print(ChemoPosHist[1])
+#
+#
+## transform the gene counts to proportions
+#ChemoPosFreq = [i / sum(ChemoPosHist[0]) for i in ChemoPosHist[0]]
+#NCPosFreq = [i / sum(NCPosHist[0]) for i in NCPosHist[0]]
+## sort values
+#ChemoPosFreq.sort()
+#NCPosFreq.sort()
+#print('values are sorted')
+#print(len(NCPosFreq))
+#print(NCPosFreq)
+
+
+ChemoAllPTCPos.sort()
+NCAllPTCPos.sort()
+
 
 
 # create figure
@@ -308,7 +323,7 @@ ax4 = FormatAx(4, [i / 10 for i in range(11)], ['0', '', '20', '', '40', '', '60
 print('plotted graph 4')
 
 # plot the CDS of PTC allele counts
-cdfdata = [ChemoPosFreq, NCPosFreq]
+cdfdata = [ChemoAllPTCPos, NCAllPTCPos]
 colorscheme = ['#de2d26', '#3182bd'] 
 
 print(len(cdfdata[0]))
@@ -316,7 +331,7 @@ print(len(cdfdata[1]))
 print(len([i / 100 for i in range(11)]))
 print(len(['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100']))
 
-ax5 = FormatAx(5, [i / 100 for i in range(11)], ['0', '', '20', '', '40', '', '60', '', '80', '', '100'], [i / 1000 for i in range(0, 100, 5)], cdfdata, fig, 0.1, colorscheme,
+ax5 = FormatAx(5, [i / 10 for i in range(11)], ['0', '', '20', '', '40', '', '60', '', '80', '', '100'], 'Not_needed', cdfdata, fig, 0.1, colorscheme,
                'CDS length', 'Proportions of PTC alleles', isXLabel = True, Legend = False, AnnotateP = False)
 print('plotted graph 5')
 
