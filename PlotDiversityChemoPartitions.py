@@ -26,9 +26,8 @@ import os
 from chemoreceptors import *
 from manipulate_sequences import *
 from diversity_chemo_partitions import *
-
 from genomic_coordinates import *
-
+from divergence import *
 
 # set up minimum number of sites in partition
 MinimumSites = 30
@@ -65,18 +64,18 @@ for gene in GPCRs:
                 proba_domain[gene][key] = val
 print('extracted proba for chemo domains')
 
+
+
 # count SNPs, degenerate sites for partitions for nonsynonymous sites
-TM_rep, EX_rep = count_SNPs_degenerate_sites_chemo_paritions('../Genome_Files/CDS_SNP_DIVERG.txt', proba_domain, 'REP', 0.95)
+TM_rep, TMrepsample, EX_rep, EXrepsample = count_SNPs_degenerate_sites_chemo_paritions('../Genome_Files/CDS_SNP_DIVERG.txt', proba_domain, 'REP',10, 0.95)
 # compute theta at replacement sites for partitions
-# accept a minimum of 15 sites
-TM_theta_rep, EX_theta_rep = compute_theta_chemo_partitions(TM_rep, EX_rep, 'REP', MinimumSites)
+TM_theta_rep, EX_theta_rep = compute_theta_chemo_partitions(TM_rep, TMrepsample, EX_rep, EXrepsample, 'REP', transcripts, MinimumSites)
 print('computed theta for replacement sites')
 
 # count SNPs, degenerate sites for partitions for synonymous sites
-TM_syn, EX_syn = count_SNPs_degenerate_sites_chemo_paritions('../Genome_Files/CDS_SNP_DIVERG.txt', proba_domain, 'SYN', 0.95)
+TM_syn, TMsynsample, EX_syn, EXsynsample = count_SNPs_degenerate_sites_chemo_paritions('../Genome_Files/CDS_SNP_DIVERG.txt', proba_domain, 'SYN',10, 0.95)
 # compute theta at synonymous sites for partitions
-# accept a minum of 15 sites
-TM_theta_syn, EX_theta_syn = compute_theta_chemo_partitions(TM_syn, EX_syn, 'SYN', MinimumSites)
+TM_theta_syn, EX_theta_syn = compute_theta_chemo_partitions(TM_syn, TMsynsample, EX_syn, EXsynsample, 'SYN', transcripts, MinimumSites)
 print('computed theta for synonymous sites')
 
 # create lists for theta in different partitions keeping the same gene between lists
