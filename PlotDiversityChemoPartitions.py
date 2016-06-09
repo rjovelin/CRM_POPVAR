@@ -171,12 +171,11 @@ plt.ylim([0, 0.20])
 
 # determine tick position on x axis
 xpos =  [0.2, 0.7, 1.2]
-xtext = ['Rep.', 'Syn', 'Rep. / Syn.']
+# use greek letters and subscripts
+xtext = ['$' + chr(952) +'_{rep}$', '$' + chr(952) + '_{syn}$', '$' + chr(952) + '_{syn}$' + '/' + '$' + chr(952) + '_{syn}$']
+
 # set up tick positions and labels
 plt.xticks(xpos, xtext, fontsize = 10, fontname = 'Arial')
-
-# set x axis label
-ax.set_xlabel('Sites in coding sequences', size = 10, ha = 'center', fontname = 'Arial')
 
 # do not show lines around figure, keep bottow line  
 ax.spines["top"].set_visible(False)    
@@ -236,25 +235,18 @@ P = '***'
 
 # annotate figure to add significance
 # add bracket
-ax.annotate("", xy=(0.1, 0.025), xycoords='data',
-            xytext=(0.3, 0.025), textcoords='data',
+ax.annotate("", xy=(0.1, 0.02), xycoords='data',
+            xytext=(0.3, 0.02), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(0.2, 0.035, P, horizontalalignment='center',
+ax.text(0.2, 0.03, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
-ax.annotate("", xy=(0.6, 0.06), xycoords='data',
-            xytext=(0.8, 0.06), textcoords='data',
+ax.annotate("", xy=(1.1, 0.19), xycoords='data',
+            xytext=(1.3, 0.19), textcoords='data',
             arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
 # add stars for significance
-ax.text(0.7, 0.075, P, horizontalalignment='center',
-        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
-
-ax.annotate("", xy=(1.1, 0.18), xycoords='data',
-            xytext=(1.3, 0.18), textcoords='data',
-            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
-# add stars for significance
-ax.text(1.2, 0.195, P, horizontalalignment='center',
+ax.text(1.2, 0.20, P, horizontalalignment='center',
         verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
 
 fig.savefig('DiversityChemoPartitions.pdf', bbox_inches = 'tight')
