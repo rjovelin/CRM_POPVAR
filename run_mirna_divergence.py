@@ -5,6 +5,10 @@ Created on Thu Jun 23 16:29:59 2016
 @author: RJovelin
 """
 
+
+from manipulate_sequences import *
+from divergence import *
+
 # use this script to compute divergence between remanei and latens miRNAs
 
 
@@ -33,13 +37,185 @@ print('non-matching', nonmatching)
 print('proportion', nonmatching / total * 100)
 
 
-
-
 # remove any miRNAs with multiple hits
+
+# make a dict for cla to crm blast
+ClaToCrm = {}
+# make a dict for crm to cla blast
+CrmToCla = {}
+
+infile = open('../Genome_Files/ClaCrmCla_miRNABestBlast.txt')
+total = 0
+nonmatching = 0
+for line in infile:
+    if line.rstrip() != '':
+        line = line.rstrip().split('\t')
+        # populate dict
+        if line[0] in ClaToCrm:
+            ClaToCrm[line[0]].append(line[1])
+        else:
+            ClaToCrm[line[0]] = [line[1]]
+            
+        if line[12] in CrmToCla:
+            CrmToCla[line[12]].append(line[13])
+        else:
+            CrmToCla[line[12]] = [line[13]]
+
+# count cla and crm mirnas with more than 1 hist
+clamore, crmmore = 0, 0
+for mirna in ClaToCrm:
+    if len(ClaToCrm[mirna]) > 1:
+        clamore += 1
+        
+for mirna in CrmToCla:
+    if len(CrmToCla[mirna]) > 1:
+        crmmore += 1
+                
+print('crmmore', crmmore)
+print('clamore', clamore)
+
+# make a set of keys to remove
+to_delete = set()
+removed_cla, removed_crm = 0, 0
+for mirna in ClaToCrm:
+    if len(ClaToCrm[mirna]) > 1:
+        # add cla key to set of keys to remove
+        to_delete.add(mirna)
+        # also delete the remanei keys from the crm to cla dict
+        for i in ClaToCrm[mirna]:
+            to_delete.add(i)
+for mirna in CrmToCla:
+    if len(CrmToCla[mirna]) > 1:
+        # add crm key to set of keys to delete
+        to_delete.add(mirna)
+        # also delete the latens mirnas
+        for i in CrmToCla[mirna]:
+            to_delete.add(i)
+        
+for mirna in to_delete:
+    if mirna in ClaToCrm:
+        del ClaToCrm[mirna]
+        removed_cla += 1
+    if mirna in CrmToCla:
+        del CrmToCla[mirna]
+        removed_crm += 1
+
+print('removed from cla', removed_cla)
+print('removed from crm', removed_crm)
+print('crm', len(CrmToCla))
+print('cla', len(ClaToCrm))
+
 
 # make a dict of remanei : latens pairs
 
+# make sets of keys and vals for each dicts
+crmkeys, crmvals, clakeys, clavals = set(), set(), set(), set()
+
+for i in CrmToCla:
+    crmkeys.add(i)
+    assert len(CrmToCla[i]) == 1, 'crm should have a single cla match'
+    crmvals.add(CrmToCla[i][0])
+for i in ClaToCrm:
+    clakeys.add(i)
+    assert len(ClaToCrm[i]) == 1, 'cla should have a single crm match'
+    clavals.add(ClaToCrm[i][0])
+
+# compare sets
+assert crmkeys == clavals, 'crm keys different than cla vals'
+assert clakeys == crmvals, 'cla keys than crm vals'
+
+# keys of crm to cla are vals of cla to crm, so can use either dict as final dict of remanei latens pairs
+
+
+# convert 
+ClaGenome = convert_fasta('../Genome_Files/noamb_534_v1.txt')
+
 # get latens coordinates
+infile = open('latens_coords.txt')
+infile.readline()
+# make a dict {name: [hairpin, LG, start]}
+clacoords = {}
+for line in infile:
+    if line.rstrip() != '':
+        line = line.rstrip().split('\t')
+        # only consider mirnas with hairpins and coordinate/arm information
+        if len(line) == 8 and line[3] != '':
+            clacoords[line[0]] = [line[1], line[2], int(line[3])-1]
+infile.close()        
+
+# check how many mirnas cannot be found in the genome
+missing = 0
+for mirna in clacoords:
+    if clacoords[mirna][0].upper() not in ClaGenome[clacoords[mirna][1]]:
+        if reverse_complement(clacoords[mirna][0].upper()) not in ClaGenome[clacoords[mirna][1]]:
+            missing += 1
+
+print('missing', missing)
+print('total', len(clacoords))
+
+
+# create a dict with hairpin and sequences (+ and rev complement) extracted from genome
+# {name :[hairpin, seq, reverse_complement]}
+sequences = {}
+
+infile = open('latens_coords.txt')
+infile.readline()
+for line in infile:
+    if line.rstrip() != '':
+        line = line.rstrip().split('\t')
+        # only consider mirnas with hairpins and coordinate/arm information
+        if len(line) == 8 and line[3] != '':
+            
+ 
+################## edit below
+
+
+
+
+
+#    for mir in mirnas:
+#        # get hairpin
+#        hairpin = mirnas[mir][0]
+#        # get chromo
+#        chromo = mirnas[mir][1]
+#        # get start and end positions 0-based
+#        start = int(mirnas[mir][2]) - 1
+#        end = start + len(hairpin)
+#        # extract forward sequence
+#        seq = genome[chromo][start: end]
+#        # extract reverse complement
+#        revseq = reverse_complement(seq)
+#        sequences[mir] = [hairpin, seq, revseq]
+#    
+#    # create a dict to store differences between hairpin and extracted sequences
+#    # {name :[diff_seq, diff_revseq]}
+#    differences = {}
+#    for i in mirnas:
+#        diff1 = match_diff(sequences[i][0], sequences[i][1])
+#        diff2 = match_diff(sequences[i][0], sequences[i][2])
+#        differences[i] = [diff1, diff2]
+#
+#    # create lists of mirna names for divergent and related sequences 
+#    divergent, close, nodiff = [], [], []
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # change names and match names according to the remanei diversity table
@@ -62,56 +238,6 @@ print('proportion', nonmatching / total * 100)
 
 #################################
 
-
-#
-## -*- coding: utf-8 -*-
-#"""
-#Created on Sat May  7 22:16:13 2016
-#@author: Richard
-#"""
-#
-#from manipulate_sequences import *
-#from divergence import *
-#import os
-#import sys
-#
-## use this script to find the coordinates of the remanei mirnas in PX356 assembly
-## options:
-## [found/search]: add final coordinates if sequences are found, or edit sequences if search
-#step = sys.argv[1]
-#
-## add family conservation to mirnas
-## get the seeds of distant caeno species
-#caenoSeeds = set()
-#infile = open('CBR_seeds.txt')
-#for line in infile:
-#    line = line.rstrip()
-#    if line != '':
-#        caenoSeeds.add(line)
-#infile.close()
-#infile = open('CEL_seeds.txt')
-#for line in infile:
-#    line = line.rstrip()
-#    if line != '':
-#        caenoSeeds.add(line)
-#infile.close()
-#infile = open('CBN_seeds.txt')
-#for line in infile:
-#    line = line.rstrip()
-#    if line != '':
-#        caenoSeeds.add(line)
-#infile.close()
-#
-## get seeds in latens
-#latensSeeds = set()
-#infile = open('CLA_seeds.txt')
-#for line in infile:
-#    line = line.rstrip()
-#    if line != '':
-#        latensSeeds.add(line)
-#infile.close()
-#
-#
 #if step == 'search':
 #    # create a dict to store information about mirna {name :[list of info]}
 #    mirnas = {}
