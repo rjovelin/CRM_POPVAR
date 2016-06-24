@@ -165,38 +165,100 @@ for line in infile:
         line = line.rstrip().split('\t')
         # only consider mirnas with hairpins and coordinate/arm information
         if len(line) == 8 and line[3] != '':
-            
- 
-################## edit below
+            # get mirna name
+            mirna = line[0]
+            # get hairpin
+            hairpin = line[1].upper()
+            # get chromo
+            chromo = line[2]
+            # get hairpin start position
+            start = int(line[3]) -1
+            # get end position
+            end = start + len(hairpin)
+            # extract forward sequence
+            seq = ClaGenome[chromo][start: end].upper()
+            # get reverse sequence
+            revseq = reverse_complement(seq)
+            sequences[mirna] = [hairpin, seq, revseq]
+infile.close()            
 
 
+   
+# create a dict to store differences between hairpin and extracted sequences
+# {name :[diff_seq, diff_revseq]}
+Differences = {}
+for i in sequences:
+    diff1 = match_diff(sequences[i][0], sequences[i][1])
+    diff2 = match_diff(sequences[i][0], sequences[i][2])
+    Differences[i] = [diff1, diff2]
+
+# create lists of mirna names for divergent and related sequences 
+divergent, close, nodiff = [], [], []
 
 
+a = [i for i in ClaToCrm]
+for i in range(len(a)):
+    if '5p' in a[i]:
+        a[i] = a[i].replace('-5p', '')
+    elif '3p' in a[i]:
+        a[i] = a[i].replace('-3p', '')
+    # replace mir
+    a[i] = a[i].lower()
+    if 'new' in a[i]:
+        a[i] = a[i]. replace('new', 'mir')
 
-#    for mir in mirnas:
-#        # get hairpin
-#        hairpin = mirnas[mir][0]
-#        # get chromo
-#        chromo = mirnas[mir][1]
-#        # get start and end positions 0-based
-#        start = int(mirnas[mir][2]) - 1
-#        end = start + len(hairpin)
-#        # extract forward sequence
-#        seq = genome[chromo][start: end]
-#        # extract reverse complement
-#        revseq = reverse_complement(seq)
-#        sequences[mir] = [hairpin, seq, revseq]
-#    
-#    # create a dict to store differences between hairpin and extracted sequences
-#    # {name :[diff_seq, diff_revseq]}
-#    differences = {}
-#    for i in mirnas:
-#        diff1 = match_diff(sequences[i][0], sequences[i][1])
-#        diff2 = match_diff(sequences[i][0], sequences[i][2])
-#        differences[i] = [diff1, diff2]
-#
-#    # create lists of mirna names for divergent and related sequences 
-#    divergent, close, nodiff = [], [], []
+print('a', len(a))
+a = set(a)
+print('a', len(a))        
+        
+        
+differences = {}
+for mir in Differences:
+    mirna = mir.lower()
+    if 'new' in mirna:
+        mirna = mirna.replace('new', 'mir')
+    differences[mirna] = list(Differences[mir])
+
+
+# loop over differences 
+for mir in differences:
+    if mir in a:
+        # check if differences are large or low
+        # get mirna orientation
+        if differences[mir][0] <= 3:
+            strand = '+'
+            assert differences[mir][1] > 3, 'differences are not strand biased'
+            if differences[mir][0] > 0:
+                close.append(mir)
+            elif differences[mir][0] == 0:
+                nodiff.append(mir)
+        elif differences[mir][1] <= 3:
+            strand = '-'
+            assert differences[mir][0] > 3, 'differences are not strand biased'
+            if differences[mir][1] > 0:
+                close.append(mir)
+            elif differences[mir][1] == 0:
+                nodiff.append(mir)
+        elif differences[mir][0] > 3 and differences[mir][1] > 3:
+            strand = 'NA'
+            divergent.append(mir)
+
+
+for mir in divergent:
+    print(mir)
+    print(sequences[mir][0])
+    print(sequences[mir][1])
+    print(sequences[mir][2])
+    print('*****')
+        
+
+
+print('nodiff', len(nodiff))
+print('close', len(close))
+print('divergent', len(divergent))
+print('total', len(nodiff) + len(divergent) + len(close))
+
+
 
 
 
@@ -238,72 +300,6 @@ for line in infile:
 
 #################################
 
-#if step == 'search':
-#    # create a dict to store information about mirna {name :[list of info]}
-#    mirnas = {}
-#    infile = open('CRM_miRNAs_Coords_rj.txt')
-#    header = infile.readline().rstrip().split('\t')
-#    for line in infile:
-#        if line.rstrip() != '':
-#            line = line.rstrip().split('\t')
-#            mirnas[line[0]] = line[1:]
-#    infile.close()
-#
-#    # make sure strings are upper caps
-#    for i in mirnas:
-#        mirnas[i][0] = mirnas[i][0].upper()
-#        mirnas[i][3] = mirnas[i][3].upper()
-#        mirnas[i][4] = mirnas[i][4].upper()
-#    
-#    # check family conservation
-#    for mir in mirnas:
-#        # get the seed sequence
-#        seed = mirnas[mir][4]
-#        if seed in caenoSeeds:
-#            conservation = 'Caeno'
-#        if seed not in caenoSeeds and seed in latensSeeds:
-#            conservation = 'CrmCla'
-#        if seed not in caenoSeeds and seed not in latensSeeds:
-#            conservation = 'Crm'
-#        # add conservation as varaible to list
-#        mirnas[mir].append(conservation)
-#
-#    # add fields to header
-#    header.append('family_conservation')
-#    header.append('strand')
-#
-#    # create a list of mirna names
-#    names = [i for i in mirnas]
-#    names.sort()
-#
-#    # convert genome sequence to dict
-#    genome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
-#
-#    # create a dict with hairpin and sequences (+ and rev complement) extracted from genome
-#    # {name :[hairpin, seq, reverse_complement]}
-#    sequences = {}
-#    for mir in mirnas:
-#        # get hairpin
-#        hairpin = mirnas[mir][0]
-#        # get chromo
-#        chromo = mirnas[mir][1]
-#        # get start and end positions 0-based
-#        start = int(mirnas[mir][2]) - 1
-#        end = start + len(hairpin)
-#        # extract forward sequence
-#        seq = genome[chromo][start: end]
-#        # extract reverse complement
-#        revseq = reverse_complement(seq)
-#        sequences[mir] = [hairpin, seq, revseq]
-#    
-#    # create a dict to store differences between hairpin and extracted sequences
-#    # {name :[diff_seq, diff_revseq]}
-#    differences = {}
-#    for i in mirnas:
-#        diff1 = match_diff(sequences[i][0], sequences[i][1])
-#        diff2 = match_diff(sequences[i][0], sequences[i][2])
-#        differences[i] = [diff1, diff2]
-#
 #    # create lists of mirna names for divergent and related sequences 
 #    divergent, close, nodiff = [], [], []
 #
