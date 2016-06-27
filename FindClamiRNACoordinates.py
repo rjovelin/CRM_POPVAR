@@ -249,7 +249,7 @@ infile.close()
 # check if mirnas sequences need to be edited
 if step == 'search':
     # create lists of mirna names for divergent and related sequences 
-    divergent, close, nodiff = [], [], []
+    divergent, nodiff = [], []
         
     # create a folder with fasta files to edit
     try:
@@ -264,51 +264,27 @@ if step == 'search':
         if mir in claorthos:
             # check if differences are large or low
             # get mirna orientation
-            if differences[mir][0] <= 3:
+            if differences[mir][0] == 0:
                 strand = '+'
-                assert differences[mir][1] > 3, 'differences are not strand biased'
-                if differences[mir][0] > 0:
-                    close.append(mir)
-                elif differences[mir][0] == 0:
-                    nodiff.append(mir)
-            elif differences[mir][1] <= 3:
+                assert differences[mir][1] != 0, 'differences are not strand biased'
+                nodiff.append(mir)
+            elif differences[mir][1] == 0:
                 strand = '-'
-                assert differences[mir][0] > 3, 'differences are not strand biased'
-                if differences[mir][1] > 0:
-                    close.append(mir)
-                elif differences[mir][1] == 0:
-                    nodiff.append(mir)
-            elif differences[mir][0] > 3 and differences[mir][1] > 3:
+                assert differences[mir][0] != 0, 'differences are not strand biased'
+                nodiff.append(mir)
+            else:
                 strand = 'NA'
                 divergent.append(mir)
+            
             # insert strand after chromo
             mirnas[mir].insert(1, strand)
             # get mature miR
             mature = mirnas[mir][7]
-            # check if mirna needs manual curation
-            curation = False
-            if strand in '+-':
-                if strand == '+' and differences[mir][0] > 0:
-                    # check if mature has differences
-                    if mature not in sequences[mir][1]:
-                        curation = True
-                    else:
-                        # no need for manual curation but replace hairpin with seq
-                        mirnas[mir][4] = sequences[mir][1]
-                elif strand == '-' and differences[mir][1] > 0:
-                    # check if mature has differences
-                    if mature not in sequences[mir][2]:
-                        curation = True
-                    else:
-                        # no need for manual curation but replace hairpin with revseq
-                        mirnas[mir][4] = sequences[mir][2]
-            elif strand == 'NA':
-                curation = True
-            # check if manual curation is needed
-            if curation == True:
+            # edit all mirnas with differences
+            if strand == 'NA':
                 # add mature to file and do manual curation
                 newfile = open('files_to_edit/' + mir + '.fasta', 'w')
-                newfile.write('>crem\n')
+                newfile.write('>cla\n')
                 newfile.write(sequences[mir][0] + '\n')
                 newfile.write('>seq\n')
                 newfile.write(sequences[mir][1] + '\n')
@@ -319,15 +295,13 @@ if step == 'search':
                 newfile.close()
     
     print('nodiff', len(nodiff))
-    print('close', len(close))
     print('divergent', len(divergent))
         
     # write mirna information to file for mirnas with 
     mirNames = [i for i in nodiff]
-    mirNames.extend(close)
     mirNames.extend(divergent)
         
-    newfile = open('Cla_miRNACoordinatesTemporary.txt', 'w')
+    newfile = open('Cla_miRNACoordinatesTemporary2.txt', 'w')
     #write header
     header = ['name', 'chromo', 'orientation', 'hairpin_start', 'hairpin_end', 'hairpin', 'mature_start', 'mature_end', 'mature', 'arm']
     newfile.write('\t'.join(header) + '\n')
@@ -336,90 +310,37 @@ if step == 'search':
     newfile.close()
 
 
-
-#
-#elif step == 'found':
-#    # remove mirnas for which the mature miR doesn't match the hairpin sequence    
-#    to_remove = []
-#    # convert file to dict, check that all mature seqs are in hairpin
-#    infile = open('CRM_miRNAsCoordinatesEdited.txt')
-#    header = infile.readline().rstrip().split('\t')
-#    mirnas = {}
-#    for line in infile:
-#        line = line.rstrip()
-#        if line != '':
-#            line = line.split('\t')
-#            if line[4] not in line[1]:
-#                # check that mature in reverse complement of hairpin
-#                if line[4] in reverse_complement(line[1]):
-#                    # change hairpin to its reverse complement
-#                    line[1] = reverse_complement(line[1])
-#                else:
-#                    to_remove.append(line[0])
-#            mirnas[line[0]] = line
-#    infile.close()
-#    
-#    # remove mirnas
-#    for i in to_remove:
-#        del mirnas[i]
-#        
-#    # convert 6bp seed to 7bp seed
-#    for mir in mirnas:
-#        mirnas[mir][5] = mirnas[mir][4][1:8]
-#        
-#    newfile = open('truc.txt', 'w')   
-#    newfile.write('\t'.join(header) + '\n')
-#    for i in mirnas:
-#        newfile.write('\t'.join(mirnas[i]) + '\n')
-#    newfile.close()
-#    
-#    # do some QC
-#    infile = open('truc.txt')
-#    infile.readline()
-#    for line in infile:
-#        line = line.rstrip()
-#        if line != '':
-#            line = line.split('\t')
-#            # check that mature in hairpin
-#            assert line[4] in line[1], 'mature not in hairpin'
-#            # check that seed  == 7bp
-#            assert len(line[5]) == 7, 'seed is not 6bp'
-#            # check that seed is seed
-#            assert line[4][1:8] == line[5], 'seed does not match'
-#    infile.close()    
-#    
-#    # add coordinates to each mirnas
-#    mirnas = {}
-#    infile = open('truc.txt')
-#    header = infile.readline().rstrip().split('\t')
-#    for line in infile:
-#        line = line.rstrip()
-#        if line != '':
-#            line = line.split('\t')
-#            mir = line[0]
-#            mirnas[mir] = line
-#    infile.close()
-#    
-#    # modify header
-#    # remove strand
-#    header.remove(header[-1])
-#    # remove start position
-#    header.remove(header[3])
-#    # correct typo
-#    header[1] = 'Hairpin'    
-#    coord = ['start', 'end', 'orientation']    
-#    # extract chromo and add at first position in coord list
-#    chromo = header.pop(2)
-#    # add coordinates after chromo
-#    coord.insert(0, chromo)
-#    # add coordinates after mirna name
-#    j = 1
-#    for i in range(len(coord)):
-#        header.insert(j+i, coord[i])
-#
-#    # convert genome sequence to dict
-#    genome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
-#    
+elif step == 'found':
+    # create a dict with mirna infos, update coordinates
+    mirnas = {}    
+    infile = open('Cla_miRNACoordinatesTemporary3.txt')
+    infile.readline()
+    for line in infile:
+        if line.rstrip():
+            line = line.rstrip().split('\t')
+            # check that all mature are in hairpin
+            name, hairpin, mature = line[0], line[5], line[8]
+            if mature not in hairpin:
+                print(name)
+            # get 7bp seed
+            seed = mature[1:8]
+            # get coords
+            chromo, start, end = line[1], int(line[3]) - 1, int(line[4])
+            # extract sequences from genome
+            seq = ClaGenome[chromo][start: end]
+            # check if hairpin in genome
+            if hairpin in ClaGenome[chromo]:
+                strand = '+'
+                genomestart = ClaGenome[chromo].index(hairpin)
+            # check if reverse seq in genome
+            elif reverse_complement(hairpin) in ClaGenome[chromo]:
+                strand = '-'
+                genomestart = ClaGenome[chromo].index(reverse_complement(hairpin))
+                    
+    
+        
+    
+#  
 #    # loop over mirnas, modifiy conservation and coordinates
 #    for mir in mirnas:
 #        # remove strand
@@ -450,18 +371,7 @@ if step == 'search':
 #        for i in range(len(coord)):
 #            mirnas[mir].insert(j+i, coord[i])
 #
-#        # check family conservation
-#        # get the seed sequence
-#        seed = mirnas[mir][7]
-#        if seed in caenoSeeds:
-#            conservation = 'Caeno'
-#        elif seed not in caenoSeeds and seed in latensSeeds:
-#            conservation = 'CrmCla'
-#        elif seed not in caenoSeeds and seed not in latensSeeds:
-#            conservation = 'Crm'
-#        # add conservation as varaible to list
-#        mirnas[mir].append(conservation)
-#    
+#   
 #    # save data to file
 #    # create a list of mirna names
 #    names = [i for i in mirnas]
@@ -471,8 +381,8 @@ if step == 'search':
 #    for i in names:
 #        newfile.write('\t'.join(mirnas[i]) + '\n')
 #    newfile.close()
-#
-#
+
+
 
 
 
