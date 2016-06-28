@@ -499,10 +499,8 @@ def compute_K_JC(seq1, seq2):
         elif SEQ1[i] != SEQ2[i]:
             D += 1
     L = len(SEQ1) - gap - N
-    # set a threshold of 30% gaps and Ns allowed within a given window
-    # if more then don't compute divergence
-    # K is not defined if p >= 0.75
-    if L != 0 and (gap + N) <= (0.3 * L):
+    
+    if L != 0:
         p = D/ L
         K = (-3/4) * math.log(1-(4/3 * p))
         return round(abs(K), 6)
