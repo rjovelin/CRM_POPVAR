@@ -207,8 +207,8 @@ for filename in maturefiles:
         print(sequences[1][0])
         undefined_mature += 1
         
-print('cannot compute K for {0} hairpins'.format(len(undefined_hairpin)))
-print('cannot compute K for {0} matures'.format(len(undefined_mature)))        
+print('cannot compute K for {0} hairpins'.format(undefined_hairpin))
+print('cannot compute K for {0} matures'.format(undefined_mature))        
         
 # move to parent directory
 os.chdir('../')
