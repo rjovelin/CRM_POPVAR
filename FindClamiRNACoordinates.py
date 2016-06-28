@@ -313,6 +313,7 @@ if step == 'search':
 elif step == 'found':
     # create a dict with mirna infos, update coordinates
     mirnas = {}    
+    to_remove = []    
     infile = open('Cla_miRNACoordinatesTemporary3.txt')
     infile.readline()
     for line in infile:
@@ -324,91 +325,58 @@ elif step == 'found':
                 if mature in reverse_complement(hairpin):
                     # update hairpin
                     hairpin = reverse_complement(hairpin)
-                    strand = '-'
                 else:
-                    print(name)
-                    
-                    
-                    
-                    
-                    
+                    print('mature does not match', name)
+            # get coordinates
+            if hairpin in ClaGenome[chromo]:
+                genomestart = ClaGenome[chromo].index(hairpin)
+                genomeend = genomestart + len(hairpin)
+                strand = '+'
+            elif reverse_complement(hairpin) in ClaGenome[chromo]:
+                genomestart = ClaGenome[chromo].index(reverse_complement(hairpin))
+                genomeend = genomestart + len(hairpin)
+                strand = '-'
+            else:
+                print('hairpin does not match', name)
+                to_remove.append(name)
             # get 7bp seed
             seed = mature[1:8]
-            # get coords
-            start, end = int(line[3]) - 1, int(line[4])
-            # extract sequences from genome
-            seq = ClaGenome[chromo][start: end]
-            # check if hairpin in genome
-            if hairpin in ClaGenome[chromo]:
-                strand = '+'
-                genomestart = ClaGenome[chromo].index(hairpin)
-            # check if reverse seq in genome
-            elif reverse_complement(hairpin) in ClaGenome[chromo]:
-                strand = '-'
-                genomestart = ClaGenome[chromo].index(reverse_complement(hairpin))
-                    
-    
+            #populate dict
+            if name not in to_remove:
+                mirnas[name] = [chromo, strand, str(genomestart + 1), str(genomeend), hairpin, mature, seed, arm] 
+                
     infile.close()    
     
-#  
-#    # loop over mirnas, modifiy conservation and coordinates
-#    for mir in mirnas:
-#        # remove strand
-#        mirnas[mir].remove(mirnas[mir][-1])
-#        # remove conservation
-#        mirnas[mir].remove(mirnas[mir][-1])
-#        # remove start position
-#        mirnas[mir].remove(mirnas[mir][3])
-#        # get hairpin
-#        hairpin = mirnas[mir][1]        
-#        # extract chromo
-#        chromo = mirnas[mir].pop(2)
-#        # find coordinates
-#        if hairpin in genome[chromo]:
-#            start = genome[chromo].index(hairpin)
-#            end = start + len(hairpin)
-#            orientation = '+'
-#        elif reverse_complement(hairpin) in genome[chromo]:
-#            start = genome[chromo].index(reverse_complement(hairpin))
-#            end = start + len(hairpin)
-#            orientation = '-'
-#        else:
-#            print(mir)
-#        # create a list of coordinates, change coordinates to 1-based
-#        coord = [chromo, str(start + 1), str(end), orientation]
-#        # add coordinates after mirna name
-#        j = 1
-#        for i in range(len(coord)):
-#            mirnas[mir].insert(j+i, coord[i])
-#
-#   
-#    # save data to file
-#    # create a list of mirna names
-#    names = [i for i in mirnas]
-#    names.sort()
-#    newfile = open('truc.txt', 'w')   
-#    newfile.write('\t'.join(header) + '\n')
-#    for i in names:
-#        newfile.write('\t'.join(mirnas[i]) + '\n')
-#    newfile.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # write coordinates to file
+    header = ['name', 'chromo', 'orientation', 'hairpin_start', 'hairpin_end', 'hairpin', 'mature', 'seed', 'arm']    
+    newfile = open('Cla_miRNACoordinatesFinal.txt', 'w')
+    newfile.write('\t'.join(header) + '\n')
+    for name in mirnas:
+        newfile.write(name + '\t' + '\t'.join(mirnas[name]) + '\n')
+    newfile.close()
+    
+    # do some QC
+    infile = open('Cla_miRNACoordinatesFinal.txt')
+    infile.readline()
+    for line in infile:
+        if line.rstrip() != '':
+            line = line.rstrip().split('\t')
+            # get mirna name, hairpin seq, mature seq
+            name, hairpin, mature = line[0], line[5], line[6]
+            # get coordinates
+            chromo, strand, start, end = line[1], line[2], int(line[3]) - 1, int(line[4])
+            # extract sequence from genome
+            seq = ClaGenome[chromo][start: end]
+            if strand == '-':
+                seq = reverse_complement(seq)
+            if seq != hairpin:
+                print(name, seq, hairpin, strand)
+            if mature not in seq:
+                print('mature not in extracted sequence for {0}'.format(name))
+            if mature not in hairpin:
+                print('mature not in hairpin for {0}'.format(name))
+    infile.close()
+    
 # change names and match names according to the remanei diversity table
 
 # verify that sequences correspond to extracted sequences
