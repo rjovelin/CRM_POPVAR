@@ -377,23 +377,4 @@ elif step == 'found':
                 print('mature not in hairpin for {0}'.format(name))
     infile.close()
     
-# change names and match names according to the remanei diversity table
-
-# verify that sequences correspond to extracted sequences
-
-
-
-# align premirnas
-
-# align matures mirnas
-
-
-# plot divergence for premirnas and for mature mirnas
-# use paml to compute divergence for comparison with dN and dS?
-# or can I compare Jukes-Cantor with ML estimates?
-
-
-
-
-#################################
 
