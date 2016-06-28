@@ -9,6 +9,7 @@ Created on Tue Jun 28 13:50:20 2016
 
 from tcoffee_alignment import *
 from manipulate_sequences import *
+from divergence import *
 import os
 
 
@@ -103,7 +104,7 @@ for crmmirna in crmhairpin:
         if clamirna in clahairpin:
             # open file for writing
             # get file from mirna name
-            newfile = open('Crm_Cla_miRNA_orthos/' + crmmirna + '_hairpin.fasta', 'w')
+            newfile = open('Crm_Cla_miRNA_orthos/' + crmmirna + '_hairpin.fas', 'w')
             newfile.write('>' + crmmirna + '\n')
             newfile.write(crmhairpin[crmmirna] + '\n')
             newfile.write('>' + clamirna + '\n')
@@ -127,7 +128,7 @@ for crmmirna in crmmature:
             if clamirna in clamature:
                 # open file for writing
                 # get file from mirna name
-                newfile = open('Crm_Cla_miRNA_orthos/' + crmmirna + '_mature.fasta', 'w')
+                newfile = open('Crm_Cla_miRNA_orthos/' + crmmirna + '_mature.fas', 'w')
                 newfile.write('>' + crmmirna + '\n')
                 newfile.write(crmmature[crmmirna] + '\n')
                 # if crm mature is miR-39, align aopposite arms
@@ -150,34 +151,78 @@ for crmmirna in crmmature:
 
 # align premirnas and mature sequences
 run_tcoffee_noncoding('Crm_Cla_miRNA_orthos/')
+# t-coffee outputs are saved in the current directory so move outputfiles
+os.system('mv crm-*.* ./Crm_Cla_miRNA_orthos/')
+# convert the t-coffee output to fasta format and save in text files
+generate_fasta_from_tcoffee('./Crm_Cla_miRNA_orthos/')
 
-## t-coffee outputs are saved in the current directory so move outputfiles
-#os.system('mv CRE_PX356*UTR* ./Crm_Cla_miRNA_orthos/')
-## convert the t-coffee output to fasta format and save in text files
-#generate_fasta_from_tcoffee('./Crm_Cla_miRNA_orthos/')
+# change dir
+os.chdir('./Crm_Cla_miRNA_orthos/')
 
+# create a list of hairpin files
+hairpinfiles = [i for i in os.listdir() if 'hairpin' in i and '.txt' in i]
+# create a list of mature files
+maturefiles = [i for i in os.listdir() if 'mature' in i and '.txt' in i]
 
+# create a dict to store the Jukes-Cantor distance for hairpins and for mature
+Khairpin, Kmature = {}, {}
 
-
-# align matures mirnas
-
-# create a file with alignments
-
-# manually inspect alignments
-
-# create a table with divergence value between hairpin and mirnas
-
-
-
-
+# count number of undefined K for hairpin and mature
+undefined_hairpin, undefined_mature = 0, 0
 
 
-# plot divergence for premirnas and for mature mirnas
+# loop over hairpin files
+for filename in hairpinfiles:
+    # convert file to dict
+    fastafile = convert_fasta(filename)
+    # get seq names and sequences
+    sequences = [[name, seq] for name, seq in fastafile.items()]
+    sequences.sort()
+    assert sequences[0][0].startswith('cla'), '1st sequence should be cla'
+    assert sequences[1][0].startswith('crm'), '2nd sequence should be crm'
+    # compute K Jukes-Cantor
+    K = compute_K_JC(sequences[0][1], sequences[1][1])
+    if K != 'NA':
+        # populate dict {crm mirna name: [cla-mirna name, K]}
+        Khairpin[sequences[1][0]] = [sequences[0][0], K]
+    else:
+        print(sequences[1][0])
+        undefined_hairpin += 1
+        
+# loop over mature files
+for filename in maturefiles:
+    # convert file to dict
+    fastafile = convert_fasta(filename)
+    # get seq names and sequences
+    sequences = [[name, seq] for name, seq in fastafile.items()]
+    sequences.sort()
+    assert sequences[0][0].startswith('cla'), '1st sequence should be cla'
+    assert sequences[1][0].startswith('crm'), '2nd sequence should be crm'
+    # compute K Jukes-Cantor
+    K = compute_K_JC(sequences[0][1], sequences[1][1])
+    if K != 'NA':
+        # populate dict {crm mirna name: [cla-mirna name, K]}
+        Kmature[sequences[1][0]] = [sequences[0][0], K]
+    else:
+        print(sequences[1][0])
+        undefined_mature += 1
+        
+print('cannot compute K for {0} hairpins'.format(len(undefined_hairpin)))
+print('cannot compute K for {0} matures'.format(len(undefined_mature)))        
+        
+# move to parent directory
+os.chdir('../')
 
+# create a table with divergence value between hairpins
+newfile = open('CrmClamiRNAHairpinDivergence.txt', 'w')
+newfile.write('Cremanei\tClatens\t\K_JukesCantor\n')
+for mir in Khairpin:
+    newfile.write(mir + '\t' + Khairpin[mir][0] + '\t' + str(Khairpin[mir][1]) + '\n')
+newfile.close()
 
+newfile = open('CrmClamiRNAMatureDivergence.txt', 'w')
+newfile.write('Cremanei\tClatens\t\K_JukesCantor\n')
+for mir in Kmature:
+    newfile.write(mir + '\t' + Kmature[mir][0] + '\t' + str(Kmature[mir][1]) + '\n')
+newfile.close()
 
-# use paml to compute divergence for comparison with dN and dS?
-
-
-
-# or can I compare Jukes-Cantor with ML estimates?
