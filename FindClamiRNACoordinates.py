@@ -319,13 +319,23 @@ elif step == 'found':
         if line.rstrip():
             line = line.rstrip().split('\t')
             # check that all mature are in hairpin
-            name, hairpin, mature = line[0], line[5], line[8]
+            name, chromo, hairpin, mature = line[0], line[1], line[5], line[8]
             if mature not in hairpin:
-                print(name)
+                if mature in reverse_complement(hairpin):
+                    # update hairpin
+                    hairpin = reverse_complement(hairpin)
+                    strand = '-'
+                else:
+                    print(name)
+                    
+                    
+                    
+                    
+                    
             # get 7bp seed
             seed = mature[1:8]
             # get coords
-            chromo, start, end = line[1], int(line[3]) - 1, int(line[4])
+            start, end = int(line[3]) - 1, int(line[4])
             # extract sequences from genome
             seq = ClaGenome[chromo][start: end]
             # check if hairpin in genome
@@ -338,7 +348,7 @@ elif step == 'found':
                 genomestart = ClaGenome[chromo].index(reverse_complement(hairpin))
                     
     
-        
+    infile.close()    
     
 #  
 #    # loop over mirnas, modifiy conservation and coordinates
