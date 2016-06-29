@@ -9,6 +9,7 @@ Created on Wed Jun 29 16:07:21 2016
 
 
 
+# need a script to count P and D for non-coding sites
 
 
 
@@ -30,7 +31,7 @@ Polymorphism data was retrieved from Drosophila Population
 Genomics Project (DPGP, http://www.dpgp.org/, release 1.0).
 
 SNPs that were detected on more than thirty individuals and
-exhibited a derived allele frequency (DAF) .5% were used for the
+exhibited a derived allele frequency (DAF) > 5% were used for the
 MK test.
 The proportion of adaptively fixed mutations (a) was estimated
 as previously described [75]. To estimate the evolutionary fate of
@@ -43,7 +44,7 @@ candidate is re-validated by using the precursor alone in the MK
 test. We then identified the conservative miRNAs by comparing
 the number of substitutions in the miRNA precursors (KmiR) with
 the number of substitutions in the synonymous sites (KS) between
-D.melanogaster and D.simulans. miRNAs with KmiR/KS,0.5 were
+D.melanogaster and D.simulans. miRNAs with KmiR/KS < 0.5 were
 considered to be conservatively evolving. Kimura’s 2-parameter
 model [72] and the Nei-Gojobori model [77] were used to
 calculate KmiR and KS, respectively. Finally, excluding the
