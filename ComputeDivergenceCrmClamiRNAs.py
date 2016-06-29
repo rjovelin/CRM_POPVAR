@@ -215,13 +215,13 @@ os.chdir('../')
 
 # create a table with divergence value between hairpins
 newfile = open('CrmClamiRNAHairpinDivergence.txt', 'w')
-newfile.write('Cremanei\tClatens\t\K_JukesCantor\n')
+newfile.write('Cremanei\tClatens\tK_JukesCantor\n')
 for mir in Khairpin:
     newfile.write(mir + '\t' + Khairpin[mir][0] + '\t' + str(Khairpin[mir][1]) + '\n')
 newfile.close()
 
 newfile = open('CrmClamiRNAMatureDivergence.txt', 'w')
-newfile.write('Cremanei\tClatens\t\K_JukesCantor\n')
+newfile.write('Cremanei\tClatens\tK_JukesCantor\n')
 for mir in Kmature:
     newfile.write(mir + '\t' + Kmature[mir][0] + '\t' + str(Kmature[mir][1]) + '\n')
 newfile.close()
