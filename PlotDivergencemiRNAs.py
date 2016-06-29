@@ -78,7 +78,7 @@ infile.close()
 
 # create lists of data and data type
 data = [dS, dN, hairpin, mature]
-names = ['dS', 'dN', 'miRNA', 'miR']
+names = ['Syn.', 'Rep.', 'miRNA', 'miR']
 for i in range(len(data)):
     print('N', names[i], len(data[i]))
 print('\n')
@@ -119,15 +119,12 @@ ax.bar([0, 0.2, 0.4, 0.6], Means, width, yerr = SEM, color = colorscheme,
 ax.set_ylabel('Nucleotide divergence', size = 10, ha = 'center', fontname = 'Arial')
 
 # set y limits
-#plt.ylim([0, 0.31])
+plt.ylim([0, 0.25])
 
 # determine tick position on x axis
 xpos =  [0.1, 0.3, 0.5, 0.7]
 # set up tick positions and labels
 plt.xticks(xpos, names, fontsize = 10, fontname = 'Arial')
-
-# set x axis label
-#ax.set_xlabel('Sites in coding sequences', size = 10, ha = 'center', fontname = 'Arial')
 
 # do not show lines around figure, keep bottow line  
 ax.spines["top"].set_visible(False)    
@@ -175,33 +172,16 @@ for label in ax.get_yticklabels():
 # add margin on the x-axis
 plt.margins(0.05)
 
+# I already determined that only dN and miRNA are not significantly different from each other
+# using Wilcoxon rank sum tests, so we need now to add letters to show significance
 
-## I already determined that all site categories are significantly different
-## using Wilcoxon rank sum tests, so we need now to add letters to show significance
-## P_rep, P_syn and P_omega < 0.001 ---> P = ***
-#P = '***'
-#
-## annotate figure to add significance
-## add bracket
-#ax.annotate("", xy=(0.1, 0.08), xycoords='data',
-#            xytext=(0.3, 0.08), textcoords='data',
-#            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
-## add stars for significance
-#ax.text(0.2, 0.10, P, horizontalalignment='center',
-#        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
-#
-#ax.annotate("", xy=(0.6, 0.27), xycoords='data',
-#            xytext=(0.8, 0.27), textcoords='data',
-#            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
-## add stars for significance
-#ax.text(0.7, 0.29, P, horizontalalignment='center',
-#        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
-#
-#ax.annotate("", xy=(1.1, 0.23), xycoords='data',
-#            xytext=(1.3, 0.23), textcoords='data',
-#            arrowprops=dict(arrowstyle="-", ec='#aaaaaa', connectionstyle="bar,fraction=0.2", linewidth = 1))
-## add stars for significance
-#ax.text(1.2, 0.25, P, horizontalalignment='center',
-#        verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
+# annotate figure to add significance
+# get the x and y coordinates
+ypos = [0.247, 0.075, 0.06, 0.04]
+xpos =  [0.1, 0.3, 0.5, 0.7]
+diff = ['A', 'B', 'B', 'C']
+for i in range(len(diff)):
+    ax.text(xpos[i], ypos[i], diff[i], horizontalalignment='center',
+            verticalalignment='center', color = 'black', fontname = 'Arial', size = 10)
 
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig('DivergencemiRNAs.pdf', bbox_inches = 'tight')
