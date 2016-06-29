@@ -60,6 +60,7 @@ hairpin, mature = [], []
 
 # extract divergence values from files
 infile = open('CrmClamiRNAHairpinDivergence.txt')
+infile.readline()
 for line in infile:
     if line.rstrip() != '':
         line = line.rstrip().split('\t')
@@ -67,6 +68,7 @@ for line in infile:
 infile.close()
 
 infile = open('CrmClamiRNAMatureDivergence.txt')
+infile.readline()
 for line in infile:
     if line.rstrip() != '':
         line = line.rstrip().split('\t')
