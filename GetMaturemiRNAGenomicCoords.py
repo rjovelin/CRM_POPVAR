@@ -75,6 +75,16 @@ newfile = open('CRM_MatureCoordinatesFinal.txt', 'w')
 newfile.write('\t'.join(['Name', 'Chromo', 'Start', 'End', 'Orientation', 'Sequence']) + '\n')
 names = [i for i in mature_coord]
 names.sort()
+
+# convert coordinates to 1-based index
+for mirna in mature_coord:
+    # modify start and end positions
+    for i in range(len(mature_coord[mirna])):
+        if i == 1:
+            # convert to 1-based
+            mature_coord[mirna][i] += 1
+
+# save coordinates to file
 for mirna in names:
     newfile.write(mirna + '\t' + '\t'.join(list(map(lambda x: str(x), mature_coord[mirna]))) + '\t' + mature[mirna] + '\n')
 newfile.close()
