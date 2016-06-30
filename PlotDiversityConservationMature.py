@@ -6,7 +6,7 @@ Created on Wed May 18 16:20:05 2016
 """
 
 # use this script to make a box plot comparing theta for mature miRNAs with different levels of conservation
-# usage ComputeDiversityConservationMature.py [options]
+# usage PlotDiversityConservationMature.py [options]
 # [box/bar] : type of graphich to plot
 
 
