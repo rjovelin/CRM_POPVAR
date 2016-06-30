@@ -22,11 +22,6 @@ print('converted genome to dict')
 valid_transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
 print('made a set of valid transcripts')
 
-# get the allele counts for all sites with coverage
-# {chromo: {site : [ref_allele, alt_allele, count_ref, count alt]}]}
-chromo_sites = get_non_coding_snps('../SNP_files/', 10)
-print('got allele counts at all sites')
-
 # get miRNA coordinates {chromo: [[start, end, orientation]]}
 mirna_coord = get_mirna_loci('CRM_miRNAsCoordinatesFinal.txt')
 print('got miRNA coordinates')
@@ -92,7 +87,6 @@ for line in infile:
 infile.close()
 print('got mirna conservation level')
 
-
 # create a dict with coordinates of mature sequences
 miR_coord = {}
 infile = open('CRM_MatureCoordinatesFinal.txt')
@@ -103,12 +97,13 @@ for line in infile:
         line = line.split('\t')
         name, chromo, start, end, orientation = line[0], line[1], int(line[2]) -1, int(line[3]), line[4]
         if orientation == '+':
-            assert CrmGenome[chromo][start : end] == line[-1], 'miR does not match mature seq on +'
+            assert CrmGenome[chromo][start : end] == line[-1], 'mirna does not match mature on +'
         elif orientation == '-':
-            assert reverse_complement(CrmGenome[chromo][start : end]) == line[-1], 'miR does not match mature seq on -'
+            assert reverse_complement(CrmGenome[chromo][start : end]) == line[-1], 'mirna does not match mature on -'
         miR_coord[name] = [chromo, start, end, orientation]
 infile.close()
 print('got mature coordinates')
+
 
 # create a dict with coordinates of hairpin sequences
 hairpin_coord = {}
@@ -130,17 +125,108 @@ infile.close()
 print('got hairpin coordinates')
 
 
+## get the allele counts for all sites with coverage
+## {chromo: {site : [ref_allele, alt_allele, count_ref, count alt]}]}
+#chromo_sites = get_non_coding_snps('../SNP_files/', 10)
+#print('got allele counts at all sites')
+
+
+
+# check that mirna names in aligned sequences dict are in coordinates dict
+for mirna in hairpins:
+    assert mirna in hairpin_coord, 'mirna with aligned sequences does not have coordinates'
+for mirna in matures:
+    assert mirna in miR_coord, 'miR with aligned sequences does not have coordinates'        
+
+
+# create a dict to record the number of fixed diffs and polmorphisms for each mirna hairpin and mature
+hairpin_diffs, mature_diffs = {}, {}
+
+
+
+
+
+def check_seq_position(a,b):
+    '''
+    
+    '''
+    
+    gaps = 0
+
+    for i in range(len(b)):
+        if b[i] != '-':
+            j = i - gaps
+        else:
+            gaps += 1
+        if a[j] != b[i]:
+            if b[i] != '-':
+                print(i, j, a[j], b[i], end = '\n')
+
+
+
+
+# loop over aligned hairpins
+for mirna in hairpins:
+    # get chromo, start, end and orientation
+    chromo, start, end, orientation = hairpin_coord[mirna][0], hairpin_coord[mirna][1], hairpin_coord[mirna][2], hairpin_coord[mirna][3] 
+    # extract sequence from genome
+    sequence = CrmGenome[chromo][start: end]
+    if orientation == '-':
+        sequence = reverse_complement(sequence)
+    # get mirna positions on chromo
+    positions = [i for i in range(start, end)]    
+    # get the position in decreasing order if orientation is -    
+    if orientation == '-':
+        positions.reverse()
+    # get the remanei and latens mirna name, and correspsonding sequences
+    for name in hairpins[mirna]:
+        if name.startswith('crm'):
+            crmmirna = name
+            crmseq = hairpins[mirna][crmmirna]
+        elif name.startswith('cla'):
+            clamirna = name
+            claseq = hairpins[mirna][clamirna]
+    # set up a gap counter
+    gaps = 0
+    # loop over crm sequence
+    # keep track of index to look for SNP data when gaps are present
+    for i in range(len(crmseq)):
+        # get ancestral allele and remanei allele
+        ancestral, crmallele = claseq[i], crmseq[i]
+        if crmallele != '-':
+            # get the index to look in positions
+            j = i - gaps
+            # check that nucleotide in crmseq correspond to sequence from genome
+            assert sequence[j] == crmallele, 'nucleotides do not match between extracted sequence and aligned sequence'
+            # check that index in positions is correct
+            if orientation == '+':
+                assert CrmGenome[chromo][positions[j]] == crmallele, 'no match with nucleotide extracted with list index on +'
+            elif orientation == '-':
+                assert seq_complement(CrmGenome[chromo][positions[j]]) == crmallele, 'no match with nucleotide extracted with list index on -'
+        else:
+            gaps += 1
+        
+        
 
 
 
 
 
 
-# determine start index of mirna
 
-# loop over alignment
 
-# check orientation
+
+
+
+
+
+
+
+
+
+
+
+
 
 # if orientation negative: need to loop over indices in chromo-sites in reverse order
 # double check that ref is equal to crem nucleotide 
@@ -159,23 +245,6 @@ print('got hairpin coordinates')
 
 
 
-def check_seq_position():
-    '''
-    
-    '''
-    
-    gaps = 0
-
-    for i in range(len(b)):
-        if b[i] != '-':
-            j = i - gaps
-        else:
-            gaps += 1
-        print(i, j, a[j], b[i], end = '\t')
-        if b[i] == '-':
-            print(b[i])
-        else:
-            print(a[j] == b[i])
 
 
 # consider only 4-fold degenerate sites in entire genome for neutral control
