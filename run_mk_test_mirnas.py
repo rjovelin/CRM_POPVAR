@@ -7,6 +7,192 @@ Created on Wed Jun 29 16:07:21 2016
 
 # use this script to compute the MK test for miRNAs
 
+import os
+from manipulate_sequences import *
+from divergence import *
+from miRNA_target import *
+from sites_with_coverage import *
+
+
+# convert genome to dict
+CrmGenome = convert_fasta('../Genome_Files/noamb_356_v1_4.txt')
+print('converted genome to dict')
+
+# create a set of valid transcripts (1 transcript mapped to 1 gene)
+valid_transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
+print('made a set of valid transcripts')
+
+# get the allele counts for all sites with coverage
+# {chromo: {site : [ref_allele, alt_allele, count_ref, count alt]}]}
+chromo_sites = get_non_coding_snps('../SNP_files/', 10)
+print('got allele counts at all sites')
+
+# get miRNA coordinates {chromo: [[start, end, orientation]]}
+mirna_coord = get_mirna_loci('CRM_miRNAsCoordinatesFinal.txt')
+print('got miRNA coordinates')
+
+# get mature coordinates {chromo: [[start, end orientation]]}
+mature_coord = get_mirna_loci('CRM_MatureCoordinatesFinal.txt')
+print('got mature miR coordinates')
+
+# create a dict with remanei mirna hairpin name and remanei-latens aligned hairpins
+hairpins = {}
+# get the hairpin alignment files
+hairpinfiles = [i for i in os.listdir('Crm_Cla_miRNA_orthos') if 'hairpin' in i and '.txt' in i]
+for filename in hairpinfiles:
+    # extract crm mir name from file
+    crmname = filename[:filename.index('_')]
+    # convert file to dict
+    fastafile = convert_fasta('Crm_Cla_miRNA_orthos' + '/' + filename)
+    # initialize dict
+    hairpins[crmname] = {}
+    for name in fastafile:
+        hairpins[crmname][name] = fastafile[name]
+print('got aligned hairpins')
+print('aligned hairpins', len(hairpins))
+
+
+# create a dict with remanei mirna mature name and remanei-latens aligned mature
+matures = {}
+# get the mature alignment files
+maturefiles = [i for i in os.listdir('Crm_Cla_miRNA_orthos') if 'mature' in i and '.txt' in i]
+for filename in maturefiles:
+    # extract crm mature name from file
+    crmname = filename[:filename.index('_mature')]
+    # convert file to dict
+    fastafile = convert_fasta('Crm_Cla_miRNA_orthos' + '/' + filename)
+    # initialize dict
+    matures[crmname] = {}
+    for name in fastafile:
+        matures[crmname][name] = fastafile[name]
+print('got aligned matures')
+print('aligned matures', len(matures))
+
+
+# get miRNA coordinates {chromo: [[start, end, orientation]]}
+mirna_coord = get_mirna_loci('CRM_miRNAsCoordinatesFinal.txt')
+print('got miRNA coordinates')
+
+
+# get mature coordinates {chromo: [[start, end orientation]]}
+mature_coord = get_mirna_loci('CRM_MatureCoordinatesFinal.txt')
+print('got mature miR coordinates')
+
+
+# make a dict with family level conservation for all miRNAs {name : conservarion}
+famCons = {}
+infile = open('CRM_miRNAsCoordinatesFinal.txt')
+infile.readline()
+for line in infile:
+    line = line.rstrip()
+    if line != '':
+        line = line.split('\t')
+        name, conservation = line[0], line[-1]
+        famCons[name] = conservation
+infile.close()
+print('got mirna conservation level')
+
+
+# create a dict with coordinates of mature sequences
+miR_coord = {}
+infile = open('CRM_MatureCoordinatesFinal.txt')
+infile.readline()
+for line in infile:
+    line = line.rstrip()
+    if line != '':
+        line = line.split('\t')
+        name, chromo, start, end, orientation = line[0], line[1], int(line[2]) -1, int(line[3]), line[4]
+        if orientation == '+':
+            assert CrmGenome[chromo][start : end] == line[-1], 'miR does not match mature seq on +'
+        elif orientation == '-':
+            assert reverse_complement(CrmGenome[chromo][start : end]) == line[-1], 'miR does not match mature seq on -'
+        miR_coord[name] = [chromo, start, end, orientation]
+infile.close()
+print('got mature coordinates')
+
+# create a dict with coordinates of hairpin sequences
+hairpin_coord = {}
+infile = open('CRM_miRNAsCoordinatesFinal.txt')
+infile.readline()
+for line in infile:
+    line = line.rstrip()
+    if line != '':
+        line = line.split('\t')
+        name, chromo, start, end, orientation = line[0], line[1], int(line[2]) - 1, int(line[3]), line[4]
+        # remove arm from name
+        name = name[: name.index('_')]
+        if orientation == '+':
+            assert CrmGenome[chromo][start : end] == line[5], 'mirna does not match hairpin on +'
+        elif orientation == '-':
+            assert reverse_complement(CrmGenome[chromo][start : end]) == line[5], 'mirna does not match hairpin on -'
+        hairpin_coord[name] = [chromo, start, end, orientation]
+infile.close()
+print('got hairpin coordinates')
+
+
+
+
+
+
+
+
+# determine start index of mirna
+
+# loop over alignment
+
+# check orientation
+
+# if orientation negative: need to loop over indices in chromo-sites in reverse order
+# double check that ref is equal to crem nucleotide 
+
+# need to check if position has coverage
+
+# fixed difference:
+# ancestral and ref are valid bases (ie not gaps) 
+# if position is gapped, keep index of the remanei seq to make sure there is no shift ( i have a function for this)
+# ref_count != 0 and alt_count == 0 and ref != ancestral
+# ref-count = 0 and alt_count != 0 and alt != ancestral
+# polymorphism if ref-count != 0 and alt-count != 0 and ref == ancestral or alt == ancestral
+
+
+
+
+
+
+def check_seq_position():
+    '''
+    
+    '''
+    
+    gaps = 0
+
+    for i in range(len(b)):
+        if b[i] != '-':
+            j = i - gaps
+        else:
+            gaps += 1
+        print(i, j, a[j], b[i], end = '\t')
+        if b[i] == '-':
+            print(b[i])
+        else:
+            print(a[j] == b[i])
+
+
+# consider only 4-fold degenerate sites in entire genome for neutral control
+
+
+
+
+
+# group mirnas based on level of conservation
+# perform MK test based on each mirna individually
+# perform MK test based on entire conservation group by pooling numbers
+# see Lyu et al for organizing table
+# compute alpha for all hairpins, all matures, and each conservation group
+
+
+
+# site type site number D P PDAF.5% D/PDAF.5% MK test pvaluea ab (% of adaptive fixations)
 
 
 # need a script to count P and D for non-coding sites
@@ -51,3 +237,160 @@ calculate KmiR and KS, respectively. Finally, excluding the
 adaptive and conservative miRNAs, the remaining were considered
 to be in transition between adaptive to conservative/death
 '''
+
+
+
+
+
+# use this function to count the number of replacement and synonymous changes
+def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
+    '''
+    (file, str, str, float, int) -> dict 
+    Take the file with the SNPs in coding sequences, a given focal group of strains
+    and return a dictionnary with gene as key and a list of containing PN, PS,
+    DN, DS as value. If rare_sites is freq then polymorphic sites with a
+    frequency < cutoff are ignored, and if rare_sites is count then sites that
+    are < than raw_count in the sample are ignored
+    '''
+    
+    # PN: number of replacement polymorphisms
+    # PS: number of synonymous polymorphisms
+    # DN: number of fixed replacements
+    # DS: number of fixed synonymous changes    
+    
+    # create a set of stop codons
+    stop_codons = {'TAG', 'TGA', 'TAA'} 
+    
+    # initialize dict
+    SNPs = {}
+    # initialize gene : empty list pairs
+    # open file for reading
+    infile = open(snp_file, 'r')
+    # skip header
+    infile.readline()
+    # loop over file, get the gene name as key and initialize list
+    # list contains PN, PS, DN, DS
+    for line in infile:
+        if line.rstrip() != '':
+            line = line.rstrip().split()
+            gene = line[2]
+            if gene not in SNPs:
+                # {gene : [PN, PS, DN, DS]}
+                SNPs[gene] = [0, 0, 0, 0]
+    # close file after reading
+    infile.close()
+    
+    # open file for reading
+    infile = open(snp_file, 'r')
+    # skip header
+    infile.readline()
+    # loop over file
+    for line in infile:
+        line = line.rstrip()
+        if line != '':
+            line = line.split()
+            # get dict key
+            gene = line[2]
+            # record only sites for which ancestral state is defined
+            if line[19] in {'A', 'C', 'T', 'G'}:
+                # record only sites labeled snp or no_snp and valid snp type
+                if line[6] in {'snp', 'no_snp'} and line[9] in {'NA', 'COD', 'SYN', 'REP'}:
+                    # get reference and alternative codons and latens codon
+                    ref_codon, alt_codon, cla_codon = line[3], line[8], line[18]
+                    # get reference, alternative and latens alleles
+                    ref, alt, cla_base = line[5], line[7], line[19]
+                    # get SNP type
+                    snp = line[9]
+                    # do not consider stop codons
+                    if ref_codon not in stop_codons and alt_codon not in stop_codons and cla_codon not in stop_codons:
+                        # do not consider codons with 'Ns'
+                        if 'N' not in ref_codon and 'N' not in alt_codon and 'N' not in cla_codon:
+                            # check focal group, consider only KSR strains or KRS and PX combined
+                            if strains == 'KSR':
+                                # get reference allele count
+                                ref_count = int(line[10])
+                                # get alternative allele count
+                                alt_count = int(line[14])
+                            elif strains == 'KSR_PX':
+                                # get reference allele count
+                                ref_count = int(line[13])
+                                # get alternative allele count
+                                alt_count = int(line[17])
+                            # Consider sites that have a sample size >= 10
+                            if ref_count + alt_count >= 10:
+                                # do not consider codons with more than 1 substitutions
+                                if diff_codon(cla_codon, alt_codon) <= 1:
+                                    # determine if site is polymorphic or fixed
+                                    # fixed diff if alternative allele fixed and different from latens 
+                                    if ref_count == 0 and alt_count != 0 and cla_base != alt:
+                                        # fixed difference between latens and remanei
+                                        # check if change is synonymous or nonsynonymous
+                                        if genetic_code[cla_codon] != genetic_code[alt_codon]:
+                                            # fixed nonsynonymous change
+                                            SNPs[gene][2] += 1
+                                        elif genetic_code[cla_codon] == genetic_code[alt_codon]:
+                                            # fixed synonymous change
+                                            SNPs[gene][3] += 1
+                                    elif ref_count != 0 and alt_count == 0 and cla_base != ref:
+                                        # fixed difference between latens and remanei
+                                        # do not consider codons with more than 1 substitutions
+                                        # check if change is synonymous or nonsynonymous
+                                        if genetic_code[cla_codon] != genetic_code[ref_codon]:
+                                            # fixed nonsynonymous change
+                                            SNPs[gene][2] += 1
+                                        elif genetic_code[cla_codon] == genetic_code[ref_codon]:
+                                            # fixed synonymous change
+                                            SNPs[gene][3] += 1
+                                    elif ref_count != 0 and alt_count != 0 and (ref == cla_base or alt == cla_base):
+                                        # site is polymorphic
+                                        # set up boolean to identify polymorphic site after filtering based on MAF or raw count
+                                        PolymorphicSite = False
+                                        # check if cutoff or raw_count applies
+                                        if rare_sites == 'freq':
+                                            # use frequency cutoff
+                                            # compare the snp MAF frequency to cutoff
+                                            if ref_count >= alt_count:
+                                                freq = alt_count / (ref_count + alt_count)
+                                            elif ref_count < alt_count:
+                                                freq = ref_count / (ref_count + alt_count)
+                                            if freq >= cutoff:
+                                                # record polymorphic site
+                                                PolymorphicSite = True
+                                        elif rare_sites == 'count':
+                                            # use allele count to filter sites
+                                            # check that allele with lowest count > raw_count threshold
+                                            if ref_count >= alt_count and alt_count > raw_count:
+                                                # alt_count is greater than minimum required threshold
+                                                # record polymorphic site
+                                                PolymorphicSite = True
+                                            elif ref_count < alt_count and ref_count > raw_count:
+                                                # ref_count is greater than minimum required thereshold
+                                                # record polymorphic site
+                                                PolymorphicSite = True
+                                        # determine the type of mutation if polymorphic site is to be recorded
+                                        if PolymorphicSite == True:
+                                            if snp == 'SYN' and genetic_code[ref_codon] == genetic_code[alt_codon]:
+                                                # mutation is synonymous
+                                                SNPs[gene][1] += 1
+                                            elif snp == 'REP' and genetic_code[ref_codon] != genetic_code[alt_codon]:
+                                                # mutation is nonsynonymous
+                                                SNPs[gene][0] += 1
+                                                    
+    # close file after readling
+    infile.close()
+    
+    # remove genes with no polymorhisms or no divergence
+    # because MK test cannot be computed for these genes
+    
+    to_remove = []
+    for gene in SNPs:
+        if SNPs[gene][0] == 0 and SNPs[gene][1] == 0:
+            to_remove.append(gene)
+        elif SNPs[gene][2] == 0 and SNPs[gene][3] == 0:
+            to_remove.append(gene)
+        
+    for gene in to_remove:
+      del SNPs[gene]  
+    
+    # return dict
+    return SNPs
