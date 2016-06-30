@@ -215,14 +215,14 @@ for i in range(len(alldata) -1):
             P = '***'
         print(ExpLevels[i], ExpLevels[j], Pval)    
         
-# I already determined that all site categories are significantly different
+# I already determined which site categories are significantly different
 # using Wilcoxon rank sum tests, so we need now to add letters to show significance
 
 # annotate figure to add significance
 # get the x and y coordinates
 y_pos = [0.0142, 0.0123, 0.005, 0.003]
 x_pos = [i + width/2 for i in range(len(ExpLevels))]
-diff = ['A', 'A,B', 'B,C', 'C']
+diff = ['A', 'A', 'B', 'B']
 
 for i in range(len(diff)):
     ax.text(x_pos[i], y_pos[i], diff[i], horizontalalignment='center',
