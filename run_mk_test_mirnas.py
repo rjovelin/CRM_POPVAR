@@ -138,27 +138,8 @@ for mirna in matures:
 
 
 # create a dict to record the number of fixed diffs and polmorphisms for each mirna hairpin and mature
+# {mirna: [D, P]}
 hairpin_diffs, mature_diffs = {}, {}
-
-
-def check_seq_position(a,b):
-    '''
-    
-    '''
-    
-    gaps = 0
-
-    for i in range(len(b)):
-        if b[i] != '-':
-            j = i - gaps
-        else:
-            gaps += 1
-        if a[j] != b[i]:
-            if b[i] != '-':
-                print(i, j, a[j], b[i], end = '\n')
-
-
-
 
 # loop over aligned hairpins
 for mirna in hairpins:
@@ -177,6 +158,7 @@ for mirna in hairpins:
     for name in hairpins[mirna]:
         if name.startswith('crm'):
             crmmirna = name
+            assert crmirna == mirna, 'mirna names do not match'
             crmseq = hairpins[mirna][crmmirna]
         elif name.startswith('cla'):
             clamirna = name
@@ -199,58 +181,63 @@ for mirna in hairpins:
                 assert CrmGenome[chromo][positions[j]] == crmallele, 'no match with nucleotide extracted with list index on +'
                 if positions[j] in chromo_sites[chromo]:
                     assert chromo_sites[chromo][positions[j]][0] == crmallele, 'no match with ref allele in SNP dict in +'
+                else:
+                    print(j, positions[j], orientation)
             elif orientation == '-':
                 assert seq_complement(CrmGenome[chromo][positions[j]]) == crmallele, 'no match with nucleotide extracted with list index on -'
                 if positions[j] in chromo_sites[chromo]:
                     assert seq_complement(chromo_sites[chromo][positions[j]][0]) == crmallele, 'no match with ref allele in SNP dict in -'
+                else:
+                    print(j, positions[j], orientation)
         else:
             gaps += 1
-        
-        
+        # determine if site a fized difference or a polymorphism
+        # check that ancestral allele is valid base
+        if ancestral in 'ATCG' and crmallele in 'ATCG':
+            # check that site has coverage            
+            if positions[j] in chromo_sites[chromo]:
+                # fixed diff if ref_count != 0 and alt_count = 0 and ref != ancestral 
+                # fixed diff is ref_count = 0 and alt_count != 0 and alt != ancestral
+                # polymorphism if (ref_count != 0 and alt_count != 0) and (ref = amcestral or alt = ancestral)
+                # get ref and alt counts
+                ref_count, alt_count = chromo_sites[chromo][positions[j]][2], chromo_sites[chromo][positions[j]][3]
+                # get reference and alternative alleles
+                ref, alt = chromo_sites[chromo][positions[j]][0], chromo_sites[chromo][positions[j]][1]
+                
+                if ref_count != 0 and alt_count == 0 and ref != ancestral:
+                    # fixed difference, populate dict
+                    if mirna in hairpin_diffs:
+                        hairpin_diffs[mirna][0] += 1
+                    else:
+                        hairpin_diffs[mirna] = [0, 0]
+                elif ref_count == 0 and alt_count != 0 and alt != ancestral:
+                    # fixed difference, populate dict
+                    if mirna in hairpin_diffs:
+                        hairpin_diffs[mirna][0] += 1
+                    else:
+                        hairpin_diffs[mirna] = [0, 0]
+                elif (ref_count != 0 and alt_count != 0) and (ref == ancestral or alt == ancestral):
+                    # polymorphism, populate dict
+                    if mirna in hairpin_diffs:
+                        hairpin_diffs[mirna][1] += 1
+                    else:
+                        hairpin_diffs[mirna] = [0, 0]
+            
 
 
 
 
 
+# add option to consider singletons or not
 
 
+# add code to consider only positions with sample size > 10
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-# if orientation negative: need to loop over indices in chromo-sites in reverse order
-# double check that ref is equal to crem nucleotide 
-
-# need to check if position has coverage
-
-# fixed difference:
-# ancestral and ref are valid bases (ie not gaps) 
-# if position is gapped, keep index of the remanei seq to make sure there is no shift ( i have a function for this)
-# ref_count != 0 and alt_count == 0 and ref != ancestral
-# ref-count = 0 and alt_count != 0 and alt != ancestral
-# polymorphism if ref-count != 0 and alt-count != 0 and ref == ancestral or alt == ancestral
-
-
-
-
-
-
+# make it a function so it can be use for mature mir as well
 
 
 # consider only 4-fold degenerate sites in entire genome for neutral control
-
-
-
 
 
 # group mirnas based on level of conservation
