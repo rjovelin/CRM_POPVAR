@@ -125,12 +125,10 @@ infile.close()
 print('got hairpin coordinates')
 
 
-## get the allele counts for all sites with coverage
-## {chromo: {site : [ref_allele, alt_allele, count_ref, count alt]}]}
-#chromo_sites = get_non_coding_snps('../SNP_files/', 10)
-#print('got allele counts at all sites')
-
-
+# get the allele counts for all sites with coverage
+# {chromo: {site : [ref_allele, alt_allele, count_ref, count alt]}]}
+chromo_sites = get_non_coding_snps('../SNP_files/', 10)
+print('got allele counts at all sites')
 
 # check that mirna names in aligned sequences dict are in coordinates dict
 for mirna in hairpins:
@@ -141,9 +139,6 @@ for mirna in matures:
 
 # create a dict to record the number of fixed diffs and polmorphisms for each mirna hairpin and mature
 hairpin_diffs, mature_diffs = {}, {}
-
-
-
 
 
 def check_seq_position(a,b):
@@ -199,10 +194,15 @@ for mirna in hairpins:
             # check that nucleotide in crmseq correspond to sequence from genome
             assert sequence[j] == crmallele, 'nucleotides do not match between extracted sequence and aligned sequence'
             # check that index in positions is correct
+            # check that ref allele in SNP dictionary is correct
             if orientation == '+':
                 assert CrmGenome[chromo][positions[j]] == crmallele, 'no match with nucleotide extracted with list index on +'
+                if positions[j] in chromo_sites[chromo]:
+                    assert chromo_sites[chromo][positions[j]][0] == crmallele, 'no match with ref allele in SNP dict in +'
             elif orientation == '-':
                 assert seq_complement(CrmGenome[chromo][positions[j]]) == crmallele, 'no match with nucleotide extracted with list index on -'
+                if positions[j] in chromo_sites[chromo]:
+                    assert seq_complement(chromo_sites[chromo][positions[j]][0]) == crmallele, 'no match with ref allele in SNP dict in -'
         else:
             gaps += 1
         
