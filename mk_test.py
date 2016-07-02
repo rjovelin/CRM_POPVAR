@@ -343,3 +343,199 @@ def BootstrapAlphaSEW2002(PolymDivCounts, MinimumPS, replicates, Ngenes):
     return AlphaDistribution
 
 
+# use this function to count the number of fixed diffs and polymorphisms at 4-fold degenerate sites
+def CountPolymDivergFourFold(snp_file, rare_alleles, threshold):
+    '''
+    (file, bool, int) -> dict 
+    Take the file with the SNPs in coding sequences, whether rare alleles 
+    should be ignored or not, and the number of mutations to ignore per site      
+    (ie, singletons) and return a dict with D and P the number of fixed 
+    differences and polymorphisms at 4-fold degenerate sites for each gene
+    '''
+    
+    # create a dict with 4 fold degenerate codons
+    fourfold = {'S': ['TCA', 'TCT', 'TCG', 'TCC'] , 'L': ['CTA', 'CTT', 'CTG', 'CTC'],
+                'P': ['CCA', 'CCT', 'CCG', 'CCC'], 'R': ['CGA', 'CGT', 'CGG', 'CGC'],
+                'T': ['ACA', 'ACT', 'ACG', 'ACC'], 'A': ['GCA', 'GCT', 'GCG', 'GCC'],
+                'G': ['GGA', 'GGT', 'GGG', 'GGC'], 'V': ['GTA', 'GTT', 'GTG', 'GTC']} 
+
+    # create a dict to record D and P {gene: [D, P]}
+    # D: number of fixed replacements at old sites
+    # P: number of polymorphism at 4-fold sites    
+    
+    # initialize dict {gene: [0, 0]}
+    SNPs = {}
+    infile = open(snp_file, 'r')
+    infile.readline()
+    # loop over file, get the gene name as key and initialize list
+    for line in infile:
+        if line.rstrip() != '':
+            line = line.rstrip().split()
+            gene = line[2]
+            if gene not in SNPs:
+                SNPs[gene] = [0, 0]
+    # close file after reading
+    infile.close()
+    
+    # count D and P
+    infile = open(snp_file, 'r')
+    infile.readline()
+    for line in infile:
+        line = line.rstrip()
+        if line != '':
+            line = line.split()
+            # get dict key
+            gene = line[2]
+            # check that ancestral state is defined, and that sites are labeled snp or no snp and valid snp
+            if line[19] in {'A', 'C', 'T', 'G'} and line[6] in {'snp', 'no_snp'} and line[9] in {'NA', 'COD', 'SYN', 'REP'}:
+                # get reference and alternative codons and latens codon
+                ref_codon, alt_codon, cla_codon = line[3], line[8], line[18]
+                # get reference, alternative and latens alleles
+                ref, alt, cla_base = line[5], line[7], line[19]
+                # get ref and alt counts for KSR + PX strains
+                ref_count, alt_count = int(line[13]), int(line[17])
+                # check that ref codon, alt codon and cla-codon translate to AAs with 4-fold degenerate sites
+                if cds_translate(ref_codon) in fourfold and cds_translate(alt_codon) in fourfold and cds_translate(cla_codon) in fourfold:
+                    # check that mutation is synonymous
+                    if cds_translate(ref_codon) == cds_translate(alt_codon) and cds_translate(ref_codon) == cds_translate(cla_codon) and cds_translate(alt_codon) == cds_translate(cla_codon):
+                        # check that codons correspond to the 4-fold degenerate codons
+                        if ref_codon in fourfold[cds_translate(ref_codon)] and alt_codon in fourfold[cds_translate(alt_codon)] and cla_codon in fourfold[cds_translate(cla_codon)]:
+                            # consider only sites with sample size >= 10
+                            if ref_count + alt_count >= 10:
+                                # determine if site is fixed or polymorphic
+                                if ref_count == 0 and alt_count != 0 and cla_base != alt:
+                                    # fixed difference between latens and remanei
+                                    SNPs[gene][0] += 1
+                                elif ref_count != 0 and alt_count == 0 and cla_base != ref:
+                                    # fixed difference between latens and remanei
+                                    SNPs[gene][0] += 1
+                                elif ref_count != 0 and alt_count != 0 and (ref == cla_base or alt == cla_base):
+                                    # site is polymorphic
+                                    # check if some polymorphic sites need to be ignored
+                                    if rare_alleles == True:
+                                        # use allele count to filter sites
+                                        # check that allele with lowest count > raw_count threshold
+                                        if min(ref_count, alt_count) > threshold:
+                                            # record polymorphic site
+                                            SNPs[gene][1] += 1
+                                    elif rare_alleles == False:
+                                        # record polymorphic sites
+                                        SNPs[gene][1] += 1
+    # close file after readling
+    infile.close()
+    
+    # remove genes with no polymorhisms and no divergence
+    to_remove = [i for i in SNPs if SNPs[i] == [0, 0]]
+    for i in to_remove:
+      del SNPs[i]  
+    # return dict
+    return SNPs
+    
+    
+    
+ # use this function to count the number of fixed differences and polymorphisms in miRNAs   
+def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rare_alleles, threshold):
+    '''
+    (dict, dict, dict, dict, bool, int)
+    Take a dict with aligned sequences between remanei and latens mirna orthologs,
+    a dict with mirna coordinates, a dict with genome sequence, a dict with SNP data    
+    a boolean indicating whether rare alleles should be ignored or not, and the
+    number of mutations to ignore per site (eg, singletons) and return a dict
+    with D and P the number of fixed differences and polymorphisms in each mirna
+    '''
+
+    # hairpins is a dict {crm_mirna_name: {crm_mirna_name: aligned_seq, cla_mirna_name: aligned_seq}}
+    # hairpin_coord is a dict with mirna coordinates {name: [chromo, start, end, orientation]}
+    # CrmGenome is a dict with genome {chromo: sequence}
+    # chromo-sites is a dict with SNP data {chromo: {site : [ref_allele, alt_allele, count_ref, count alt]}]}
+
+    # loop over aligned hairpins
+    for mirna in hairpins:
+        # get chromo, start, end and orientation
+        chromo, start, end, orientation = hairpin_coord[mirna][0], hairpin_coord[mirna][1], hairpin_coord[mirna][2], hairpin_coord[mirna][3] 
+        # extract sequence from genome
+        sequence = CrmGenome[chromo][start: end]
+        if orientation == '-':
+            sequence = reverse_complement(sequence)
+        # get mirna positions on chromo
+        positions = [i for i in range(start, end)]    
+        # get the position in decreasing order if orientation is -    
+        if orientation == '-':
+            positions.reverse()
+        # get the remanei and latens mirna name, and correspsonding sequences
+        for name in hairpins[mirna]:
+            if name.startswith('crm'):
+                crmmirna = name
+                assert crmirna == mirna, 'mirna names do not match'
+                crmseq = hairpins[mirna][crmmirna]
+            elif name.startswith('cla'):
+                clamirna = name
+                claseq = hairpins[mirna][clamirna]
+        # set up a gap counter
+        gaps = 0
+        # loop over crm sequence
+        # keep track of index to look for SNP data when gaps are present
+        for i in range(len(crmseq)):
+            # get ancestral allele and remanei allele
+            ancestral, crmallele = claseq[i], crmseq[i]
+            if crmallele != '-':
+                # get the index to look in positions
+                j = i - gaps
+                # check that nucleotide in crmseq correspond to sequence from genome
+                assert sequence[j] == crmallele, 'nucleotides do not match between extracted sequence and aligned sequence'
+                # check that index in positions is correct
+                # check that ref allele in SNP dictionary is correct
+                if orientation == '+':
+                    assert CrmGenome[chromo][positions[j]] == crmallele, 'no match with nucleotide extracted with list index on +'
+                    if positions[j] in chromo_sites[chromo]:
+                        assert chromo_sites[chromo][positions[j]][0] == crmallele, 'no match with ref allele in SNP dict in +'
+                    else:
+                        print(j, positions[j], orientation)
+                elif orientation == '-':
+                    assert seq_complement(CrmGenome[chromo][positions[j]]) == crmallele, 'no match with nucleotide extracted with list index on -'
+                    if positions[j] in chromo_sites[chromo]:
+                        assert seq_complement(chromo_sites[chromo][positions[j]][0]) == crmallele, 'no match with ref allele in SNP dict in -'
+                    else:
+                        print(j, positions[j], orientation)
+            else:
+                gaps += 1
+            # determine if site a fized difference or a polymorphism
+            # check that ancestral allele is valid base
+            if ancestral in 'ATCG' and crmallele in 'ATCG':
+                # check that site has coverage            
+                if positions[j] in chromo_sites[chromo]:
+                    # fixed diff if ref_count != 0 and alt_count = 0 and ref != ancestral 
+                    # fixed diff is ref_count = 0 and alt_count != 0 and alt != ancestral
+                    # polymorphism if (ref_count != 0 and alt_count != 0) and (ref = amcestral or alt = ancestral)
+                    # get ref and alt counts
+                    ref_count, alt_count = chromo_sites[chromo][positions[j]][2], chromo_sites[chromo][positions[j]][3]
+                    # get reference and alternative alleles
+                    ref, alt = chromo_sites[chromo][positions[j]][0], chromo_sites[chromo][positions[j]][1]
+                    # consider positions with sample size > 10 (positions are already filtered in chromo_sites)
+                    if ref_count + alt_count >= 10:
+                        if ref_count != 0 and alt_count == 0 and ref != ancestral:
+                            # fixed difference, populate dict
+                            if mirna in hairpin_diffs:
+                                hairpin_diffs[mirna][0] += 1
+                            else:
+                                hairpin_diffs[mirna] = [0, 0]
+                        elif ref_count == 0 and alt_count != 0 and alt != ancestral:
+                            # fixed difference, populate dict
+                            if mirna in hairpin_diffs:
+                                hairpin_diffs[mirna][0] += 1
+                            else:
+                                hairpin_diffs[mirna] = [0, 0]
+                        elif (ref_count != 0 and alt_count != 0) and (ref == ancestral or alt == ancestral):
+                            # check if some polymorphic sites need to be ignored
+                            if rare_alleles == True:
+                                # use allele count to filter sites
+                                # check that allele with lowest count > raw_count threshold
+                                if min(ref_count, alt_count) > threshold:
+                                    # polymorphism, populate dict
+                                    if mirna in hairpin_diffs:
+                                        hairpin_diffs[mirna][1] += 1
+                                    else:
+                                        hairpin_diffs[mirna] = [0, 0]
+   
+    return hairpin_diffs
+    
