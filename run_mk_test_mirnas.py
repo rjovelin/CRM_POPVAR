@@ -207,44 +207,20 @@ PCorrMature = Benjamini_Hochberg_correction(MaturePvals)
 print('corrected P for matures')
 
 
-
-# edit below
-
-
-
-
-
-
-
-
-
 # count the number of genes with significant MK after BJ correction with 10% FDR 
 FDR = 0.1
-signifcorr = [gene for gene in corrected if corrected[gene] < FDR]
-nonsignifcorr = [gene for gene in corrected if corrected[gene] >= FDR]
-print('FDR', FDR, len(signifcorr))
-print('FDR', FDR, len(nonsignifcorr))
+HairpinSignifCorr = [mirna for mirna in MKhairpinCorr if MKhairpinCorr[mirna] < FDR]
+HairpinNeutralCorr = [mirna for mirna in MKhairpinCorr if MKhairpinCorr[mirna] >= FDR]
+# determine mirnas with significant MK that are under positive or negative selection
+HairpinNegativeCorr, HairpinPositiveCorr = NaturalSelection(MKhairpin, HairpinSignifCorr)
+MatureSignifCorr = [mirna for mirna in MKmatureCorr if MKmatureCorr[mirna] < FDR]
+MatureNeutralCorr = [mirna for mirna in MKmatureCorr if MKmatureCorr[mirna] >= FDR]
+MatureNegativeCorr, MaturePositiveCorr = NaturalSelection(MKmature, MatureSignifCorr)
 
-# determine genes with significant MK that are under positive or negative selection
-negativecorr, positivecorr = NaturalSelection(MK, signifcorr)
-
-# create lists of GPCR and non-GPCR genes
-PositiveChemoCorr = [gene for gene in positivecorr if gene in GPCRs]
-NegativeChemoCorr = [gene for gene in negativecorr if gene in GPCRs]
-NonsignificantChemoCorr = [gene for gene in nonsignifcorr if gene in GPCRs]
-
-PositiveNCCorr = [gene for gene in positivecorr if gene in NonGPCRs]
-NegativeNCCorr = [gene for gene in negativecorr if gene in NonGPCRs]
-NonsignificantNCCorr = [gene for gene in nonsignifcorr if gene in NonGPCRs]
-
-print('chemo +', len(PositiveChemoCorr))
-print('chemo -', len(NegativeChemoCorr))
-print('chemo NS', len(NonsignificantChemoCorr))
-print('NC +', len(PositiveNCCorr))
-print('NC -', len(NegativeNCCorr))
-print('NC NS', len(NonsignificantNCCorr))
-assert len(mk) == len(PositiveChemoCorr) + len(NegativeChemoCorr) + len(NonsignificantChemoCorr) + \
-                  len(PositiveNCCorr) + len(NegativeNCCorr) + len(NonsignificantNCCorr)
+print('significant after correction', len(HairpinSignifCorr), len(MatureSignifCorr))
+print('positive after correction', len(HairpinPositiveCorr), len(MaturePositiveCorr))
+print('negative after correction', len(HairpinNegativeCorr), len(MatureNegativeCorr))
+print('neutral after correction', len(HairpinNeutralCorr), len(MatureNeutralCorr))
 
 
 
@@ -252,14 +228,16 @@ assert len(mk) == len(PositiveChemoCorr) + len(NegativeChemoCorr) + len(Nonsigni
 
 
 
-
-
-
-
-# make a summary file with results of the MK test for hairpin
-newfile = open('MKtestmiRNAHairpinsNoSingleton.txt', 'w')
-newfile.write('\t'.join(['Crm_miRNA', 'Pmirna', 'P4fold', 'Dmirna', 'D4fold', 'MK_P', 'Selection', 'MK_P_Corr', 'Selection_Corr']) + '\n')
-
+#
+#
+#
+#
+#
+#
+## make a summary file with results of the MK test for hairpin
+#newfile = open('MKtestmiRNAHairpinsNoSingleton.txt', 'w')
+#newfile.write('\t'.join(['Crm_miRNA', 'Pmirna', 'P4fold', 'Dmirna', 'D4fold', 'MK_P', 'Selection', 'MK_P_Corr', 'Selection_Corr']) + '\n')
+#
 
 
 
