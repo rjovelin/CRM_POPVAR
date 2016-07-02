@@ -470,7 +470,7 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
         for name in hairpins[mirna]:
             if name.startswith('crm'):
                 crmmirna = name
-                assert crmirna == mirna, 'mirna names do not match'
+                assert crmmirna == mirna, 'mirna names do not match'
                 crmseq = hairpins[mirna][crmmirna]
             elif name.startswith('cla'):
                 clamirna = name
