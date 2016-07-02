@@ -493,12 +493,10 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
                     assert CrmGenome[chromo][positions[j]] == crmallele, 'no match with nucleotide extracted with list index on +'
                     if positions[j] in chromo_sites[chromo]:
                         assert chromo_sites[chromo][positions[j]][0] == crmallele, 'no match with ref allele in SNP dict in +'
-                    
                 elif orientation == '-':
                     assert seq_complement(CrmGenome[chromo][positions[j]]) == crmallele, 'no match with nucleotide extracted with list index on -'
                     if positions[j] in chromo_sites[chromo]:
                         assert seq_complement(chromo_sites[chromo][positions[j]][0]) == crmallele, 'no match with ref allele in SNP dict in -'
-                    
             else:
                 gaps += 1
             # determine if site a fized difference or a polymorphism
