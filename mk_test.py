@@ -449,6 +449,10 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
     # CrmGenome is a dict with genome {chromo: sequence}
     # chromo-sites is a dict with SNP data {chromo: {site : [ref_allele, alt_allele, count_ref, count alt]}]}
 
+
+    # create a dict to store the fixed diffs and polyms {mirna: [D, P]}
+    hairpin_diffs = {}
+
     # loop over aligned hairpins
     for mirna in hairpins:
         # get chromo, start, end and orientation
@@ -518,13 +522,13 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
                             if mirna in hairpin_diffs:
                                 hairpin_diffs[mirna][0] += 1
                             else:
-                                hairpin_diffs[mirna] = [0, 0]
+                                hairpin_diffs[mirna] = [1, 0]
                         elif ref_count == 0 and alt_count != 0 and alt != ancestral:
                             # fixed difference, populate dict
                             if mirna in hairpin_diffs:
                                 hairpin_diffs[mirna][0] += 1
                             else:
-                                hairpin_diffs[mirna] = [0, 0]
+                                hairpin_diffs[mirna] = [1, 0]
                         elif (ref_count != 0 and alt_count != 0) and (ref == ancestral or alt == ancestral):
                             # check if some polymorphic sites need to be ignored
                             if rare_alleles == True:
@@ -535,7 +539,7 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
                                     if mirna in hairpin_diffs:
                                         hairpin_diffs[mirna][1] += 1
                                     else:
-                                        hairpin_diffs[mirna] = [0, 0]
+                                        hairpin_diffs[mirna] = [0, 1]
    
     return hairpin_diffs
     

@@ -12,6 +12,8 @@ from manipulate_sequences import *
 from divergence import *
 from miRNA_target import *
 from sites_with_coverage import *
+from mk_test import *
+from multiple_testing import *
 
 
 # convert genome to dict
@@ -21,14 +23,6 @@ print('converted genome to dict')
 # create a set of valid transcripts (1 transcript mapped to 1 gene)
 valid_transcripts = get_valid_transcripts('../Genome_Files/unique_transcripts.txt')
 print('made a set of valid transcripts')
-
-# get miRNA coordinates {chromo: [[start, end, orientation]]}
-mirna_coord = get_mirna_loci('CRM_miRNAsCoordinatesFinal.txt')
-print('got miRNA coordinates')
-
-# get mature coordinates {chromo: [[start, end orientation]]}
-mature_coord = get_mirna_loci('CRM_MatureCoordinatesFinal.txt')
-print('got mature miR coordinates')
 
 # create a dict with remanei mirna hairpin name and remanei-latens aligned hairpins
 hairpins = {}
@@ -62,16 +56,6 @@ for filename in maturefiles:
         matures[crmname][name] = fastafile[name]
 print('got aligned matures')
 print('aligned matures', len(matures))
-
-
-# get miRNA coordinates {chromo: [[start, end, orientation]]}
-mirna_coord = get_mirna_loci('CRM_miRNAsCoordinatesFinal.txt')
-print('got miRNA coordinates')
-
-
-# get mature coordinates {chromo: [[start, end orientation]]}
-mature_coord = get_mirna_loci('CRM_MatureCoordinatesFinal.txt')
-print('got mature miR coordinates')
 
 
 # make a dict with family level conservation for all miRNAs {name : conservarion}
@@ -136,317 +120,174 @@ for mirna in hairpins:
 for mirna in matures:
     assert mirna in miR_coord, 'miR with aligned sequences does not have coordinates'        
 
-
-# create a dict to record the number of fixed diffs and polmorphisms for each mirna hairpin and mature
+# create a dict to record the number of fixed diffs and polmorphisms for each mirna hairpin
 # {mirna: [D, P]}
-hairpin_diffs, mature_diffs = {}, {}
+hairpin_diffs = CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, True, 1)
+print('got the diff counts for hairpins')  
+  
+# create a dict to record the number of fixed diffs and polmorphisms for each mirna mature
+# {mirna: [D, P]}
+mature_diffs = CountPolymDivergmiRNAs(matures, miR_coord, CrmGenome, chromo_sites, True, 1)
+print('got the diff counts for matures')
 
-# loop over aligned hairpins
-for mirna in hairpins:
-    # get chromo, start, end and orientation
-    chromo, start, end, orientation = hairpin_coord[mirna][0], hairpin_coord[mirna][1], hairpin_coord[mirna][2], hairpin_coord[mirna][3] 
-    # extract sequence from genome
-    sequence = CrmGenome[chromo][start: end]
-    if orientation == '-':
-        sequence = reverse_complement(sequence)
-    # get mirna positions on chromo
-    positions = [i for i in range(start, end)]    
-    # get the position in decreasing order if orientation is -    
-    if orientation == '-':
-        positions.reverse()
-    # get the remanei and latens mirna name, and correspsonding sequences
-    for name in hairpins[mirna]:
-        if name.startswith('crm'):
-            crmmirna = name
-            assert crmirna == mirna, 'mirna names do not match'
-            crmseq = hairpins[mirna][crmmirna]
-        elif name.startswith('cla'):
-            clamirna = name
-            claseq = hairpins[mirna][clamirna]
-    # set up a gap counter
-    gaps = 0
-    # loop over crm sequence
-    # keep track of index to look for SNP data when gaps are present
-    for i in range(len(crmseq)):
-        # get ancestral allele and remanei allele
-        ancestral, crmallele = claseq[i], crmseq[i]
-        if crmallele != '-':
-            # get the index to look in positions
-            j = i - gaps
-            # check that nucleotide in crmseq correspond to sequence from genome
-            assert sequence[j] == crmallele, 'nucleotides do not match between extracted sequence and aligned sequence'
-            # check that index in positions is correct
-            # check that ref allele in SNP dictionary is correct
-            if orientation == '+':
-                assert CrmGenome[chromo][positions[j]] == crmallele, 'no match with nucleotide extracted with list index on +'
-                if positions[j] in chromo_sites[chromo]:
-                    assert chromo_sites[chromo][positions[j]][0] == crmallele, 'no match with ref allele in SNP dict in +'
-                else:
-                    print(j, positions[j], orientation)
-            elif orientation == '-':
-                assert seq_complement(CrmGenome[chromo][positions[j]]) == crmallele, 'no match with nucleotide extracted with list index on -'
-                if positions[j] in chromo_sites[chromo]:
-                    assert seq_complement(chromo_sites[chromo][positions[j]][0]) == crmallele, 'no match with ref allele in SNP dict in -'
-                else:
-                    print(j, positions[j], orientation)
-        else:
-            gaps += 1
-        # determine if site a fized difference or a polymorphism
-        # check that ancestral allele is valid base
-        if ancestral in 'ATCG' and crmallele in 'ATCG':
-            # check that site has coverage            
-            if positions[j] in chromo_sites[chromo]:
-                # fixed diff if ref_count != 0 and alt_count = 0 and ref != ancestral 
-                # fixed diff is ref_count = 0 and alt_count != 0 and alt != ancestral
-                # polymorphism if (ref_count != 0 and alt_count != 0) and (ref = amcestral or alt = ancestral)
-                # get ref and alt counts
-                ref_count, alt_count = chromo_sites[chromo][positions[j]][2], chromo_sites[chromo][positions[j]][3]
-                # get reference and alternative alleles
-                ref, alt = chromo_sites[chromo][positions[j]][0], chromo_sites[chromo][positions[j]][1]
-                
-                if ref_count != 0 and alt_count == 0 and ref != ancestral:
-                    # fixed difference, populate dict
-                    if mirna in hairpin_diffs:
-                        hairpin_diffs[mirna][0] += 1
-                    else:
-                        hairpin_diffs[mirna] = [0, 0]
-                elif ref_count == 0 and alt_count != 0 and alt != ancestral:
-                    # fixed difference, populate dict
-                    if mirna in hairpin_diffs:
-                        hairpin_diffs[mirna][0] += 1
-                    else:
-                        hairpin_diffs[mirna] = [0, 0]
-                elif (ref_count != 0 and alt_count != 0) and (ref == ancestral or alt == ancestral):
-                    # polymorphism, populate dict
-                    if mirna in hairpin_diffs:
-                        hairpin_diffs[mirna][1] += 1
-                    else:
-                        hairpin_diffs[mirna] = [0, 0]
-            
+# create a dict to record the number of fixed diffs and polymorphisms at 4-fold degenerate sites
+fourfold_diffs = CountPolymDivergFourFold('../Genome_Files/CDS_SNP_DIVERG.txt', True, 1)
+print('got the diff count at 4-fold degenerate sites')
 
+# remove genes that are not valid
+total = 0
+to_remove = [i for i in fourfold_diffs if i not in valid_transcripts]
+for i in to_remove:
+    if i in fourfold_diffs:
+        del fourfold_diffs[i]
+        total += 1
+print('removed {0} non-valid genes'.format(total))
+
+
+# compute Mk test according to Lyu et al Plos Genetics 2014:
+# New MicroRNAs in Drosophila—Birth, Death and Cycles of Adaptive Evolution
+'''
+McDonald-Kreitman test to detect positive selection in miRNAs from each age group
+based on the polymorphisms within Dmel and divergence between Dmel-Dsim. 
+Precursor or mature sequences of each miRNA group were combined and treated as
+the functional category, 4-fold degenerate sites in the whole genome were used
+as the neutral control.
+'''
+
+# compute the MK test for each individual mirnas with 4-fold diffs as neutral control
+# make a list with polym and divergence at 4-fold by pooling all the gene-centered counts [D, P]
+Neutral = [0, 0]
+for gene in fourfold_diffs:
+    Neutral[0] += fourfold_diffs[gene][0]
+    Neutral[1] += fourfold_diffs[gene][1]
+print('pooled diffs for 4-fold sites', Neutral)
+
+# create a dict by combining D and P for mirna sites and for 4-fold
+# {mirna: [Pmirna, P4fold, Dmirna, D4fold]}
+HairpinCounts, MatureCounts = {}, {}
+for mirna in hairpin_diffs:
+    HairpinCounts[mirna] = [hairpin_diffs[mirna][1], Neutral[1], hairpin_diffs[mirna][0], Neutral[0]]
+for mirna in mature_diffs:
+    MatureCounts[mirna] = [mature_diffs[mirna][1], Neutral[1], mature_diffs[mirna][0], Neutral[0]]
+print('pooled fixed diffs and polyms for hairpins and matures')
+
+# compute MK for each mirna and generate a dict {mirna: [[Pmirna, P4fold, Dmirna, D4fold, Pval]}
+MKhairpin = MK_test(HairpinCounts, 'fisher')
+MKmature = MK_test(MatureCounts, 'fisher')
+print('computed MK tests for hairpins and matures')
+
+# determine genes that are neutral, under negative and positive selection
+# make a list of genes with significant MK test
+HairpinSignificant = [mirna for mirna in MKhairpin if MKhairpin[mirna][-1] < 0.05]
+HairpinNeutral = [mirna for mirna in MKhairpin if MKhairpin[mirna][-1] >= 0.05]
+# determine mirnas with significant MK that are under positive or negative selection
+HairpinNegative, HairpinPositive = NaturalSelection(MKhairpin, HairpinSignificant)
+MatureSignificant = [mirna for mirna in MKmature if MKmature[mirna][-1] < 0.05]
+MatureNeutral = [mirna for mirna in MKmature if MKmature[mirna][-1] >= 0.05]
+# determine mirnas with signidicant MK that are under positive or negative selection
+MatureNegative, MaturePositive = NaturalSelection(MKmature, MatureSignificant)
+print('got lists of mirnas under positive and negative selection')
+
+print('significant', len(HairpinSignificant), len(MatureSignificant))
+print('positive', len(HairpinPositive), len(MaturePositive))
+print('negative', len(HairpinNegative), len(MatureNegative))
+print('neutral', len(HairpinNeutral), len(MatureNeutral))
+
+# apply a Benjamini-Hochberg correction for multiple testing {gene: corrected_Pval}
+MKhairpinCorr, MKmatureCorr = {}, {}
+for gene in MKhairpin:
+    MKhairpinCorr[gene] = MKhairpin[gene][-1]
+HairpinPvals = [(p, gene) for gene, p in MKhairpinCorr.items()]
+PCorrHairpin = Benjamini_Hochberg_correction(HairpinPvals)
+print('corrected P for hairpins')
+for gene in MKmature:
+    MKmatureCorr[gene] = MKmature[gene][-1]
+MaturePvals = [(p, gene) for gene, p in MKmatureCorr.items()]
+PCorrMature = Benjamini_Hochberg_correction(MaturePvals)
+print('corrected P for matures')
 
 
 
 
-# add option to consider singletons or not
 
 
-# add code to consider only positions with sample size > 10
 
 
-# make it a function so it can be use for mature mir as well
 
 
-# consider only 4-fold degenerate sites in entire genome for neutral control
+
+
+
+# count the number of genes with significant MK after BJ correction with 10% FDR 
+FDR = 0.1
+signifcorr = [gene for gene in corrected if corrected[gene] < FDR]
+nonsignifcorr = [gene for gene in corrected if corrected[gene] >= FDR]
+print('FDR', FDR, len(signifcorr))
+print('FDR', FDR, len(nonsignifcorr))
+
+# determine genes with significant MK that are under positive or negative selection
+negativecorr, positivecorr = NaturalSelection(MK, signifcorr)
+
+# create lists of GPCR and non-GPCR genes
+PositiveChemoCorr = [gene for gene in positivecorr if gene in GPCRs]
+NegativeChemoCorr = [gene for gene in negativecorr if gene in GPCRs]
+NonsignificantChemoCorr = [gene for gene in nonsignifcorr if gene in GPCRs]
+
+PositiveNCCorr = [gene for gene in positivecorr if gene in NonGPCRs]
+NegativeNCCorr = [gene for gene in negativecorr if gene in NonGPCRs]
+NonsignificantNCCorr = [gene for gene in nonsignifcorr if gene in NonGPCRs]
+
+print('chemo +', len(PositiveChemoCorr))
+print('chemo -', len(NegativeChemoCorr))
+print('chemo NS', len(NonsignificantChemoCorr))
+print('NC +', len(PositiveNCCorr))
+print('NC -', len(NegativeNCCorr))
+print('NC NS', len(NonsignificantNCCorr))
+assert len(mk) == len(PositiveChemoCorr) + len(NegativeChemoCorr) + len(NonsignificantChemoCorr) + \
+                  len(PositiveNCCorr) + len(NegativeNCCorr) + len(NonsignificantNCCorr)
+
+
+
+
+
+
+
+
+
+
+
+# make a summary file with results of the MK test for hairpin
+newfile = open('MKtestmiRNAHairpinsNoSingleton.txt', 'w')
+newfile.write('\t'.join(['Crm_miRNA', 'Pmirna', 'P4fold', 'Dmirna', 'D4fold', 'MK_P', 'Selection', 'MK_P_Corr', 'Selection_Corr']) + '\n')
+
+
+
+
 
 
 # group mirnas based on level of conservation
 # perform MK test based on each mirna individually
 # perform MK test based on entire conservation group by pooling numbers
 # see Lyu et al for organizing table
-# compute alpha for all hairpins, all matures, and each conservation group
+
 
 
 
 # site type site number D P PDAF.5% D/PDAF.5% MK test pvaluea ab (% of adaptive fixations)
 
 
-# need a script to count P and D for non-coding sites
-
-
-
-# extract from Lyu et al Plos genetics 2014
-# New MicroRNAs in Drosophila—Birth, Death and Cycles of Adaptive Evolution
-
-'''
-We used the McDonald-Kreitman test (MK test) [32] framework
-to detect positive selection in miRNAs from each age group
-based on the polymorphisms within D. melanogaster and the
-divergence between D. melanogaster and D. simulans. Precursor or
-mature sequences of each miRNA group were combined and
-treated as the functional category, while the 4-fold degenerate sites
-in the whole genome were used as the neutral control. The
-divergence is calculated by counting the number of changed
-nucleotide sites between D. melanogaster (dm3) and D. simulans
-(droSim1) based on the UCSC whole genome alignment.
-Polymorphism data was retrieved from Drosophila Population
-Genomics Project (DPGP, http://www.dpgp.org/, release 1.0).
-
-SNPs that were detected on more than thirty individuals and
-exhibited a derived allele frequency (DAF) > 5% were used for the
-MK test.
-The proportion of adaptively fixed mutations (a) was estimated
-as previously described [75]. To estimate the evolutionary fate of
-each miRNA, we first screened for adaptive miRNAs among the
-238 candidates by using each miRNA’s precursor together with
-the 50 bp flanking sequences on both sides as the functional sites.
-The p-values of multiple MK tests were adjusted by the BenjaminiHochberg
-method [76] and the adaptive significance of each
-candidate is re-validated by using the precursor alone in the MK
-test. We then identified the conservative miRNAs by comparing
-the number of substitutions in the miRNA precursors (KmiR) with
-the number of substitutions in the synonymous sites (KS) between
-D.melanogaster and D.simulans. miRNAs with KmiR/KS < 0.5 were
-considered to be conservatively evolving. Kimura’s 2-parameter
-model [72] and the Nei-Gojobori model [77] were used to
-calculate KmiR and KS, respectively. Finally, excluding the
-adaptive and conservative miRNAs, the remaining were considered
-to be in transition between adaptive to conservative/death
-'''
 
 
 
 
 
-# use this function to count the number of replacement and synonymous changes
-def count_polym_diverg(snp_file, strains, rare_sites, cutoff, raw_count):
-    '''
-    (file, str, str, float, int) -> dict 
-    Take the file with the SNPs in coding sequences, a given focal group of strains
-    and return a dictionnary with gene as key and a list of containing PN, PS,
-    DN, DS as value. If rare_sites is freq then polymorphic sites with a
-    frequency < cutoff are ignored, and if rare_sites is count then sites that
-    are < than raw_count in the sample are ignored
-    '''
-    
-    # PN: number of replacement polymorphisms
-    # PS: number of synonymous polymorphisms
-    # DN: number of fixed replacements
-    # DS: number of fixed synonymous changes    
-    
-    # create a set of stop codons
-    stop_codons = {'TAG', 'TGA', 'TAA'} 
-    
-    # initialize dict
-    SNPs = {}
-    # initialize gene : empty list pairs
-    # open file for reading
-    infile = open(snp_file, 'r')
-    # skip header
-    infile.readline()
-    # loop over file, get the gene name as key and initialize list
-    # list contains PN, PS, DN, DS
-    for line in infile:
-        if line.rstrip() != '':
-            line = line.rstrip().split()
-            gene = line[2]
-            if gene not in SNPs:
-                # {gene : [PN, PS, DN, DS]}
-                SNPs[gene] = [0, 0, 0, 0]
-    # close file after reading
-    infile.close()
-    
-    # open file for reading
-    infile = open(snp_file, 'r')
-    # skip header
-    infile.readline()
-    # loop over file
-    for line in infile:
-        line = line.rstrip()
-        if line != '':
-            line = line.split()
-            # get dict key
-            gene = line[2]
-            # record only sites for which ancestral state is defined
-            if line[19] in {'A', 'C', 'T', 'G'}:
-                # record only sites labeled snp or no_snp and valid snp type
-                if line[6] in {'snp', 'no_snp'} and line[9] in {'NA', 'COD', 'SYN', 'REP'}:
-                    # get reference and alternative codons and latens codon
-                    ref_codon, alt_codon, cla_codon = line[3], line[8], line[18]
-                    # get reference, alternative and latens alleles
-                    ref, alt, cla_base = line[5], line[7], line[19]
-                    # get SNP type
-                    snp = line[9]
-                    # do not consider stop codons
-                    if ref_codon not in stop_codons and alt_codon not in stop_codons and cla_codon not in stop_codons:
-                        # do not consider codons with 'Ns'
-                        if 'N' not in ref_codon and 'N' not in alt_codon and 'N' not in cla_codon:
-                            # check focal group, consider only KSR strains or KRS and PX combined
-                            if strains == 'KSR':
-                                # get reference allele count
-                                ref_count = int(line[10])
-                                # get alternative allele count
-                                alt_count = int(line[14])
-                            elif strains == 'KSR_PX':
-                                # get reference allele count
-                                ref_count = int(line[13])
-                                # get alternative allele count
-                                alt_count = int(line[17])
-                            # Consider sites that have a sample size >= 10
-                            if ref_count + alt_count >= 10:
-                                # do not consider codons with more than 1 substitutions
-                                if diff_codon(cla_codon, alt_codon) <= 1:
-                                    # determine if site is polymorphic or fixed
-                                    # fixed diff if alternative allele fixed and different from latens 
-                                    if ref_count == 0 and alt_count != 0 and cla_base != alt:
-                                        # fixed difference between latens and remanei
-                                        # check if change is synonymous or nonsynonymous
-                                        if genetic_code[cla_codon] != genetic_code[alt_codon]:
-                                            # fixed nonsynonymous change
-                                            SNPs[gene][2] += 1
-                                        elif genetic_code[cla_codon] == genetic_code[alt_codon]:
-                                            # fixed synonymous change
-                                            SNPs[gene][3] += 1
-                                    elif ref_count != 0 and alt_count == 0 and cla_base != ref:
-                                        # fixed difference between latens and remanei
-                                        # do not consider codons with more than 1 substitutions
-                                        # check if change is synonymous or nonsynonymous
-                                        if genetic_code[cla_codon] != genetic_code[ref_codon]:
-                                            # fixed nonsynonymous change
-                                            SNPs[gene][2] += 1
-                                        elif genetic_code[cla_codon] == genetic_code[ref_codon]:
-                                            # fixed synonymous change
-                                            SNPs[gene][3] += 1
-                                    elif ref_count != 0 and alt_count != 0 and (ref == cla_base or alt == cla_base):
-                                        # site is polymorphic
-                                        # set up boolean to identify polymorphic site after filtering based on MAF or raw count
-                                        PolymorphicSite = False
-                                        # check if cutoff or raw_count applies
-                                        if rare_sites == 'freq':
-                                            # use frequency cutoff
-                                            # compare the snp MAF frequency to cutoff
-                                            if ref_count >= alt_count:
-                                                freq = alt_count / (ref_count + alt_count)
-                                            elif ref_count < alt_count:
-                                                freq = ref_count / (ref_count + alt_count)
-                                            if freq >= cutoff:
-                                                # record polymorphic site
-                                                PolymorphicSite = True
-                                        elif rare_sites == 'count':
-                                            # use allele count to filter sites
-                                            # check that allele with lowest count > raw_count threshold
-                                            if ref_count >= alt_count and alt_count > raw_count:
-                                                # alt_count is greater than minimum required threshold
-                                                # record polymorphic site
-                                                PolymorphicSite = True
-                                            elif ref_count < alt_count and ref_count > raw_count:
-                                                # ref_count is greater than minimum required thereshold
-                                                # record polymorphic site
-                                                PolymorphicSite = True
-                                        # determine the type of mutation if polymorphic site is to be recorded
-                                        if PolymorphicSite == True:
-                                            if snp == 'SYN' and genetic_code[ref_codon] == genetic_code[alt_codon]:
-                                                # mutation is synonymous
-                                                SNPs[gene][1] += 1
-                                            elif snp == 'REP' and genetic_code[ref_codon] != genetic_code[alt_codon]:
-                                                # mutation is nonsynonymous
-                                                SNPs[gene][0] += 1
-                                                    
-    # close file after readling
-    infile.close()
-    
-    # remove genes with no polymorhisms or no divergence
-    # because MK test cannot be computed for these genes
-    
-    to_remove = []
-    for gene in SNPs:
-        if SNPs[gene][0] == 0 and SNPs[gene][1] == 0:
-            to_remove.append(gene)
-        elif SNPs[gene][2] == 0 and SNPs[gene][3] == 0:
-            to_remove.append(gene)
-        
-    for gene in to_remove:
-      del SNPs[gene]  
-    
-    # return dict
-    return SNPs
+
+
+
+
+
+
+
+
+
+
