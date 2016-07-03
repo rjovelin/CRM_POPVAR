@@ -8,11 +8,11 @@ Created on Wed Jun 29 16:07:21 2016
 # use this script to compute the MK test for miRNAs
 
 import os
-from manipulate_sequences import *
 from divergence import *
 from miRNA_target import *
 from sites_with_coverage import *
 from mk_test import *
+from manipulate_sequences import *
 from multiple_testing import *
 
 
@@ -138,9 +138,8 @@ print('got the diff count at 4-fold degenerate sites')
 total = 0
 to_remove = [i for i in fourfold_diffs if i not in valid_transcripts]
 for i in to_remove:
-    if i in fourfold_diffs:
-        del fourfold_diffs[i]
-        total += 1
+    del fourfold_diffs[i]
+    total += 1
 print('removed {0} non-valid genes'.format(total))
 
 
@@ -209,18 +208,26 @@ print('corrected P for matures')
 
 # count the number of genes with significant MK after BJ correction with 10% FDR 
 FDR = 0.1
-HairpinSignifCorr = [mirna for mirna in MKhairpinCorr if MKhairpinCorr[mirna] < FDR]
-HairpinNeutralCorr = [mirna for mirna in MKhairpinCorr if MKhairpinCorr[mirna] >= FDR]
+HairpinSignifCorr = [mirna for mirna in PCorrHairpin if PCorrHairpin[mirna] < FDR]
+HairpinNeutralCorr = [mirna for mirna in PCorrHairpin if PCorrHairpin[mirna] >= FDR]
 # determine mirnas with significant MK that are under positive or negative selection
 HairpinNegativeCorr, HairpinPositiveCorr = NaturalSelection(MKhairpin, HairpinSignifCorr)
-MatureSignifCorr = [mirna for mirna in MKmatureCorr if MKmatureCorr[mirna] < FDR]
-MatureNeutralCorr = [mirna for mirna in MKmatureCorr if MKmatureCorr[mirna] >= FDR]
+MatureSignifCorr = [mirna for mirna in PCorrMature if PCorrMature[mirna] < FDR]
+MatureNeutralCorr = [mirna for mirna in PCorrMature if PCorrMature[mirna] >= FDR]
 MatureNegativeCorr, MaturePositiveCorr = NaturalSelection(MKmature, MatureSignifCorr)
 
 print('significant after correction', len(HairpinSignifCorr), len(MatureSignifCorr))
 print('positive after correction', len(HairpinPositiveCorr), len(MaturePositiveCorr))
 print('negative after correction', len(HairpinNegativeCorr), len(MatureNegativeCorr))
 print('neutral after correction', len(HairpinNeutralCorr), len(MatureNeutralCorr))
+
+
+for mirna in MKhairpin:
+    print(mirna, MKhairpin[mirna])
+
+
+
+
 
 
 
