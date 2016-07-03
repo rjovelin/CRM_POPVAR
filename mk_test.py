@@ -443,12 +443,11 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
     number of mutations to ignore per site (eg, singletons) and return a dict
     with D and P the number of fixed differences and polymorphisms in each mirna
     '''
-
+    
     # hairpins is a dict {crm_mirna_name: {crm_mirna_name: aligned_seq, cla_mirna_name: aligned_seq}}
     # hairpin_coord is a dict with mirna coordinates {name: [chromo, start, end, orientation]}
     # CrmGenome is a dict with genome {chromo: sequence}
     # chromo-sites is a dict with SNP data {chromo: {site : [ref_allele, alt_allele, count_ref, count alt]}]}
-
 
     # create a dict to store the fixed diffs and polyms {mirna: [D, P]}
     hairpin_diffs = {}
@@ -514,10 +513,13 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
                     if orientation == '-':
                         ref = seq_complement(ref)
                         alt = seq_complement(alt)
-                        assert CrmGenome[chromo][positions[j]] == ref, 'no match with ref on +'
+                        assert seq_complement(CrmGenome[chromo][positions[j]]) == ref, 'no match with ref on -'
+                     elif orientation == '+':
+                         assert CrmGenome[chromo][positions[j]] == ref, 'no match with ref on +'
                     # consider positions with sample size > 10 (positions are already filtered in chromo_sites)
                     if ref_count + alt_count >= 10:
                         if ref_count != 0 and alt_count == 0 and ref != ancestral:
+                            #
                             # fixed difference, populate dict
                             if mirna in hairpin_diffs:
                                 hairpin_diffs[mirna][0] += 1
@@ -540,6 +542,6 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
                                         hairpin_diffs[mirna][1] += 1
                                     else:
                                         hairpin_diffs[mirna] = [0, 1]
-   
+    
     return hairpin_diffs
     
