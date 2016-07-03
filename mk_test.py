@@ -514,6 +514,7 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
                     if orientation == '-':
                         ref = seq_complement(ref)
                         alt = seq_complement(alt)
+                        assert CrmGenome[chromo][positions[j]] == ref, 'no match with ref on +'
                     # consider positions with sample size > 10 (positions are already filtered in chromo_sites)
                     if ref_count + alt_count >= 10:
                         if ref_count != 0 and alt_count == 0 and ref != ancestral:
