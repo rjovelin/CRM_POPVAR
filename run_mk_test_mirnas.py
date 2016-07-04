@@ -5,7 +5,8 @@ Created on Wed Jun 29 16:07:21 2016
 @author: RJovelin
 """
 
-# use this script to compute the MK test for miRNAs
+# use this script to compute the MK test for miRNAs and miRs
+# write results to summary files
 
 import os
 from divergence import *
@@ -170,6 +171,8 @@ for mirna in hairpin_diffs:
 for mirna in mature_diffs:
     MatureCounts[mirna] = [mature_diffs[mirna][1], Neutral[1], mature_diffs[mirna][0], Neutral[0]]
 print('pooled fixed diffs and polyms for hairpins and matures')
+print('hairpins counts', len(HairpinCounts))
+print('mature counts', len(MatureCounts))
 
 # compute MK for each mirna and generate a dict {mirna: [[Pmirna, P4fold, Dmirna, D4fold, Pval]}
 MKhairpin = MK_test(HairpinCounts, 'fisher')
@@ -222,11 +225,6 @@ print('positive after correction', len(HairpinPositiveCorr), len(MaturePositiveC
 print('negative after correction', len(HairpinNegativeCorr), len(MatureNegativeCorr))
 print('neutral after correction', len(HairpinNeutralCorr), len(MatureNeutralCorr))
 
-
-#for mirna in MKhairpin:
-#    print(mirna, MKhairpin[mirna])
-#for mirna in MKmature:
-#    print(mirna, MKmature[mirna])
 
 # make a summary file with results of the MK test for hairpin
 newfile = open('MKtestmiRNAHairpinsNoSingleton.txt', 'w')
@@ -371,77 +369,3 @@ print('alpha restricted', AlphaRestricted)
 print('alpha novel', AlphaNovel)
 print('alpha conserved', AlphaConserved)
 
-# resample mirnas in each group to compute 95% CI
-
-
-
-
-
-
-
-
-
-#
-## make summary file with each group
-#header = '\t'.join(['Site_type', 'D', 'P', 'D/P', 'MK_Pval', 'alpha', '95% CI'])
-#newfile = open('MKtestmiRNAConservationGroupsNoSingleton.txt', 'w')
-#newfile.write(header + '\n')
-
-
-
-
-
-# see Lyu et al for organizing table
-# site type site number D P PDAF.5% D/PDAF.5% MK test pvaluea ab (% of adaptive fixations)
-
-
-
-    
-     
-
-# use this function to bootstrap genes to compoute a distribution of alpha values
-def BootstrapAlphaSEW2002(PolymDivCounts, MinimumPS, replicates, Ngenes):
-    '''
-    (dict, int, int, int) -> list
-    Take a dictionary with polymorphim and divergence counts at synonymous 
-    and replacement sites, the minimum number of synonymous polymorphisms,
-    the number of bootstrap replicates, the number of genes to draw with replacement,
-    and return a list with distribution of alpha (Smith-Eyre-Walker 2002)
-    for each replicate
-    '''
-    
-    # create a list to store alpha values
-    AlphaDistribution = []
-    
-    # create a list of genes to draw genes at random    
-    GeneNames = [gene for gene in PolymDivCounts]
-        
-    # loop over number of replicates
-    while replicates != 0:
-        # create a dictionary with {gene : [PN, PS, DN, DS]} from genes draw at random
-        RandomDraw = {}
-        i = Ngenes
-        # draw Ngenes from PolymDivCounts
-        while i != 0:
-            # draw the index of gene at random (randint include last number)
-            # draw genes with replacement
-            position = random.randint(0, len(GeneNames)-1)
-            gene = GeneNames[position]
-            # populate dict
-            RandomDraw[gene] = list(PolymDivCounts[gene])
-            # update counter
-            i -= 1
-        # compute alpha
-        alpha = ComputeAlphaSEW2002(RandomDraw, MinimumPS)
-        AlphaDistribution.append(alpha)
-        # update counter
-        replicates -= 1
-        
-    return AlphaDistribution
-
-
-
-
-
-
-# plot alpha for each group?
