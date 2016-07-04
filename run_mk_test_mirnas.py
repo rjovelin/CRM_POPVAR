@@ -70,6 +70,7 @@ for line in infile:
         famCons[name] = conservation
 infile.close()
 print('got mirna conservation level')
+print('conservation level', len(famCons))
 
 # create a dict with coordinates of mature sequences
 miR_coord = {}
@@ -222,10 +223,10 @@ print('negative after correction', len(HairpinNegativeCorr), len(MatureNegativeC
 print('neutral after correction', len(HairpinNeutralCorr), len(MatureNeutralCorr))
 
 
-for mirna in MKhairpin:
-    print(mirna, MKhairpin[mirna])
-for mirna in MKmature:
-    print(mirna, MKmature[mirna])
+#for mirna in MKhairpin:
+#    print(mirna, MKhairpin[mirna])
+#for mirna in MKmature:
+#    print(mirna, MKmature[mirna])
 
 # make a summary file with results of the MK test for hairpin
 newfile = open('MKtestmiRNAHairpinsNoSingleton.txt', 'w')
@@ -271,18 +272,12 @@ print('generated summary table matures')
 
 
 # group mirnas based on level of conservation
-Restricted = [mirna for mirna in famCons if famCons[mirna] == 'CrmCla']
-Novel = [mirna for mirna in famCons if famCons[mirna] == 'Crm']
-Conserved = [mirna for mirna in famCons if famCons[mirna] == 'Caeno']
+Restricted = [mirna for mirna in famCons if famCons[mirna] == 'CrmCla' and mirna in MatureCounts]
+Novel = [mirna for mirna in famCons if famCons[mirna] == 'Crm' and mirna in MatureCounts]
+Conserved = [mirna for mirna in famCons if famCons[mirna] == 'Caeno' and mirna in MatureCounts]
 print('restricted', len(Restricted))
 print('novel', len(Novel))
 print('conserved', len(Conserved))
-
-
-
-
-
-# {mirna: [Pmirna, P4fold, Dmirna, D4fold]}
 
 
 # perform MK test based on entire conservation group
@@ -344,7 +339,7 @@ ConservedSignificant = [group for group in MKConserved if MKConserved[group][-1]
 ConservedNeutral = [group for group in MKConserved if MKConserved[group][-1] >= 0.05]
 # determine if group is under positive or negative selection
 if len(ConservedSignificant) != 0:
-    ConservedNegative, ConservedlPositive = NaturalSelection(MKConserved, ConservedSignificant)
+    ConservedNegative, ConservedPositive = NaturalSelection(MKConserved, ConservedSignificant)
 else:
     ConservedNegative, ConservedPositive = [], []
 print('determined groups under positive and negative selection')
@@ -376,14 +371,26 @@ print('alpha restricted', AlphaRestricted)
 print('alpha novel', AlphaNovel)
 print('alpha conserved', AlphaConserved)
 
-
-# plot alpha for each group?
-# make summary file with each group
+# resample mirnas in each group to compute 95% CI
 
 
 
 
-# make summary file
+
+
+
+
+
+#
+## make summary file with each group
+#header = '\t'.join(['Site_type', 'D', 'P', 'D/P', 'MK_Pval', 'alpha', '95% CI'])
+#newfile = open('MKtestmiRNAConservationGroupsNoSingleton.txt', 'w')
+#newfile.write(header + '\n')
+
+
+
+
+
 # see Lyu et al for organizing table
 # site type site number D P PDAF.5% D/PDAF.5% MK test pvaluea ab (% of adaptive fixations)
 
@@ -437,3 +444,4 @@ def BootstrapAlphaSEW2002(PolymDivCounts, MinimumPS, replicates, Ngenes):
 
 
 
+# plot alpha for each group?
