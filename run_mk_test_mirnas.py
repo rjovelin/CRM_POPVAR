@@ -245,7 +245,7 @@ for mirna in MKhairpin:
         newfile.write('adaptive' + '\n')
     elif mirna in HairpinNegativeCorr:
         newfile.write('negative' + '\n')
-newile.close()
+newfile.close()
 print('generated summary table hairpins')
 
 # make a summary file with results of the MK test for mature
@@ -266,7 +266,7 @@ for mirna in MKmature:
         newfile.write('adaptive' + '\n')
     elif mirna in MatureNegativeCorr:
         newfile.write('negative' + '\n')
-newile.close()
+newfile.close()
 print('generated summary table matures')
 
 
@@ -286,22 +286,72 @@ for mirna in MatureCounts:
             RestrictedCounts['restricted'][i] += MatureCounts[mirna][i]
     elif mirna in Novel:
         for i in range(4):
-            NovelCounts['novel'] += MatureCounts[mirna][i]
+            NovelCounts['novel'][i] += MatureCounts[mirna][i]
     elif mirna in Conserved:
         for i in range(4):
-            ConservedCounts['conserved'] += MatureCounts[mirna][i]
+            ConservedCounts['conserved'][i] += MatureCounts[mirna][i]
 print('sorted mirnas based on conservation')
 
 MKRestricted = MK_test(RestrictedCounts, 'fisher')
 MKNovel = MK_test(NovelCounts, 'fisher')
 MKConserved = MK_test(ConservedCounts, 'fisher')
-
+print('performed MK tests for each conservation group')
 print(MKRestricted)
 print(MKNovel)
 print(MKConserved)
 
 
+# determine groups that are neutral, under negative and positive selection
+RestrictedSignificant = [group for group in MKRestricted if MKRestricted[group][-1] < 0.05]
+RestrictedNeutral = [group for group in MKRestricted if MKRestricted[group][-1] >= 0.05]
+# determine if group is under positive or negative selection
+if len(RestrictedSignificant) != 0:
+    RestrictedNegative, RestrictedPositive = NaturalSelection(MKRestricted, RestrictedSignificant)
+else:
+    RestrictedNegative, RestrictedPositive = [], []
+
+NovelSignificant = [group for group in MKRestricted if MKNovel[group][-1] < 0.05]
+NovelNeutral = [group for group in MKRestricted if MKNovel[group][-1] >= 0.05]
+# determine if group is under positive or negative selection
+if len(NovelSignificant) != 0:
+    NovelNegative, NovelPositive = NaturalSelection(MKNovel, NovelSignificant)
+else:
+    NovelNegative, NovelPositive = [], []
+
+ConservedSignificant = [group for group in MKConserved if MKConserved[group][-1] < 0.05]
+ConservedNeutral = [group for group in MKConserved if MKConserved[group][-1] >= 0.05]
+# determine if group is under positive or negative selection
+if len(ConservedSignificant) != 0:
+    ConservedNegative, ConservedlPositive = NaturalSelection(MKConserved, ConservedSignificant)
+else:
+    ConservedNegative, ConservedPositive = [], []
+print('determined groups under positive and negative selection')
+
+print('significant', len(RestrictedSignificant), len(NovelSignificant), len(ConservedSignificant))
+print('positive', len(RestrictedPositive), len(NovelPositive), len(ConservedPositive))
+print('negative', len(RestrictedNegative), len(NovelNegative), len(ConservedNegative))
+print('neutral', len(RestrictedNeutral), len(NovelNeutral), len(ConservedNeutral))
+
 # make a dict with mirna for each conservation group
+MatureRestrictedCounts, MatureNovelCounts, MatureConservedCounts = {}, {}, {}
+for mirna in MatureCounts:
+    if mirna in Restricted:
+        MatureRestrictedCounts[mirna] = list(MatureCounts[mirna])
+    elif mirna in Novel:
+        MatureNovelCounts[mirna] = list(MatureCounts[mirna])
+    elif mirna in Conserved:
+        MatureConservedCounts[mirna] = list(MatureCounts[mirna])
+print('generated diffs coutns for mirna in each conservation group')
+
+
+
+
+
+
+
+
+
+
 # use this dict to sample mirna for calulting distribution of alpha
 # compute alpha
 # plot alpha for each group?
@@ -329,6 +379,73 @@ print(MKConserved)
 
 
 
+# use this function to compute alpha according to Smith-EyreWalker 2002    
+def ComputeAlphaSEW2002(PolymDivCounts, MinimumPS):
+     '''
+     (dict, int) -> float
+     Take a dictionary with polymorphim and divergence counts at synonymous 
+     and replacement sites and the minimum number of synonymous polymorphisms
+     and compute alpha, the average proportion of amino-acid substitutions
+     driven by positive selection according to the method of Smith-Eyre-Walker 2002
+     '''
+     
+     # alpha = 1 - ((MeanDS / MeanDN) * (Mean(PN / (PS + 1))))
+     # MeanDS: average number of fixed differences at synonymous sites
+     # MeanDN: average number of of fixed differences at nonsynonymous sites
+     # PN: number of nonymous replacement polymorphisms for a given gene
+     # PS: number of synonymous polymorphisms or a given gene
+     # PolymDivCounts  if in the form {gene : [PN, PS, DN, DS]}
+     
+     # create lists with divergence counts
+     DN = [PolymDivCounts[gene][2] for gene in PolymDivCounts]
+     DS = [PolymDivCounts[gene][3] for gene in PolymDivCounts]
+     
+     # create list with polymorphism ratio
+     Polym = [(PolymDivCounts[gene][0] / (PolymDivCounts[gene][1] + 1)) for gene in PolymDivCounts if PolymDivCounts[gene][1] >= MinimumPS]
+     
+     alpha = 1 - ((np.mean(DS) / np.mean(DN)) * np.mean(Polym))
+     return alpha     
+     
+
+# use this function to bootstrap genes to compoute a distribution of alpha values
+def BootstrapAlphaSEW2002(PolymDivCounts, MinimumPS, replicates, Ngenes):
+    '''
+    (dict, int, int, int) -> list
+    Take a dictionary with polymorphim and divergence counts at synonymous 
+    and replacement sites, the minimum number of synonymous polymorphisms,
+    the number of bootstrap replicates, the number of genes to draw with replacement,
+    and return a list with distribution of alpha (Smith-Eyre-Walker 2002)
+    for each replicate
+    '''
+    
+    # create a list to store alpha values
+    AlphaDistribution = []
+    
+    # create a list of genes to draw genes at random    
+    GeneNames = [gene for gene in PolymDivCounts]
+        
+    # loop over number of replicates
+    while replicates != 0:
+        # create a dictionary with {gene : [PN, PS, DN, DS]} from genes draw at random
+        RandomDraw = {}
+        i = Ngenes
+        # draw Ngenes from PolymDivCounts
+        while i != 0:
+            # draw the index of gene at random (randint include last number)
+            # draw genes with replacement
+            position = random.randint(0, len(GeneNames)-1)
+            gene = GeneNames[position]
+            # populate dict
+            RandomDraw[gene] = list(PolymDivCounts[gene])
+            # update counter
+            i -= 1
+        # compute alpha
+        alpha = ComputeAlphaSEW2002(RandomDraw, MinimumPS)
+        AlphaDistribution.append(alpha)
+        # update counter
+        replicates -= 1
+        
+    return AlphaDistribution
 
 
 
