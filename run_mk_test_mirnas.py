@@ -228,7 +228,7 @@ print('neutral after correction', len(HairpinNeutralCorr), len(MatureNeutralCorr
 
 # make a summary file with results of the MK test for hairpin
 newfile = open('MKtestmiRNAHairpinsNoSingleton.txt', 'w')
-newfile.write('\t'.join(['Crm_miRNA', 'Pmirna', 'P4fold', 'Dmirna', 'D4fold', 'MK_P', 'Selection', 'MK_P_Corr', 'Selection_Corr']) + '\n')
+newfile.write('\t'.join(['Crm_miRNA', 'Pmirna', 'P4fold', 'Dmirna', 'D4fold', 'MK_P', 'Selection', 'MK_P_Corr_10%FDR', 'Selection_Corr']) + '\n')
 for mirna in MKhairpin:
     newfile.write('\t'.join([mirna, str(MKhairpin[mirna][0]), str(MKhairpin[mirna][1]), str(MKhairpin[mirna][2]), str(MKhairpin[mirna][3]), str(MKhairpin[mirna][4])]) + '\t')
     if mirna in HairpinNeutral:
@@ -249,7 +249,7 @@ print('generated summary table hairpins')
 
 # make a summary file with results of the MK test for mature
 newfile = open('MKtestmiRNAmatureNoSingleton.txt', 'w')
-newfile.write('\t'.join(['Crm_miRNA', 'Pmirna', 'P4fold', 'Dmirna', 'D4fold', 'MK_P', 'Selection', 'MK_P_Corr', 'Selection_Corr']) + '\n')
+newfile.write('\t'.join(['Crm_miRNA', 'Pmirna', 'P4fold', 'Dmirna', 'D4fold', 'MK_P', 'Selection', 'MK_P_Corr_10%FDR', 'Selection_Corr']) + '\n')
 for mirna in MKmature:
     newfile.write('\t'.join([mirna, str(MKmature[mirna][0]), str(MKmature[mirna][1]), str(MKmature[mirna][2]), str(MKmature[mirna][3]), str(MKmature[mirna][4])]) + '\t')
     if mirna in MatureNeutral:
