@@ -451,6 +451,9 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
 
     # create a dict to store the fixed diffs and polyms {mirna: [D, P]}
     hairpin_diffs = {}
+    # initialize dict with list value
+    for mirna in hairpins:
+        hairpin_diffs[mirna] = [0, 0]
 
     # loop over aligned hairpins
     for mirna in hairpins:
@@ -519,18 +522,11 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
                     # consider positions with sample size > 10 (positions are already filtered in chromo_sites)
                     if ref_count + alt_count >= 10:
                         if ref_count != 0 and alt_count == 0 and ref != ancestral:
-                            #
                             # fixed difference, populate dict
-                            if mirna in hairpin_diffs:
-                                hairpin_diffs[mirna][0] += 1
-                            else:
-                                hairpin_diffs[mirna] = [1, 0]
+                            hairpin_diffs[mirna][0] += 1
                         elif ref_count == 0 and alt_count != 0 and alt != ancestral:
                             # fixed difference, populate dict
-                            if mirna in hairpin_diffs:
-                                hairpin_diffs[mirna][0] += 1
-                            else:
-                                hairpin_diffs[mirna] = [1, 0]
+                            hairpin_diffs[mirna][0] += 1
                         elif (ref_count != 0 and alt_count != 0) and (ref == ancestral or alt == ancestral):
                             # check if some polymorphic sites need to be ignored
                             if rare_alleles == True:
@@ -538,10 +534,10 @@ def CountPolymDivergmiRNAs(hairpins, hairpin_coord, CrmGenome, chromo_sites, rar
                                 # check that allele with lowest count > raw_count threshold
                                 if min(ref_count, alt_count) > threshold:
                                     # polymorphism, populate dict
-                                    if mirna in hairpin_diffs:
-                                        hairpin_diffs[mirna][1] += 1
-                                    else:
-                                        hairpin_diffs[mirna] = [0, 1]
+                                    hairpin_diffs[mirna][1] += 1
+                            elif rare_alleles == False:
+                                # polymorphism, populate dict
+                                hairpin_diffs[mirna][1] += 1
     
     return hairpin_diffs
     
