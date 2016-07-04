@@ -278,18 +278,40 @@ print('restricted', len(Restricted))
 print('novel', len(Novel))
 print('conserved', len(Conserved))
 
+
+
+
+
+# {mirna: [Pmirna, P4fold, Dmirna, D4fold]}
+
+
 # perform MK test based on entire conservation group
 RestrictedCounts, NovelCounts, ConservedCounts = {'restricted': [0, 0, 0, 0]}, {'novel': [0, 0, 0, 0]}, {'conserved': [0, 0, 0, 0]} 
 for mirna in MatureCounts:
     if mirna in Restricted:
         for i in range(4):
-            RestrictedCounts['restricted'][i] += MatureCounts[mirna][i]
+            if i % 2 == 0:
+                # add counts for mirna fixed diffs and polyms
+                RestrictedCounts['restricted'][i] += MatureCounts[mirna][i]
+            else:
+                # compare to D and P for 4fold across entire genome
+                RestrictedCounts['restricted'][i] = MatureCounts[mirna][i]
     elif mirna in Novel:
         for i in range(4):
-            NovelCounts['novel'][i] += MatureCounts[mirna][i]
+            if i % 2 == 0:
+                # add counts for mirna fixed diffs and polyms
+                NovelCounts['novel'][i] += MatureCounts[mirna][i]
+            else:
+                # compare to D and P for 4fold across entire genome
+                NovelCounts['novel'][i] = MatureCounts[mirna][i]
     elif mirna in Conserved:
         for i in range(4):
-            ConservedCounts['conserved'][i] += MatureCounts[mirna][i]
+            if i % 2 == 0:
+                # add counts for mirna fixed diffs and polyms
+                ConservedCounts['conserved'][i] += MatureCounts[mirna][i]
+            else:
+                # compare to D and P for 4fold across entire genome
+                ConservedCounts['conserved'][i] = MatureCounts[mirna][i]
 print('sorted mirnas based on conservation')
 
 MKRestricted = MK_test(RestrictedCounts, 'fisher')
@@ -310,8 +332,8 @@ if len(RestrictedSignificant) != 0:
 else:
     RestrictedNegative, RestrictedPositive = [], []
 
-NovelSignificant = [group for group in MKRestricted if MKNovel[group][-1] < 0.05]
-NovelNeutral = [group for group in MKRestricted if MKNovel[group][-1] >= 0.05]
+NovelSignificant = [group for group in MKNovel if MKNovel[group][-1] < 0.05]
+NovelNeutral = [group for group in MKNovel if MKNovel[group][-1] >= 0.05]
 # determine if group is under positive or negative selection
 if len(NovelSignificant) != 0:
     NovelNegative, NovelPositive = NaturalSelection(MKNovel, NovelSignificant)
@@ -332,7 +354,9 @@ print('positive', len(RestrictedPositive), len(NovelPositive), len(ConservedPosi
 print('negative', len(RestrictedNegative), len(NovelNegative), len(ConservedNegative))
 print('neutral', len(RestrictedNeutral), len(NovelNeutral), len(ConservedNeutral))
 
+
 # make a dict with mirna for each conservation group
+# use this dict to sample mirna for calulting distribution of alpha
 MatureRestrictedCounts, MatureNovelCounts, MatureConservedCounts = {}, {}, {}
 for mirna in MatureCounts:
     if mirna in Restricted:
@@ -344,16 +368,15 @@ for mirna in MatureCounts:
 print('generated diffs coutns for mirna in each conservation group')
 
 
+# compute alpha for each conservation group
+AlphaRestricted = ComputeAlphaSEW2002(MatureRestrictedCounts, 0)
+AlphaNovel = ComputeAlphaSEW2002(MatureNovelCounts, 0)
+AlphaConserved = ComputeAlphaSEW2002(MatureConservedCounts, 0)
+print('alpha restricted', AlphaRestricted)
+print('alpha novel', AlphaNovel)
+print('alpha conserved', AlphaConserved)
 
 
-
-
-
-
-
-
-# use this dict to sample mirna for calulting distribution of alpha
-# compute alpha
 # plot alpha for each group?
 # make summary file with each group
 
@@ -361,50 +384,12 @@ print('generated diffs coutns for mirna in each conservation group')
 
 
 # make summary file
-
 # see Lyu et al for organizing table
-
-
-
-
 # site type site number D P PDAF.5% D/PDAF.5% MK test pvaluea ab (% of adaptive fixations)
 
 
 
-# plot alpha for the different conservation group
-
-
-
-
-
-
-
-# use this function to compute alpha according to Smith-EyreWalker 2002    
-def ComputeAlphaSEW2002(PolymDivCounts, MinimumPS):
-     '''
-     (dict, int) -> float
-     Take a dictionary with polymorphim and divergence counts at synonymous 
-     and replacement sites and the minimum number of synonymous polymorphisms
-     and compute alpha, the average proportion of amino-acid substitutions
-     driven by positive selection according to the method of Smith-Eyre-Walker 2002
-     '''
-     
-     # alpha = 1 - ((MeanDS / MeanDN) * (Mean(PN / (PS + 1))))
-     # MeanDS: average number of fixed differences at synonymous sites
-     # MeanDN: average number of of fixed differences at nonsynonymous sites
-     # PN: number of nonymous replacement polymorphisms for a given gene
-     # PS: number of synonymous polymorphisms or a given gene
-     # PolymDivCounts  if in the form {gene : [PN, PS, DN, DS]}
-     
-     # create lists with divergence counts
-     DN = [PolymDivCounts[gene][2] for gene in PolymDivCounts]
-     DS = [PolymDivCounts[gene][3] for gene in PolymDivCounts]
-     
-     # create list with polymorphism ratio
-     Polym = [(PolymDivCounts[gene][0] / (PolymDivCounts[gene][1] + 1)) for gene in PolymDivCounts if PolymDivCounts[gene][1] >= MinimumPS]
-     
-     alpha = 1 - ((np.mean(DS) / np.mean(DN)) * np.mean(Polym))
-     return alpha     
+    
      
 
 # use this function to bootstrap genes to compoute a distribution of alpha values
