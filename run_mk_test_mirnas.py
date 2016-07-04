@@ -224,35 +224,94 @@ print('neutral after correction', len(HairpinNeutralCorr), len(MatureNeutralCorr
 
 for mirna in MKhairpin:
     print(mirna, MKhairpin[mirna])
+for mirna in MKmature:
+    print(mirna, MKmature[mirna])
 
+# make a summary file with results of the MK test for hairpin
+newfile = open('MKtestmiRNAHairpinsNoSingleton.txt', 'w')
+newfile.write('\t'.join(['Crm_miRNA', 'Pmirna', 'P4fold', 'Dmirna', 'D4fold', 'MK_P', 'Selection', 'MK_P_Corr', 'Selection_Corr']) + '\n')
+for mirna in MKhairpin:
+    newfile.write('\t'.join([mirna, str(MKhairpin[mirna][0]), str(MKhairpin[mirna][1]), str(MKhairpin[mirna][2]), str(MKhairpin[mirna][3]), str(MKhairpin[mirna][4])] + '\t'))
+    if mirna in HairpinNeutral:
+        newfile.write('neutral' + '\t')
+    elif mirna in HairpinPositive:
+        newfile.write('adaptive' + '\t')
+    elif mirna in HairpinNegative:
+        newfile.write('negative' + '\t')
+    newfile.write(str(PCorrHairpin[mirna]) + '\t')
+    if mirna in HairpinNeutralCorr:
+        newfile.write('neutral' + '\n')
+    elif mirna in HairpinPositiveCorr:
+        newfile.write('adaptive' + '\n')
+    elif mirna in HairpinNegativeCorr:
+        newfile.write('negative' + '\n')
+newile.close()
+print('generated summary table hairpins')
 
-
-
-
-
-
-
-
-
-
-#
-#
-#
-#
-#
-#
-## make a summary file with results of the MK test for hairpin
-#newfile = open('MKtestmiRNAHairpinsNoSingleton.txt', 'w')
-#newfile.write('\t'.join(['Crm_miRNA', 'Pmirna', 'P4fold', 'Dmirna', 'D4fold', 'MK_P', 'Selection', 'MK_P_Corr', 'Selection_Corr']) + '\n')
-#
-
-
-
+# make a summary file with results of the MK test for mature
+newfile = open('MKtestmiRNAmatureNoSingleton.txt', 'w')
+newfile.write('\t'.join(['Crm_miRNA', 'Pmirna', 'P4fold', 'Dmirna', 'D4fold', 'MK_P', 'Selection', 'MK_P_Corr', 'Selection_Corr']) + '\n')
+for mirna in MKmature:
+    newfile.write('\t'.join([mirna, str(MKmature[mirna][0]), str(MKmature[mirna][1]), str(MKmature[mirna][2]), str(MKmature[mirna][3]), str(MKmature[mirna][4])] + '\t'))
+    if mirna in MatureNeutral:
+        newfile.write('neutral' + '\t')
+    elif mirna in MaturePositive:
+        newfile.write('adaptive' + '\t')
+    elif mirna in MatureNegative:
+        newfile.write('negative' + '\t')
+    newfile.write(str(PCorrMature[mirna]) + '\t')
+    if mirna in MatureNeutralCorr:
+        newfile.write('neutral' + '\n')
+    elif mirna in MaturePositiveCorr:
+        newfile.write('adaptive' + '\n')
+    elif mirna in MatureNegativeCorr:
+        newfile.write('negative' + '\n')
+newile.close()
+print('generated summary table matures')
 
 
 # group mirnas based on level of conservation
-# perform MK test based on each mirna individually
-# perform MK test based on entire conservation group by pooling numbers
+Restricted = [mirna for mirna in famCons if famCons[mirna] == 'CrmCla']
+Novel = [mirna for mirna in famCons if famCons[mirna] == 'Crm']
+Conserved = [mirna for mirna in famCons if famCons[mirna] == 'Caeno']
+print('restricted', len(Restricted))
+print('novel', len(Novel))
+print('conserved', len(Conserved))
+
+# perform MK test based on entire conservation group
+RestrictedCounts, NovelCounts, ConservedCounts = {'restricted': [0, 0, 0, 0]}, {'novel': [0, 0, 0, 0]}, {'conserved': [0, 0, 0, 0]} 
+for mirna in MatureCounts:
+    if mirna in Restricted:
+        for i in range(4):
+            RestrictedCounts['restricted'][i] += MatureCounts[mirna][i]
+    elif mirna in Novel:
+        for i in range(4):
+            NovelCounts['novel'] += MatureCounts[mirna][i]
+    elif mirna in Conserved:
+        for i in range(4):
+            ConservedCounts['conserved'] += MatureCounts[mirna][i]
+print('sorted mirnas based on conservation')
+
+MKRestricted = MK_test(RestrictedCounts, 'fisher')
+MKNovel = MK_test(NovelCounts, 'fisher')
+MKConserved = MK_test(ConservedCounts, 'fisher')
+
+print(MKRestricted)
+print(MKNovel)
+print(MKConserved)
+
+
+# make a dict with mirna for each conservation group
+# use this dict to sample mirna for calulting distribution of alpha
+# compute alpha
+# plot alpha for each group?
+# make summary file with each group
+
+
+
+
+# make summary file
+
 # see Lyu et al for organizing table
 
 
@@ -262,7 +321,7 @@ for mirna in MKhairpin:
 
 
 
-
+# plot alpha for the different conservation group
 
 
 
